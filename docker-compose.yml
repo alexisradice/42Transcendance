@@ -26,6 +26,14 @@ services:
     ports:
       - 443:443
 
+  backend:
+    image: backend
+    container_name: backend
+    build: ./srcs/backend
+    restart: always
+    expose:
+      - "3000"
+
 networks:
   transcendence:
     driver: bridge
