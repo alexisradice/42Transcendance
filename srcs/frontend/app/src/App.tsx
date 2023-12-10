@@ -1,12 +1,12 @@
-import './App.css'
+import '@mantine/core/styles.css';
+import { MantineProvider } from '@mantine/core';
+import { Router } from './Router';
+import { theme } from './theme';
 
-function App() {
-
+export default function App() {
   return (
-    <>
-      Hello World
-    </>
-  )
+    <MantineProvider theme={theme} defaultColorScheme='auto'>
+      <Router />
+    </MantineProvider>
+  );
 }
-
-export default App
