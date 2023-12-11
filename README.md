@@ -1,8 +1,40 @@
 # Transcendence
 
 ## Production
-Launch project with `docker-compose up --build`
+Launch project with
+
+```bash
+docker-compose up --build
+```
+
+then visit [https://pongopongo.fr](https://pongopongo.fr)
 
 ## Development
-Launch watch mode for either the frontend or the backend with `./dev-start.sh [front|back]`
 
+### Frontend
+
+If it's the first time launching the project, or if you want to update the dependencies:
+
+```bash
+./dev-start.sh front --install
+```
+
+else 
+
+```bash
+./dev-start.sh front
+```
+
+### Backend
+
+If it's the first time launching the project, or if you want to update the dependencies:
+
+```bash
+./dev-start.sh back --install
+```
+
+else 
+
+```bash
+./dev-start.sh back
+```
