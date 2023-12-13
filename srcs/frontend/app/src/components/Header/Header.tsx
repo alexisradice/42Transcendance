@@ -6,8 +6,9 @@ export default function Header() {
   return (
     <div className={classes.header}>
       <div className={classes.title}>
-        <Link to='/'>Pongo Pongo!</Link>
+        <Link to='/'>Pongu!</Link>
       </div>
+      <a href="/login">Login</a>
       <ColorSchemeToggle />
     </div>
   );
