@@ -5,11 +5,8 @@ export type User = any;
 
 @Injectable()
 export class UserService {
-  // async findOrCreate(userProfile): Promise<User> {
-  //   console.log('userProfile.name', userProfile.name);
-  // insert user in DB
-  // }
-  // async findOne(username: string): Promise<User | undefined> {
-  //   return this.users.find((user) => user.username === username);
-  // }
+  async findOrCreate(userProfile: any) {
+    console.log('userProfile.name', userProfile.name);
+    // insert user in DB
+  }
 }
