@@ -8,7 +8,7 @@ export default function Header() {
       <div className={classes.title}>
         <Link to='/'>Pongu!</Link>
       </div>
-      <a href="/login">Login</a>
+      <a href="http://localhost:3000/auth">Login</a>
       <ColorSchemeToggle />
     </div>
   );

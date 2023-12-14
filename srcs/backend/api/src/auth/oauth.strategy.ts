@@ -14,8 +14,7 @@ export class OAuthStrategy extends PassportStrategy(Strategy, 'oauth') {
     const clientSecret = configService.get<string>('SECRET_OAUTH');
     const callbackURL = configService.get<string>('REDIRECT_URL_OAUTH');
     super({
-      // Put config in `.env`
-      authorizationURL: `https://api.intra.42.fr/oauth/authorize/client_id=${clientID}&redirect_uri=${callbackURL}&response_type=code&scope=public`,
+      authorizationURL: 'https://api.intra.42.fr/oauth/authorize',
       tokenURL: 'https://api.intra.42.fr/oauth/token',
       clientID,
       clientSecret,
