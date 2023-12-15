@@ -1,15 +1,18 @@
-import { Drawer } from '@mantine/core';
+import { Burger, Drawer } from '@mantine/core';
 import { useState } from 'react';
 // import classes from './LeftDrawer.module.css';
 
 export default function LeftDrawer() {
-  const [opened, setOpened] = useState(true);
+  const [opened, setOpened] = useState(false);
 
   const onClose = () => {
     setOpened(false);
   };
 
   return (
-    <Drawer opened={opened} onClose={onClose} />
+    <>
+      <Burger opened={opened} onClick={() => setOpened((o) => !o)} />
+      <Drawer opened={opened} onClose={onClose} />
+    </>
   );
 }
