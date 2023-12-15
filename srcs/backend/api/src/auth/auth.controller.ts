@@ -6,7 +6,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { OAuthGuard } from './guards/oauth.guard';
 
@@ -21,7 +21,7 @@ export class AuthController {
 
   @Get('callback')
   @UseGuards(OAuthGuard)
-  async oauthCallback(@Req() req, @Res() res: Response) {
+  async oauthCallback(@Req() req: Request, @Res() res: Response) {
     const token = await this.authService.signIn(req.user);
 
     res.cookie('access_token', token, {

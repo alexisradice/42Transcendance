@@ -9,7 +9,7 @@ export default function Header() {
         <Link to='/'>Pongu!</Link>
       </div>
       <div className={classes.userSection}>
-        <a href="localhost:3000/auth">Login</a>
+        <a href="http://localhost:3000/auth" target="_blank" rel="noopener noreferrer">Login</a>
         {/* <div>Howdy, lmurtin</div>
         <img className={classes.avatar} src='/avatar.webp' alt='avatar' height="50" width="50" /> */}
         <ColorSchemeToggle />

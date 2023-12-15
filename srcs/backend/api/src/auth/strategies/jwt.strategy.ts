@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 // import config from '../../config/config';
 // import { InjectRepository } from '@nestjs/typeorm';
 // import { Repository } from 'typeorm';
@@ -12,22 +12,21 @@ export type JwtPayload = {
   email: string;
 };
 
+const extractJwtFromCookie = (req: any) => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies['access_token'];
+  }
+  return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
-     private configService: ConfigService,
-  ) {
-    const extractJwtFromCookie = (req) => {
-      let token = null;
-      if (req && req.cookies) {
-        token = req.cookies['access_token'];
-      }
-      return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    };
-    console.log(configService.get<string>('JWT_SECRET'));
+  constructor(private configService: ConfigService) {
+    const secretOrKey = configService.get<string>('JWT_SECRET');
     super({
       ignoreExpiration: false,
-      secretOrPrivateKey: configService.get<string>('JWT_SECRET'),
+      secretOrKey,
       jwtFromRequest: extractJwtFromCookie,
     });
   }
@@ -36,10 +35,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     // const user = await this.userRepository.findOne({ id: payload.sub });
 
     // if (!user) throw new UnauthorizedException('Please log in to continue');
+    const { sub, email } = payload;
 
     return {
-      id: payload.sub,
-      email: payload.email,
+      sub,
+      email,
     };
   }
 }
