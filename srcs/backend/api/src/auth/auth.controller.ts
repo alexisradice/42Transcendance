@@ -1,16 +1,14 @@
 import {
-  Body,
-  UseGuards,
   Controller,
-  Post,
   Get,
+  HttpStatus,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto';
-import { OAuthGuard } from './oauth.guard';
-import { Request, Response } from 'express';
+import { OAuthGuard } from './guards/oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -18,27 +16,20 @@ export class AuthController {
 
   @Get()
   @UseGuards(OAuthGuard)
-  async OAuth(@Req() _req) {
-    // Guard redirects
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async auth() {}
 
-  @Get('redirect')
+  @Get('callback')
   @UseGuards(OAuthGuard)
-  async OAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    // For now, we'll just show the user object
-    return req.user;
-  }
+  async oauthCallback(@Req() req, @Res() res: Response) {
+    const token = await this.authService.signIn(req.user);
 
-  @Post('signup')
-  signup(@Body() dto: AuthDto) {
-    console.log({
-      dto,
+    res.cookie('access_token', token, {
+      maxAge: 2592000000,
+      sameSite: true,
+      secure: false,
     });
-    return this.authService.signup();
-  }
 
-  @Post('signin')
-  signin() {
-    return this.authService.signin();
+    return res.status(HttpStatus.OK);
   }
 }
