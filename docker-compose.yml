@@ -7,7 +7,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     restart: always
     env_file: .env
 
@@ -16,7 +16,7 @@ services:
     container_name: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
 
   frontend:
     image: frontend
@@ -24,7 +24,7 @@ services:
     build: ./srcs/frontend
     restart: always
     ports:
-      - 443:443
+      - "443:443"
 
   backend:
     image: backend
