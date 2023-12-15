@@ -7,6 +7,6 @@ export class AuthService {
   constructor() {}
 
   async signIn(@Req() req: Request) {
-    return { user: req.user };
+    return req.user;
   }
 }

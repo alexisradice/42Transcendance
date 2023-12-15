@@ -28,6 +28,10 @@ export class AuthStrategy extends PassportStrategy(Strategy, 'oauth') {
       },
     });
     const userProfile = await response.json();
-    return done(null, userProfile);
+    return done(null, {
+      email: userProfile.email,
+      login: userProfile.login,
+      image: userProfile.image.link,
+    });
   }
 }
