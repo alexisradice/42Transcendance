@@ -8,8 +8,11 @@ export default function Header() {
       <div className={classes.title}>
         <Link to='/'>Pongu!</Link>
       </div>
-      <a href="http://localhost:3000/auth">Login</a>
-      <ColorSchemeToggle />
+      <div className={classes.userSection}>
+        <div>Howdy, lmurtin</div>
+        <img className={classes.avatar} src='/avatar.webp' alt='avatar' height="50" width="50" />
+        <ColorSchemeToggle />
+      </div>
     </div>
   );
 }
