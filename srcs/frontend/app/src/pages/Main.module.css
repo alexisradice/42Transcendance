@@ -7,34 +7,38 @@
   height: 100vh;
 }
 
+.contentBlock {
+  background-color: var(--mantine-color-dark-6);
+}
+
 .header {
-  border: 1px solid blue;
+  composes: contentBlock;
   grid-row: 1;
   grid-column: 1 / 4;
 }
 
 .footer {
-  border: 1px solid yellow;
+  composes: contentBlock;
   grid-row: 3;
   grid-column: 1 / 4;
 }
 
 .mainFrame {
-  border: 1px solid violet;
+  composes: contentBlock;
   grid-row: 2;
   grid-column: 2;
 }
 
 .leftDrawer {
   width: 300px;
-  border: 1px solid aqua;
+  composes: contentBlock;
   grid-row: 2;
   grid-column: 1;
 }
 
 .rightDrawer {
   width: 340px;
-  border: 1px solid green;
+  composes: contentBlock;
   grid-row: 2;
   grid-column: 3;
 }
