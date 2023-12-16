@@ -1,28 +1,28 @@
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
-import LeftDrawer from '../components/LeftDrawer/LeftDrawer';
-import MainFrame from '../components/MainFrame/MainFrame';
-import RightDrawer from '../components/RightDrawer/RightDrawer';
-import classes from './Main.module.css';
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
+import LeftDrawer from "../components/LeftDrawer/LeftDrawer";
+import MainFrame from "../components/MainFrame/MainFrame";
+import RightDrawer from "../components/RightDrawer/RightDrawer";
+import classes from "./Main.module.css";
 
 export function MainPage() {
-  return (
-    <div className={classes.main}>
-      <div className={classes.header}>
-        <Header />
-      </div>
-      <div className={classes.leftDrawer}>
-        <LeftDrawer />
-      </div>
-      <main className={classes.mainFrame}>
-        <MainFrame />
-      </main>
-      <div className={classes.rightDrawer}>
-        <RightDrawer />
-      </div>
-      <div className={classes.footer}>
-        <Footer />
-      </div>
-    </div>
-  );
+	return (
+		<div className={classes.main}>
+			<div className={classes.header}>
+				<Header />
+			</div>
+			<div className={classes.leftDrawer}>
+				<LeftDrawer />
+			</div>
+			<main className={classes.mainFrame}>
+				<MainFrame />
+			</main>
+			<div className={classes.rightDrawer}>
+				<RightDrawer />
+			</div>
+			<div className={classes.footer}>
+				<Footer />
+			</div>
+		</div>
+	);
 }

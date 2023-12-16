@@ -1,90 +1,90 @@
 :global {
-  body {
-    @mixin light {
-      background-color: var(--mantine-color-gray-0);
-    }
-  }
+	body {
+		@mixin light {
+			background-color: var(--mantine-color-gray-0);
+		}
+	}
 
-  a {
-    color: var(--mantine-color-anchor);
-    text-decoration: none;
-    font-size: var(--mantine-font-size-sm);
-  }
+	a {
+		color: var(--mantine-color-anchor);
+		text-decoration: none;
+		font-size: var(--mantine-font-size-sm);
+	}
 
-  a:hover {
-    text-decoration: underline;
-  }
+	a:hover {
+		text-decoration: underline;
+	}
 }
 
 .main {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: 1fr 30fr 1fr;
-  grid-gap: 10px;
-  width: 100vw;
-  height: 100vh;
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	grid-template-rows: 1fr 30fr 1fr;
+	grid-gap: 10px;
+	width: 100vw;
+	height: 100vh;
 }
 
 .contentBlock {
-  @mixin dark {
-    background-color: var(--mantine-color-dark-6);
-  }
+	@mixin dark {
+		background-color: var(--mantine-color-dark-6);
+	}
 
-  @mixin light {
-    background-color: var(--mantine-color-gray-1);
-  }
+	@mixin light {
+		background-color: var(--mantine-color-gray-1);
+	}
 }
 
 .header {
-  composes: contentBlock;
-  grid-row: 1;
-  grid-column: 1 / 4;
+	composes: contentBlock;
+	grid-row: 1;
+	grid-column: 1 / 4;
 }
 
 .footer {
-  composes: contentBlock;
-  grid-row: 3;
-  grid-column: 1 / 4;
+	composes: contentBlock;
+	grid-row: 3;
+	grid-column: 1 / 4;
 }
 
 .mainFrame {
-  composes: contentBlock;
-  grid-row: 2;
-  grid-column: 2;
-  /* border-radius: var(--mantine-radius-md); */
+	composes: contentBlock;
+	grid-row: 2;
+	grid-column: 2;
+	/* border-radius: var(--mantine-radius-md); */
 }
 
 .leftDrawer {
-  composes: contentBlock;
-  width: 300px;
-  grid-row: 2;
-  grid-column: 1;
-  /* border-radius: 0px var(--mantine-radius-md) var(--mantine-radius-md) 0px; */
+	composes: contentBlock;
+	width: 300px;
+	grid-row: 2;
+	grid-column: 1;
+	/* border-radius: 0px var(--mantine-radius-md) var(--mantine-radius-md) 0px; */
 }
 
 .rightDrawer {
-  composes: contentBlock;
-  width: 340px;
-  grid-row: 2;
-  grid-column: 3;
-  /* border-radius: var(--mantine-radius-md)  0px 0px var(--mantine-radius-md); */
+	composes: contentBlock;
+	width: 340px;
+	grid-row: 2;
+	grid-column: 3;
+	/* border-radius: var(--mantine-radius-md)  0px 0px var(--mantine-radius-md); */
 }
 
 @media (max-width: 1200px) {
-  .leftDrawer {
-    width: 40px;
-  }
+	.leftDrawer {
+		width: 40px;
+	}
 
-  .rightDrawer {
-    width: 250px;
-  }
+	.rightDrawer {
+		width: 250px;
+	}
 }
 
 @media (max-width: 768px) {
-  .leftDrawer {
-    width: 40px;
-  }
-  .rightDrawer {
-    display: none;
-  }
+	.leftDrawer {
+		width: 40px;
+	}
+	.rightDrawer {
+		display: none;
+	}
 }

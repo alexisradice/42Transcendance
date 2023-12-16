@@ -1,8 +1,3 @@
 export function HelloPage() {
-  return (
-    <>
-      Hello World
-    </>
-  );
+	return <>Hello World</>;
 }
-
