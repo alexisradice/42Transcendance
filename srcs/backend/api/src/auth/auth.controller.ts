@@ -1,11 +1,12 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthService } from './auth.service';
 import { OAuthGuard } from './auth.guard';
+import { UserService } from 'src/user/user.service';
+import { MiniUser } from 'src/types';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
   @UseGuards(OAuthGuard)
@@ -14,6 +15,6 @@ export class AuthController {
   @Get('callback')
   @UseGuards(OAuthGuard)
   callback(@Req() req: Request) {
-    return this.authService.signIn(req);
+    return this.userService.findOrCreate(req.user as MiniUser);
   }
 }
