@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserSettingsDto } from 'src/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FindOneCriteria as FindOneParam, MiniUser } from 'src/types';
 
@@ -28,5 +29,13 @@ export class UserService {
 			}
 		});
 		return createdUser;
+	}
+
+	async updateDisplayName(userDto: UserSettingsDto) {
+		const user = await this.prisma.user.update({
+			where: { login: userDto.login },
+			data: { displayName: userDto.displayName},
+		});
+		return user;
 	}
 }
