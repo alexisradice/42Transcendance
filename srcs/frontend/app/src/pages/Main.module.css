@@ -1,3 +1,21 @@
+:global {
+  body {
+    @mixin light {
+      background-color: var(--mantine-color-gray-0);
+    }
+  }
+
+  a {
+    color: var(--mantine-color-anchor);
+    text-decoration: none;
+    font-size: var(--mantine-font-size-sm);
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
 .main {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -8,7 +26,13 @@
 }
 
 .contentBlock {
-  background-color: var(--mantine-color-dark-6);
+  @mixin dark {
+    background-color: var(--mantine-color-dark-6);
+  }
+
+  @mixin light {
+    background-color: var(--mantine-color-gray-1);
+  }
 }
 
 .header {
@@ -27,20 +51,23 @@
   composes: contentBlock;
   grid-row: 2;
   grid-column: 2;
+  /* border-radius: var(--mantine-radius-md); */
 }
 
 .leftDrawer {
-  width: 300px;
   composes: contentBlock;
+  width: 300px;
   grid-row: 2;
   grid-column: 1;
+  /* border-radius: 0px var(--mantine-radius-md) var(--mantine-radius-md) 0px; */
 }
 
 .rightDrawer {
-  width: 340px;
   composes: contentBlock;
+  width: 340px;
   grid-row: 2;
   grid-column: 3;
+  /* border-radius: var(--mantine-radius-md)  0px 0px var(--mantine-radius-md); */
 }
 
 @media (max-width: 1200px) {
