@@ -1,9 +1,2 @@
 .leftDrawer {
-  @mixin light {
-    border: 1px solid #000;
-  }
-
-  @mixin dark {
-    border: 1px solid #fff;
-  }
 }

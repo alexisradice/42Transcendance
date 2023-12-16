@@ -4,17 +4,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-
-  @mixin dark {
-    border: 1px solid white;
-  }
-
-  @mixin light {
-    border: 1px solid black;
-  }
 }
 
-.userSection {
+.subsection {
   display: flex;
   align-items: center;
   gap: 15px;

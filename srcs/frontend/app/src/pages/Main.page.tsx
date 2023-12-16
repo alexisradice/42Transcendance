@@ -1,17 +1,28 @@
-import { Outlet } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import LeftDrawer from '../components/LeftDrawer/LeftDrawer';
+import MainFrame from '../components/MainFrame/MainFrame';
+import RightDrawer from '../components/RightDrawer/RightDrawer';
+import classes from './Main.module.css';
 
 export function MainPage() {
   return (
-    <>
-      <Header />
-      <main>
+    <div className={classes.main}>
+      <div className={classes.header}>
+        <Header />
+      </div>
+      <div className={classes.leftDrawer}>
         <LeftDrawer />
-        <Outlet />
+      </div>
+      <main className={classes.mainFrame}>
+        <MainFrame />
       </main>
-      <Footer />
-    </>
+      <div className={classes.rightDrawer}>
+        <RightDrawer />
+      </div>
+      <div className={classes.footer}>
+        <Footer />
+      </div>
+    </div>
   );
 }

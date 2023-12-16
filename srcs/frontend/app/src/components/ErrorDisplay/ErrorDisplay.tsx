@@ -8,7 +8,7 @@ type Props = {
   message?: string;
 }
 
-export default function ErrorDisplay({ status, message }: Props) {
+const ErrorDisplay = ({ status, message }: Props) => {
   return (
     <div id="error-page" className={classes.message}>
       <h1>Oops!</h1>
@@ -25,4 +25,6 @@ export default function ErrorDisplay({ status, message }: Props) {
       )}
     </div>
   );
-}
+};
+
+export default ErrorDisplay;
