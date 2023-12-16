@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { UserSettingsDto } from 'src/dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { FindOneCriteria as FindOneParam, MiniUser } from 'src/types';
+import { Injectable } from "@nestjs/common";
+import { UserSettingsDto } from "src/dto";
+import { PrismaService } from "src/prisma/prisma.service";
+import { FindOneCriteria as FindOneParam, MiniUser } from "src/types";
 
 @Injectable()
 export class UserService {
@@ -9,13 +9,13 @@ export class UserService {
 
 	async findOne(param: FindOneParam) {
 		const user = await this.prisma.user.findFirst({
-			where: param
+			where: param,
 		});
 		return user;
 	}
 
 	async findOrCreate(user: MiniUser) {
-		const foundUser = await this.findOne({email: user.email});
+		const foundUser = await this.findOne({ email: user.email });
 		if (foundUser) {
 			return foundUser;
 		}
@@ -26,7 +26,7 @@ export class UserService {
 				displayName: user.login,
 				image: user.image,
 				// init other things
-			}
+			},
 		});
 		return createdUser;
 	}
@@ -34,7 +34,7 @@ export class UserService {
 	async updateDisplayName(userDto: UserSettingsDto) {
 		const user = await this.prisma.user.update({
 			where: { login: userDto.login },
-			data: { displayName: userDto.displayName},
+			data: { displayName: userDto.displayName },
 		});
 		return user;
 	}

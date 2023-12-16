@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Injectable } from "@nestjs/common";
+import { Req } from "@nestjs/common";
+import { Request } from "express";
 
 @Injectable()
 export class AuthService {
-  constructor() {}
+	constructor() {}
 
-  async signIn(@Req() req: Request) {
-    return req.user;
-  }
+	async signIn(@Req() req: Request) {
+		return req.user;
+	}
 }
