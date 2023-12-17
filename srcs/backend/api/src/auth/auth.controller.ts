@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Controller, Post, Req } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { AuthService } from "./auth.service";
 
@@ -10,7 +10,8 @@ export class AuthController {
 	) {}
 
 	@Post()
-	async auth(@Body() accessToken: { token: string }) {
-		return await this.authService.fromOauthToJwt(accessToken.token);
+	async auth(@Req() request: Request) {
+		const token = request.headers["authorization"].split(" ")[1];
+		return await this.authService.fromOauthToJwt(token);
 	}
 }
