@@ -1,20 +1,16 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
-import { Request } from "express";
-import { OAuthGuard } from "./auth.guard";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
-import { MiniUser } from "src/types";
+import { AuthService } from "./auth.service";
 
 @Controller("auth")
 export class AuthController {
-	constructor(private userService: UserService) {}
+	constructor(
+		private authService: AuthService,
+		private userService: UserService,
+	) {}
 
-	@Get()
-	@UseGuards(OAuthGuard)
-	async auth() {}
-
-	@Get("callback")
-	@UseGuards(OAuthGuard)
-	callback(@Req() req: Request) {
-		return this.userService.findOrCreate(req.user as MiniUser);
+	@Post()
+	async auth(@Body() accessToken: { token: string }) {
+		return await this.authService.fromOauthToJwt(accessToken.token);
 	}
 }
