@@ -11,13 +11,6 @@ services:
     restart: always
     env_file: .env
 
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-
   frontend:
     image: frontend
     container_name: frontend
