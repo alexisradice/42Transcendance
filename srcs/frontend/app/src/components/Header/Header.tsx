@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
-import classes from "./Header.module.css";
-import UserMenu from "../UserMenu/UserMenu";
 import LoginButton from "../LoginButton/LoginButton";
+import UserMenu from "../UserMenu/UserMenu";
+import classes from "./Header.module.css";
 
 export default function Header() {
 	const isAuthenticated = false;

@@ -1,6 +1,8 @@
 import { Menu } from "@mantine/core";
-import SettingsModal from "../SettingsModal/SettingsModal";
 import { useDisclosure } from "@mantine/hooks";
+import { useContext } from "react";
+import { AuthContext, IAuthContext } from "react-oauth2-code-pkce";
+import SettingsModal from "../SettingsModal/SettingsModal";
 
 type Props = {
 	children: JSX.Element;
@@ -8,6 +10,11 @@ type Props = {
 
 const UserMenu = ({ children }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
+	const context = useContext<IAuthContext>(AuthContext);
+
+	const logOut = () => {
+		context.logOut();
+	};
 
 	return (
 		<>
@@ -17,7 +24,7 @@ const UserMenu = ({ children }: Props) => {
 				<Menu.Dropdown>
 					<Menu.Item onClick={open}>Settings</Menu.Item>
 					<Menu.Item>Stats</Menu.Item>
-					<Menu.Item>Log out</Menu.Item>
+					<Menu.Item onClick={logOut}>Log out</Menu.Item>
 				</Menu.Dropdown>
 			</Menu>
 		</>
