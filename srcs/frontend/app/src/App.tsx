@@ -1,52 +1,53 @@
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
-import {
-	AuthProvider,
-	TAuthConfig,
-	TRefreshTokenExpiredEvent,
-} from "react-oauth2-code-pkce";
+import { Notifications, notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.css";
+import { AuthProvider } from "react-oauth2-code-pkce";
+import { AuthConfig } from "./AuthConfig";
 import { Router } from "./Router";
 import { theme } from "./theme";
+import { HttpException } from "./utils/HttpException";
+import { prettyErrors } from "./utils/PrettyErrors";
 
-const authConfig: TAuthConfig = {
-	clientId: import.meta.env.VITE_CLIENT_ID,
-	authorizationEndpoint: "https://api.intra.42.fr/oauth/authorize",
-	tokenEndpoint: "https://api.intra.42.fr/oauth/token",
-	redirectUri: import.meta.env.VITE_REDIRECT_URI,
-	autoLogin: false,
-	decodeToken: false,
-	extraTokenParameters: {
-		client_secret: import.meta.env.VITE_CLIENT_SECRET,
-	},
-	scope: "public",
-	postLogin: () => {
+export default function App() {
+	const postLogin = () => {
+		const accessToken = localStorage
+			.getItem("ROCP_token")
+			?.replace(/"/g, "");
 		fetch(`${import.meta.env.VITE_API_URL}/auth`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				"Authorization": `Bearer ${accessToken}`,
 			},
-			body: JSON.stringify({ token: localStorage.getItem("ROCP_token") }),
 		})
 			.then((response: Response) => {
+				if (!response.ok) {
+					throw new HttpException(
+						response.statusText,
+						response.status,
+					);
+				}
 				return response.json();
 			})
-			.then((json: { token: string }) => {
-				localStorage.setItem("JWT_token", json.token);
+			.then((json: { jwtToken: string }) => {
+				localStorage.setItem("JWT_token", json.jwtToken);
 			})
-			.catch((err: Error) => {
-				console.error(err);
+			.catch((err: HttpException) => {
+				notifications.show({
+					title: "Uh oh! Something went wrong.",
+					message: prettyErrors(err.status),
+					color: "red",
+					radius: "md",
+					withBorder: true,
+				});
 			});
-	},
-	onRefreshTokenExpire: (event: TRefreshTokenExpiredEvent) =>
-		window.confirm(
-			"Session expired. Refresh page to continue using the site?",
-		) && event.login(),
-};
+	};
 
-export default function App() {
 	return (
-		<AuthProvider authConfig={authConfig}>
+		<AuthProvider authConfig={AuthConfig(postLogin)}>
 			<MantineProvider theme={theme} defaultColorScheme="auto">
+				<Notifications limit={3} position="top-center" />
 				<Router />
 			</MantineProvider>
 		</AuthProvider>
