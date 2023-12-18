@@ -37,19 +37,39 @@ export class AuthService {
 		}
 	}
 
-	async fromOauthToJwt(oauthToken: string) {
+	async fromOauthToJwtTokens(oauthToken: string) {
+		//revalidate access from 42API
 		const userInfo = await this.validate(oauthToken);
 		const payload = {
 			sub: userInfo.login,
 			email: userInfo.email,
 			image: userInfo.image,
 		};
+
+		//creat (or find) user in database
 		await this.userService.findOrCreate(userInfo);
-		const options = {
-			secret: this.configService.get<string>("JWT_SECRET"),
-		};
+
+		//generate two jwt tokens for access and refresh
+		const [jwtToken, jwtRefreshToken] = await Promise.all([
+			this.jwtService.signAsync(payload, {
+				secret: this.configService.get<string>("JWT_SECRET"),
+				expiresIn: "15m",
+			}),
+			this.jwtService.signAsync(payload, {
+				secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+				expiresIn: "7d",
+			}),
+		]);
 		return {
-			jwtToken: await this.jwtService.signAsync(payload, options),
+			jwtToken,
+			jwtRefreshToken,
 		};
 	}
+
+	// async updateRefreshToken(userId: string, refreshToken: string) {
+	// 	const hashedRefreshToken = await this.hashData(refreshToken);
+	// 	await this.usersService.update(userId, {
+	// 	  refreshToken: hashedRefreshToken,
+	// 	});
+	//   }
 }
