@@ -19,6 +19,8 @@ model User {
   email       String
 
   image       String
+
+  refreshToken	String	@unique
 }
 
 model Message {

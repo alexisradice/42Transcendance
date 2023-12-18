@@ -25,6 +25,7 @@ export class UserService {
 				login: user.login,
 				displayName: user.login,
 				image: user.image,
+				refreshToken: null,
 				// init other things
 			},
 		});
