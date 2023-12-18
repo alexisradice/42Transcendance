@@ -45,9 +45,11 @@ export class AuthService {
 			image: userInfo.image,
 		};
 		await this.userService.findOrCreate(userInfo);
-		const option = { secret: this.configService.get<string>("JWT_SECRET") };
+		const options = {
+			secret: this.configService.get<string>("JWT_SECRET"),
+		};
 		return {
-			jwtToken: await this.jwtService.signAsync(payload, option),
+			jwtToken: await this.jwtService.signAsync(payload, options),
 		};
 	}
 }
