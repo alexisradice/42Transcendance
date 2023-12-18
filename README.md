@@ -1,40 +1,65 @@
 # Transcendence
 
-## Production
-Launch project with
+First make sure you have your .env files set up correctly.
 
-```bash
-docker-compose up --build
-```
+## Frontend
 
-then visit [https://pongopongo.fr](https://pongopongo.fr)
+React app written in TypeScript, built with [Vite](https://vitejs.dev/guide/features.html).
 
-## Development
+It uses [Mantine](https://mantine.dev/overview/) for UI components and styling.
 
-### Frontend
-
-If it's the first time launching the project, or if you want to update the dependencies:
-
-```bash
-./dev-start.sh front --install
-```
-
-else 
+### Launch the project
 
 ```bash
 ./dev-start.sh front
 ```
 
-### Backend
+then visit [http://localhost:5173/](http://localhost:5173/)
 
-If it's the first time launching the project, or if you want to update the dependencies:
+### Recommended VSCode extensions
+
+-   **Prettier** (esbenp.prettier-vscode) formats code automatically on file save, so we have consistent code across the project (like the norm but less restrictive and automatic).
+-   **CSS Variable Autocomplete** provides autocompletion for CSS variables.
+-   **PostCSS Intellisense and Highlighting** enables syntax highlighting and suppress variables `($variable)` errors for Mantine.
+
+## Backend
+
+### Initial setup
 
 ```bash
-./dev-start.sh back --install
+npm install -g prisma
 ```
 
-else 
+```
+cd srcs/backend/api
+```
+
+```
+prisma migrate dev
+```
+
+### Launch the database
+
+```bash
+docker compose up postgres -d
+```
+
+### Launch
 
 ```bash
 ./dev-start.sh back
+```
+
+Your endpoints are testable at [http://localhost:3000/](http://localhost:3000/)
+
+### Recommended VSCode extensions
+
+-   **Prettier** (esbenp.prettier-vscode) formats code automatically on file save, so we have consistent code across the project (like the norm but less restrictive and automatic).
+
+# Production
+
+This is pretty much only used for correction. Launch project with:
+
+```bash
+docker-compose up --build
 ```
