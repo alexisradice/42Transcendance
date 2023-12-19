@@ -1,6 +1,16 @@
 # Transcendence
 
-First make sure you have your .env files set up correctly.
+-   Make sure you have your .env files set up correctly.
+
+-   Install [Volta](https://docs.volta.sh/guide/getting-started)
+
+```bash
+curl https://get.volta.sh | bash
+```
+
+Volta is a node version manager. When installing it, it will automatically install the correct node version for the project.
+
+Note: If you already had `node_modules` installed in either `srcs/backend/api` or `srcs/frontend/app`, you might need to delete those folders and restart your terminal(s).
 
 ## Frontend
 
@@ -24,24 +34,26 @@ then visit [http://localhost:5173/](http://localhost:5173/)
 
 ## Backend
 
-### Initial setup
+### Launch the database
 
 ```bash
-npm install -g prisma
+docker compose up postgres -d
 ```
+
+### Initial setup
 
 ```
 cd srcs/backend/api
 ```
 
 ```
-prisma migrate dev
+npm install -g prisma && prisma migrate dev
 ```
 
-### Launch the database
+If the above doesn't work:
 
-```bash
-docker compose up postgres -d
+```
+npx prisma migrate dev
 ```
 
 ### Launch
@@ -62,4 +74,8 @@ This is pretty much only used for correction. Launch project with:
 
 ```bash
 docker-compose up --build
+```
+
+```
+
 ```
