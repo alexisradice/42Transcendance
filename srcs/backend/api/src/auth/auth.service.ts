@@ -111,7 +111,11 @@ export class AuthService {
 		return tokens;
 	}
 
-	// async logout(login: string) {
-	// 	return this.usersService.update(login, { refreshToken: null });
-	//   }
+	async logout(token: string) {
+		const decodedToken: Payload = this.jwtService.decode(token);
+		await this.prisma.user.update({
+			where: { login: decodedToken.sub },
+			data: { refreshToken: null },
+		});
+	}
 }
