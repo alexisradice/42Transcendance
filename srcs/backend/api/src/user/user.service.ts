@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { User } from "@prisma/client";
 import { UserSettingsDto } from "src/dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { FindOneCriteria as FindOneParam, MiniUser } from "src/types";
@@ -14,17 +15,18 @@ export class UserService {
 		return user;
 	}
 
-	async findOrCreate(user: MiniUser) {
-		const foundUser = await this.findOne({ email: user.email });
+	async findOrCreate(user: MiniUser): Promise<User> {
+		const foundUser = await this.findOne({ login: user.login });
 		if (foundUser) {
 			return foundUser;
 		}
 		const createdUser = await this.prisma.user.create({
 			data: {
-				email: user.email,
 				login: user.login,
+				email: user.email,
 				displayName: user.login,
 				image: user.image,
+				refreshToken: "null",
 				// init other things
 			},
 		});
