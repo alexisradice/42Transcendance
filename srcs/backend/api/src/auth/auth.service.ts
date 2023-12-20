@@ -49,14 +49,12 @@ export class AuthService {
 				throw new TypeError(response.statusText);
 			}
 			const userProfile = await response.json();
-			console.log("OK from 42");
 			return {
 				email: userProfile.email,
 				login: userProfile.login,
 				image: userProfile.image.link,
 			};
 		} catch (error) {
-			console.log("ERROR from 42 - status", status);
 			throw new HttpException(error.message, status || 500);
 		}
 	}
@@ -111,6 +109,5 @@ export class AuthService {
 			where: { login: decodedToken.sub },
 			data: { refreshToken: "null" },
 		});
-		console.log("user has logged out: ", decodedToken.sub);
 	}
 }

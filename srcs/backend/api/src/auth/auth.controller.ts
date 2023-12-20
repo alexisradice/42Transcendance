@@ -24,7 +24,6 @@ export class AuthController {
 	async auth(@Req() request: Request) {
 		const token = request.headers["authorization"].split(" ")[1];
 		// async auth(@Body() token: string) {
-		console.log("token42: ", token);
 		return await this.authService.fromOauthToJwtTokens(token);
 	}
 

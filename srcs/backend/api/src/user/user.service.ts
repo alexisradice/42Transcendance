@@ -18,7 +18,6 @@ export class UserService {
 	async findOrCreate(user: MiniUser): Promise<User> {
 		const foundUser = await this.findOne({ login: user.login });
 		if (foundUser) {
-			console.log("FOUND USER IN DB", foundUser.login);
 			return foundUser;
 		}
 		const createdUser = await this.prisma.user.create({
@@ -31,7 +30,6 @@ export class UserService {
 				// init other things
 			},
 		});
-		console.log("CREATED USER IN DB", user.login);
 		return createdUser;
 	}
 
