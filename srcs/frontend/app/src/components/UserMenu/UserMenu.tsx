@@ -1,7 +1,6 @@
 import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useContext } from "react";
-import { AuthContext, IAuthContext } from "react-oauth2-code-pkce";
+import axiosPrivate from "../../utils/axios";
 import SettingsModal from "../SettingsModal/SettingsModal";
 
 type Props = {
@@ -10,10 +9,10 @@ type Props = {
 
 const UserMenu = ({ children }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
-	const context = useContext<IAuthContext>(AuthContext);
 
 	const logOut = () => {
-		context.logOut();
+		axiosPrivate.patch("/auth/logout");
+		// TODO logOut();
 	};
 
 	return (
