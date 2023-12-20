@@ -49,11 +49,7 @@ export class AuthService {
 	async fromOauthToJwtTokens(oauthToken: string): Promise<Tokens> {
 		// revalidate access from 42API
 		const userInfo = await this.validate(oauthToken);
-		const payload: Payload = {
-			sub: userInfo.login,
-			email: userInfo.email,
-			image: userInfo.image,
-		};
+		const payload: Payload = { sub: userInfo.login };
 
 		// creat (or find) user in database
 		await this.userService.findOrCreate(userInfo);
@@ -100,11 +96,7 @@ export class AuthService {
 		);
 		if (!refreshTokenMatches) throw new ForbiddenException("Access Denied");
 		const tokens: Tokens = await this.generateTokens(
-			{
-				sub: user.login,
-				email: user.email,
-				image: user.image,
-			},
+			{ sub: user.login },
 			ACCESS_TOKEN_FLAG,
 		);
 		tokens.jwtRefreshToken = refreshToken;

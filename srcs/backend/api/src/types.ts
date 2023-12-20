@@ -16,8 +16,6 @@ export type Tokens = {
 
 export type Payload = {
 	sub: string;
-	email: string;
-	image: string;
 };
 
 export const ACCESS_TOKEN_FLAG = true;

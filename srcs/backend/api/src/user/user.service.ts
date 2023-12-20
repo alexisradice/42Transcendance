@@ -15,14 +15,14 @@ export class UserService {
 	}
 
 	async findOrCreate(user: MiniUser) {
-		const foundUser = await this.findOne({ email: user.email });
+		const foundUser = await this.findOne({ login: user.login });
 		if (foundUser) {
 			return foundUser;
 		}
 		const createdUser = await this.prisma.user.create({
 			data: {
-				email: user.email,
 				login: user.login,
+				email: user.email,
 				displayName: user.login,
 				image: user.image,
 				refreshToken: null,
