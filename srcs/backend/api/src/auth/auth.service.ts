@@ -21,6 +21,19 @@ export class AuthService {
 		private prisma: PrismaService,
 	) {}
 
+	// takes a 42Token, validates it,
+	// finds associated user in db or create it if new,
+	// then returns jwtTokens with user information
+	async fromOauthToJwtTokens(oauthToken: string): Promise<Tokens> {
+		const userInfo = await this.validate(oauthToken);
+		const payload: Payload = { sub: userInfo.login };
+		await this.userService.findOrCreate(userInfo);
+		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
+		await this.updateRefreshToken(userInfo.login, tokens.jwtRefreshToken);
+		return tokens;
+	}
+
+	// handshake with 42API to validate token and get user info
 	async validate(accessToken): Promise<MiniUser> {
 		const url = "https://api.intra.42.fr/v2/me";
 		let status;
@@ -46,22 +59,7 @@ export class AuthService {
 		}
 	}
 
-	async fromOauthToJwtTokens(oauthToken: string): Promise<Tokens> {
-		// revalidate access from 42API
-		const userInfo = await this.validate(oauthToken);
-		const payload: Payload = { sub: userInfo.login };
-
-		// creat (or find) user in database
-		await this.userService.findOrCreate(userInfo);
-
-		// generate two jwt tokens for access and refresh
-		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
-
-		// put hashed refreshToken in db
-		await this.updateRefreshToken(userInfo.login, tokens.jwtRefreshToken);
-		return tokens;
-	}
-
+	// generates a new jwt access token (always) and a new refresh token (if needed)
 	async generateTokens(payload: Payload, flag: boolean): Promise<Tokens> {
 		const jwtToken = await this.jwtService.signAsync(payload, {
 			secret: this.configService.get<string>("JWT_SECRET"),
@@ -77,7 +75,7 @@ export class AuthService {
 		return { jwtToken, jwtRefreshToken };
 	}
 
-	// update the refresh token in db with a hashed version
+	// updates the refresh token in db with a hashed version
 	async updateRefreshToken(login: string, refreshToken: string) {
 		const hashedRefreshToken = await argon2.hash(refreshToken);
 		await this.prisma.user.update({
@@ -86,6 +84,7 @@ export class AuthService {
 		});
 	}
 
+	// uses refresh Token to replace expired jwt access token
 	async refreshTokens(login: string, refreshToken: string) {
 		const user = await this.userService.findOne({ login });
 		if (!user || !user.refreshToken)
@@ -103,6 +102,7 @@ export class AuthService {
 		return tokens;
 	}
 
+	// end of session -> destroys refreshToken in db
 	async logout(token: string) {
 		const decodedToken: Payload = this.jwtService.decode(token);
 		await this.prisma.user.update({
