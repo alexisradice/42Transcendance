@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	HttpCode,
+	HttpException,
 	HttpStatus,
 	Patch,
 	Post,
@@ -19,8 +20,12 @@ import { JwtGuard } from "./jwtToken.guard";
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@HttpCode(HttpStatus.OK)
-	@Post()
+	@Post("42")
+	async accessToken(@Body("code") code: string) {
+		return await this.authService.get42Token(code);
+	}
+
+	@Post("login")
 	async auth(@Req() request: Request) {
 		const token = request.headers["authorization"].split(" ")[1];
 		// async auth(@Body() token: string) {
@@ -30,7 +35,6 @@ export class AuthController {
 	@UseGuards(JwtGuard)
 	@Patch("logout")
 	async logout(@Req() req: Request) {
-		// req.user = {...req.user, toto: "coucou"};
 		const token = req.headers["authorization"].split(" ")[1];
 		return await this.authService.logout(token);
 	}

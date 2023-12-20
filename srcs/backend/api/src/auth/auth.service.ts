@@ -21,6 +21,32 @@ export class AuthService {
 		private prisma: PrismaService,
 	) {}
 
+	async get42Token(code: string): Promise<string> {
+		const url = "https://api.intra.42.fr/oauth/token";
+		let status: number;
+		const body = {
+			grant_type: "authorization_code",
+			client_id: this.configService.get<string>("CLIENT_ID"),
+			client_secret: this.configService.get<string>("CLIENT_SECRET"),
+			redirect_uri: this.configService.get<string>("REDIRECT_URI"),
+			code,
+		};
+		try {
+			const response = await fetch(url, {
+				method: "POST",
+				body: new URLSearchParams(body),
+			});
+			status = response.status;
+			if (!response.ok) {
+				throw new TypeError(response.statusText);
+			}
+			const data = await response.json();
+			return data;
+		} catch (error) {
+			throw new HttpException(error.message, status || 500);
+		}
+	}
+
 	// takes a 42Token, validates it,
 	// finds associated user in db or create it if new,
 	// then returns jwtTokens with user information
@@ -36,7 +62,7 @@ export class AuthService {
 	// handshake with 42API to validate token and get user info
 	async validate(accessToken: string): Promise<MiniUser> {
 		const url = "https://api.intra.42.fr/v2/me";
-		let status;
+		let status: number;
 		try {
 			const response = await fetch(url, {
 				method: "GET",
