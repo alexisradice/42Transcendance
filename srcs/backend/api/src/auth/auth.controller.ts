@@ -4,6 +4,7 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
+	Patch,
 	Post,
 	Req,
 	UseGuards,
@@ -23,11 +24,12 @@ export class AuthController {
 	async auth(@Req() request: Request) {
 		const token = request.headers["authorization"].split(" ")[1];
 		// async auth(@Body() token: string) {
+		console.log("token42: ", token);
 		return await this.authService.fromOauthToJwtTokens(token);
 	}
 
 	@UseGuards(JwtGuard)
-	@Get("logout")
+	@Patch("logout")
 	async logout(@Req() req: Request) {
 		// req.user = {...req.user, toto: "coucou"};
 		const token = req.headers["authorization"].split(" ")[1];
