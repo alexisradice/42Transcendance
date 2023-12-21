@@ -41,7 +41,7 @@ export class AuthService {
 				throw new TypeError(response.statusText);
 			}
 			const data = await response.json();
-			return data;
+			return data.access_token;
 		} catch (error) {
 			throw new HttpException(error.message, status || 500);
 		}
