@@ -5,7 +5,6 @@ import { notifications } from "@mantine/notifications";
 
 const LoginModal = () => {
 	useEffect(() => {
-		let isMounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get("code");
 		const controller = new AbortController();
@@ -16,10 +15,26 @@ const LoginModal = () => {
 					{ code },
 					{ signal: controller.signal, withCredentials: true },
 				);
-				localStorage.setItem("token", response.data);
-				isMounted && console.log(response.data);
+				if (response.data.success) {
+					notifications.show({
+						title: "Success!",
+						message: "Welcome, you are now logged in!",
+						color: "green",
+						radius: "md",
+						withBorder: true,
+					});
+				} else {
+					notifications.show({
+						title: "Uh oh! Something went wrong.",
+						message: "Please try again later.",
+						color: "red",
+						radius: "md",
+						withBorder: true,
+					});
+				}
 			} catch (err) {
 				if (err) {
+					console.error(err);
 					notifications.show({
 						title: "Uh oh! Something went wrong.",
 						message: "Please try again later.",
@@ -37,7 +52,6 @@ const LoginModal = () => {
 		}
 
 		return () => {
-			isMounted = false;
 			controller.abort();
 		};
 	}, []);

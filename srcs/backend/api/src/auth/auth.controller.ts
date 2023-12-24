@@ -24,9 +24,15 @@ export class AuthController {
 		const token = await this.authService.get42Token(code);
 		const { jwtToken, jwtRefreshToken } =
 			await this.authService.fromOauthToJwtTokens(token);
-		res.cookie("jwtToken", jwtToken, { httpOnly: true });
-		res.cookie("jwtRefreshToken", jwtRefreshToken, { httpOnly: true });
-		res.cookie("isLogged", true);
+		res.cookie("jwtToken", jwtToken, {
+			maxAge: 15 * 60 * 1000, // 15 minutes
+			httpOnly: true,
+		});
+		res.cookie("jwtRefreshToken", jwtRefreshToken, {
+			maxAge: 7 * 24 * 3600 * 1000, // 7 days
+			httpOnly: true,
+		});
+		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
 		return { success: true };
 	}
 

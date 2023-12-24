@@ -1,16 +1,18 @@
+import { useState } from "react";
 import Footer from "../components/Footer/Footer";
 import Header from "../components/Header/Header";
 import LeftDrawer from "../components/LeftDrawer/LeftDrawer";
 import LoginModal from "../components/LoginModal/LoginModal";
 import MainFrame from "../components/MainFrame/MainFrame";
 import RightDrawer from "../components/RightDrawer/RightDrawer";
+import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
 
 export function MainPage() {
-	// TODO remove modal when logged in (cookie isAuth)
+	const [isLogged] = useState(isLoggedCookie());
 	return (
 		<>
-			<LoginModal />
+			{!isLogged && <LoginModal />}
 			<div className={classes.main}>
 				<div className={classes.header}>
 					<Header />
