@@ -3,8 +3,13 @@ import { useEffect } from "react";
 import axios from "../../utils/axios";
 import { notifications } from "@mantine/notifications";
 
-const LoginModal = () => {
+type Props = {
+	setIsLogged: (isLogged: boolean) => void;
+};
+
+const LoginModal = ({ setIsLogged }: Props) => {
 	useEffect(() => {
+		let isMounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get("code");
 		const controller = new AbortController();
@@ -15,23 +20,11 @@ const LoginModal = () => {
 					{ code },
 					{ signal: controller.signal, withCredentials: true },
 				);
-				if (response.data.success) {
-					notifications.show({
-						title: "Success!",
-						message: "Welcome, you are now logged in!",
-						color: "green",
-						radius: "md",
-						withBorder: true,
-					});
-				} else {
-					notifications.show({
-						title: "Uh oh! Something went wrong.",
-						message: "Please try again later.",
-						color: "red",
-						radius: "md",
-						withBorder: true,
-					});
+				console.log("response.data", response.data);
+				if (!response.data.success) {
+					throw new Error("Error while logging in: " + response.data);
 				}
+				isMounted && setIsLogged(true);
 			} catch (err) {
 				if (err) {
 					console.error(err);
@@ -52,9 +45,10 @@ const LoginModal = () => {
 		}
 
 		return () => {
+			isMounted = false;
 			controller.abort();
 		};
-	}, []);
+	}, [setIsLogged]);
 
 	const login = () => {
 		const params = new URLSearchParams({

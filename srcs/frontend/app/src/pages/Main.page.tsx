@@ -9,10 +9,11 @@ import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
 
 export function MainPage() {
-	const [isLogged] = useState(isLoggedCookie());
+	const [isLogged, setIsLogged] = useState(isLoggedCookie());
+
 	return (
 		<>
-			{!isLogged && <LoginModal />}
+			{!isLogged && <LoginModal setIsLogged={setIsLogged} />}
 			<div className={classes.main}>
 				<div className={classes.header}>
 					<Header />
