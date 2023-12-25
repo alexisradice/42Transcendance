@@ -24,16 +24,25 @@ export class AuthController {
 		const token = await this.authService.get42Token(code);
 		const { jwtToken, jwtRefreshToken } =
 			await this.authService.fromOauthToJwtTokens(token);
-		res.cookie("jwtToken", jwtToken, { httpOnly: true });
-		res.cookie("jwtRefreshToken", jwtRefreshToken, { httpOnly: true });
-		res.cookie("isLogged", true);
+		res.cookie("jwtToken", jwtToken, {
+			maxAge: 15 * 60 * 1000, // 15 minutes
+			httpOnly: true,
+		});
+		res.cookie("jwtRefreshToken", jwtRefreshToken, {
+			maxAge: 7 * 24 * 3600 * 1000, // 7 days
+			httpOnly: true,
+		});
+		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
 		return { success: true };
 	}
 
 	@UseGuards(JwtGuard)
 	@Patch("logout")
-	async logout(@Req() req: Request) {
-		const token = req.cookies.jwtToken;
-		return await this.authService.logout(token);
+	async logout(@Req() req: Request, @Res() res: Response) {
+		await this.authService.logout(req.user["login"]);
+		res.clearCookie("jwtToken");
+		res.clearCookie("jwtRefreshToken");
+		res.clearCookie("isLogged");
+		return res.json({ success: true });
 	}
 }

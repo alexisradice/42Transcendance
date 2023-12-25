@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default axios.create({
+export const axiosInstance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
 });
 
@@ -9,3 +9,9 @@ export const axiosPrivate = axios.create({
 	headers: { "Content-Type": "application/json" },
 	withCredentials: true,
 });
+
+export const fetcher = (url: string) =>
+	axiosInstance.get(url).then((res) => res.data);
+
+export const fetcherPrivate = (url: string) =>
+	axiosPrivate.get(url).then((res) => res.data);

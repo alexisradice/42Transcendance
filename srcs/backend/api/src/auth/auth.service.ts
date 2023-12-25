@@ -1,4 +1,9 @@
-import { ForbiddenException, HttpException, Injectable } from "@nestjs/common";
+import {
+	ForbiddenException,
+	HttpException,
+	Injectable,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -51,7 +56,7 @@ export class AuthService {
 	// finds associated user in db or create it if new,
 	// then returns jwtTokens with user information
 	async fromOauthToJwtTokens(oauthToken: string): Promise<Tokens> {
-		const userInfo = await this.validate(oauthToken);
+		const userInfo = await this.validateUser(oauthToken);
 		const user = await this.userService.findOrCreate(userInfo);
 		const payload: Payload = { sub: user.login };
 		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
@@ -60,7 +65,7 @@ export class AuthService {
 	}
 
 	// handshake with 42API to validate token and get user info
-	async validate(accessToken: string): Promise<MiniUser> {
+	async validateUser(accessToken: string): Promise<MiniUser> {
 		const url = "https://api.intra.42.fr/v2/me";
 		let status: number;
 		try {
@@ -111,28 +116,36 @@ export class AuthService {
 	}
 
 	// uses refresh Token to replace expired jwt access token
-	async refreshTokens(login: string, refreshToken: string) {
-		const user = await this.userService.findOne({ login });
-		if (!user || !user.refreshToken)
-			throw new ForbiddenException("Access Denied");
-		const refreshTokenMatches = await argon2.verify(
-			user.refreshToken,
-			refreshToken,
-		);
-		if (!refreshTokenMatches) throw new ForbiddenException("Access Denied");
-		const tokens: Tokens = await this.generateTokens(
-			{ sub: user.login },
-			ACCESS_TOKEN_FLAG,
-		);
-		tokens.jwtRefreshToken = refreshToken;
-		return tokens;
+	async refreshTokens(refreshToken: string) {
+		try {
+			const payload = await this.jwtService.verifyAsync(refreshToken, {
+				secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+			});
+			const user = await this.userService.findOne({ login: payload.sub });
+			if (!user || !user.refreshToken)
+				throw new UnauthorizedException("Access Denied");
+			const refreshTokenMatches = await argon2.verify(
+				user.refreshToken,
+				refreshToken,
+			);
+			if (!refreshTokenMatches) {
+				throw new ForbiddenException("Access Denied");
+			}
+			const tokens: Tokens = await this.generateTokens(
+				{ sub: user.login },
+				ACCESS_TOKEN_FLAG,
+			);
+			tokens.jwtRefreshToken = refreshToken;
+			return tokens;
+		} catch (error) {
+			throw new HttpException(error.message, error.status || 500);
+		}
 	}
 
 	// end of session -> destroys refreshToken in db
-	async logout(token: string) {
-		const decodedToken: Payload = this.jwtService.decode(token);
+	async logout(login: string) {
 		await this.prisma.user.update({
-			where: { login: decodedToken.sub },
+			where: { login },
 			data: { refreshToken: "null" },
 		});
 	}
