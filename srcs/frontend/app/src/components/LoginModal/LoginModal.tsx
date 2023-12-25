@@ -1,13 +1,15 @@
 import { Button, Group, Modal } from "@mantine/core";
-import { useEffect } from "react";
-import axios from "../../utils/axios";
+import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
+import { axiosInstance } from "../../utils/fetcher";
 
 type Props = {
 	setIsLogged: (isLogged: boolean) => void;
 };
 
 const LoginModal = ({ setIsLogged }: Props) => {
+	const [isLoading, setIsLoading] = useState(false);
+
 	useEffect(() => {
 		let isMounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
@@ -15,31 +17,30 @@ const LoginModal = ({ setIsLogged }: Props) => {
 		const controller = new AbortController();
 		const getJwtTokens = async () => {
 			try {
-				const response = await axios.post(
+				const response = await axiosInstance.post(
 					"/auth/login",
 					{ code },
 					{ signal: controller.signal, withCredentials: true },
 				);
-				console.log("response.data", response.data);
 				if (!response.data.success) {
 					throw new Error("Error while logging in: " + response.data);
 				}
 				isMounted && setIsLogged(true);
 			} catch (err) {
-				if (err) {
-					console.error(err);
-					notifications.show({
-						title: "Uh oh! Something went wrong.",
-						message: "Please try again later.",
-						color: "red",
-						radius: "md",
-						withBorder: true,
-					});
-				}
+				setIsLoading(false);
+				console.error(err);
+				notifications.show({
+					title: "Uh oh! Something went wrong.",
+					message: "Please try again later.",
+					color: "red",
+					radius: "md",
+					withBorder: true,
+				});
 			}
 		};
 
 		if (code) {
+			setIsLoading(true);
 			getJwtTokens();
 			window.history.replaceState(null, "", window.location.pathname);
 		}
@@ -67,14 +68,15 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			opened={true}
 			withCloseButton={false}
 			onClose={() => {}}
-			overlayProps={{
-				backgroundOpacity: 0.55,
-				blur: 8,
-			}}
 		>
 			<Group justify="center">
 				<span>Hey! You must be logged in to use this site.</span>
-				<Button fullWidth={true} onClick={login}>
+				<Button
+					fullWidth={true}
+					onClick={login}
+					loading={isLoading}
+					loaderProps={{ type: "dots" }}
+				>
 					Login with your 42 account
 				</Button>
 			</Group>

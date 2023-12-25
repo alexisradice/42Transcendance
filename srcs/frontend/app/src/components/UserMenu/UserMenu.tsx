@@ -1,6 +1,6 @@
 import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { axiosPrivate } from "../../utils/axios";
+import { axiosPrivate } from "../../utils/fetcher";
 import SettingsModal from "../SettingsModal/SettingsModal";
 
 type Props = {

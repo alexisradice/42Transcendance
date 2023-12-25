@@ -13,24 +13,27 @@ export function MainPage() {
 
 	return (
 		<>
-			{!isLogged && <LoginModal setIsLogged={setIsLogged} />}
-			<div className={classes.main}>
-				<div className={classes.header}>
-					<Header />
+			{isLogged ? (
+				<div className={classes.main}>
+					<div className={classes.header}>
+						<Header />
+					</div>
+					<div className={classes.leftDrawer}>
+						<LeftDrawer />
+					</div>
+					<main className={classes.mainFrame}>
+						<MainFrame />
+					</main>
+					<div className={classes.rightDrawer}>
+						<RightDrawer />
+					</div>
+					<div className={classes.footer}>
+						<Footer />
+					</div>
 				</div>
-				<div className={classes.leftDrawer}>
-					<LeftDrawer />
-				</div>
-				<main className={classes.mainFrame}>
-					<MainFrame />
-				</main>
-				<div className={classes.rightDrawer}>
-					<RightDrawer />
-				</div>
-				<div className={classes.footer}>
-					<Footer />
-				</div>
-			</div>
+			) : (
+				<LoginModal setIsLogged={setIsLogged} />
+			)}
 		</>
 	);
 }
