@@ -4,17 +4,19 @@ import UserMenu from "../UserMenu/UserMenu";
 import classes from "./Header.module.css";
 import useSWR from "swr";
 import { fetcherPrivate } from "../../utils/fetcher";
-import { notifications } from "@mantine/notifications";
+import { errorNotif } from "../../utils/errorNotif";
 
-export default function Header() {
+type Props = {
+	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function Header({ setIsLogged }: Props) {
 	const { data, error } = useSWR("/user/me", fetcherPrivate);
+
 	const { displayName, image } = data || {};
 	if (error) {
-		notifications.show({
-			title: "Uh oh! An error occurred.",
-			message: error.message,
-			color: "red",
-		});
+		console.error(error);
+		errorNotif();
 	}
 	return (
 		<div className={classes.header}>
@@ -23,7 +25,7 @@ export default function Header() {
 			</div>
 			<div className={classes.subsection}>
 				<div>Howdy, {displayName || ""}</div>
-				<UserMenu>
+				<UserMenu setIsLogged={setIsLogged}>
 					<img
 						className={classes.avatar}
 						src={image}

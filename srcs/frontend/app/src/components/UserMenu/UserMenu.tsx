@@ -2,17 +2,32 @@ import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { axiosPrivate } from "../../utils/fetcher";
 import SettingsModal from "../SettingsModal/SettingsModal";
+import { errorNotif } from "../../utils/errorNotif";
+import { HttpException } from "../../utils/HttpException";
 
 type Props = {
 	children: JSX.Element;
+	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const UserMenu = ({ children }: Props) => {
+const UserMenu = ({ children, setIsLogged }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
 
-	const logOut = () => {
-		axiosPrivate.patch("/auth/logout");
-		// TODO logOut();
+	const logOut = async () => {
+		try {
+			const response = await axiosPrivate.patch("/auth/logout");
+			if (response.data.success) {
+				setIsLogged(false);
+			} else {
+				throw new HttpException(
+					"" + response.status,
+					response.statusText,
+				);
+			}
+		} catch (err) {
+			console.error(err);
+			errorNotif();
+		}
 	};
 
 	return (

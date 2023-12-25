@@ -40,6 +40,8 @@ export class JwtRefreshMiddleware implements NestMiddleware {
 						httpOnly: true,
 					});
 					req.cookies.jwtToken = jwtToken;
+				} else {
+					throw err;
 				}
 			}
 		}

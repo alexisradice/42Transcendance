@@ -27,7 +27,9 @@ export class UserController {
 	@Get("me")
 	@UseGuards(JwtGuard)
 	async getMe(@Req() req: Request) {
-		const user = await this.userService.findOne({ login: req.user["sub"] });
+		const user = await this.userService.findOne({
+			login: req.user["login"],
+		});
 		return {
 			login: user.login,
 			displayName: user.displayName,

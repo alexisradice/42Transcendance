@@ -1,7 +1,7 @@
 import { Button, Group, Modal } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { notifications } from "@mantine/notifications";
 import { axiosInstance } from "../../utils/fetcher";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	setIsLogged: (isLogged: boolean) => void;
@@ -29,13 +29,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			} catch (err) {
 				setIsLoading(false);
 				console.error(err);
-				notifications.show({
-					title: "Uh oh! Something went wrong.",
-					message: "Please try again later.",
-					color: "red",
-					radius: "md",
-					withBorder: true,
-				});
+				errorNotif();
 			}
 		};
 

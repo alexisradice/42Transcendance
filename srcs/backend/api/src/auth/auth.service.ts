@@ -128,8 +128,9 @@ export class AuthService {
 				user.refreshToken,
 				refreshToken,
 			);
-			if (!refreshTokenMatches)
+			if (!refreshTokenMatches) {
 				throw new ForbiddenException("Access Denied");
+			}
 			const tokens: Tokens = await this.generateTokens(
 				{ sub: user.login },
 				ACCESS_TOKEN_FLAG,
@@ -142,10 +143,9 @@ export class AuthService {
 	}
 
 	// end of session -> destroys refreshToken in db
-	async logout(token: string) {
-		const decodedToken: Payload = this.jwtService.decode(token);
+	async logout(login: string) {
 		await this.prisma.user.update({
-			where: { login: decodedToken.sub },
+			where: { login },
 			data: { refreshToken: "null" },
 		});
 	}

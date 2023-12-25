@@ -16,7 +16,7 @@ export function MainPage() {
 			{isLogged ? (
 				<div className={classes.main}>
 					<div className={classes.header}>
-						<Header />
+						<Header setIsLogged={setIsLogged} />
 					</div>
 					<div className={classes.leftDrawer}>
 						<LeftDrawer />

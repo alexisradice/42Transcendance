@@ -38,8 +38,11 @@ export class AuthController {
 
 	@UseGuards(JwtGuard)
 	@Patch("logout")
-	async logout(@Req() req: Request) {
-		const token = req.cookies.jwtToken;
-		return await this.authService.logout(token);
+	async logout(@Req() req: Request, @Res() res: Response) {
+		await this.authService.logout(req.user["login"]);
+		res.clearCookie("jwtToken");
+		res.clearCookie("jwtRefreshToken");
+		res.clearCookie("isLogged");
+		return res.json({ success: true });
 	}
 }
