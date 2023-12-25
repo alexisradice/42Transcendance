@@ -4,17 +4,14 @@ import {
 	Get,
 	Param,
 	Patch,
-	Post,
-	Put,
 	Req,
-	Res,
 	UseGuards,
 } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { UserSettingsDto } from "src/dto";
-import { JwtGuard } from "src/auth/jwtToken.guard";
-import { Request, Response } from "express";
 import { JwtService } from "@nestjs/jwt";
+import { Request } from "express";
+import { JwtGuard } from "src/auth/jwtToken.guard";
+import { UserSettingsDto } from "src/dto";
+import { UserService } from "./user.service";
 // import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("user")
@@ -45,8 +42,8 @@ export class UserController {
 
 	@Patch("update")
 	@UseGuards(JwtGuard)
-	async updateUser(@Body() userDto: UserSettingsDto) {
-		await this.userService.updateDisplayName(userDto);
+	async updateUser(@Req() req: Request, @Body() userDto: UserSettingsDto) {
+		return await this.userService.updateUser(req.user["login"], userDto);
 		// await this.userService.updateAvatar(userDto.image);
 		// await this.userService.switchTfa(userDto.tfa);
 	}

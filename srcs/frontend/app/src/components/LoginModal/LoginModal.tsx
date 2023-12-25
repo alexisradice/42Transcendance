@@ -17,19 +17,15 @@ const LoginModal = ({ setIsLogged }: Props) => {
 		const controller = new AbortController();
 		const getJwtTokens = async () => {
 			try {
-				const response = await axiosInstance.post(
+				await axiosInstance.post(
 					"/auth/login",
 					{ code },
 					{ signal: controller.signal, withCredentials: true },
 				);
-				if (!response.data.success) {
-					throw new Error("Error while logging in: " + response.data);
-				}
 				isMounted && setIsLogged(true);
-			} catch (err) {
+			} catch (err: unknown) {
 				setIsLoading(false);
-				console.error(err);
-				errorNotif();
+				errorNotif(err);
 			}
 		};
 

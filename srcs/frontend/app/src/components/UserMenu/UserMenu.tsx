@@ -3,7 +3,6 @@ import { useDisclosure } from "@mantine/hooks";
 import { axiosPrivate } from "../../utils/fetcher";
 import SettingsModal from "../SettingsModal/SettingsModal";
 import { errorNotif } from "../../utils/errorNotif";
-import { HttpException } from "../../utils/HttpException";
 
 type Props = {
 	children: JSX.Element;
@@ -15,18 +14,10 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 
 	const logOut = async () => {
 		try {
-			const response = await axiosPrivate.patch("/auth/logout");
-			if (response.data.success) {
-				setIsLogged(false);
-			} else {
-				throw new HttpException(
-					"" + response.status,
-					response.statusText,
-				);
-			}
-		} catch (err) {
-			console.error(err);
-			errorNotif();
+			await axiosPrivate.patch("/auth/logout");
+			setIsLogged(false);
+		} catch (err: unknown) {
+			errorNotif(err);
 		}
 	};
 
