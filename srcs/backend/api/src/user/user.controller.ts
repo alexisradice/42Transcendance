@@ -44,7 +44,5 @@ export class UserController {
 	@UseGuards(JwtGuard)
 	async updateUser(@Req() req: Request, @Body() userDto: UserSettingsDto) {
 		return await this.userService.updateUser(req.user["login"], userDto);
-		// await this.userService.updateAvatar(userDto.image);
-		// await this.userService.switchTfa(userDto.tfa);
 	}
 }

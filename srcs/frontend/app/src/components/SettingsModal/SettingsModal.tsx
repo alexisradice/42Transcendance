@@ -1,8 +1,8 @@
 import { Button, Group, Loader, Modal, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import useSWR from "swr";
 import { errorNotif } from "../../utils/errorNotif";
-import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import { axiosPrivate } from "../../utils/fetcher";
+import { useMyData } from "../../hooks/useMyData";
 
 type Props = {
 	opened: boolean;
@@ -10,7 +10,7 @@ type Props = {
 };
 
 const SettingsModal = ({ opened, close }: Props) => {
-	const { data, error, isLoading } = useSWR("/user/me", fetcherPrivate);
+	const { user, error, isLoading, mutate } = useMyData();
 
 	const form = useForm({
 		initialValues: {
@@ -42,6 +42,10 @@ const SettingsModal = ({ opened, close }: Props) => {
 						console.log("values", values);
 						try {
 							await axiosPrivate.patch("/user/update", values);
+							mutate({
+								...user,
+								displayName: values.displayName,
+							});
 							close();
 						} catch (err: unknown) {
 							errorNotif(err);
@@ -51,7 +55,7 @@ const SettingsModal = ({ opened, close }: Props) => {
 					<TextInput
 						label="Change your username"
 						radius="md"
-						placeholder={data.displayName || ""}
+						placeholder={user.displayName || ""}
 						{...form.getInputProps("displayName")}
 					/>
 					{/* <Switch
