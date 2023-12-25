@@ -33,10 +33,17 @@ export class UserService {
 		return createdUser;
 	}
 
-	async updateDisplayName(userDto: UserSettingsDto) {
+	async updateUser(login: string, userDto: UserSettingsDto) {
+		// if we sent an empty value, then delete the key to not update it in DB
+		Object.keys(userDto).forEach((key) => {
+			const value = userDto[key];
+			if (value == null || value === "") {
+				delete userDto[key];
+			}
+		});
 		const user = await this.prisma.user.update({
-			where: { login: userDto.login },
-			data: { displayName: userDto.displayName },
+			where: { login },
+			data: userDto,
 		});
 		return user;
 	}
