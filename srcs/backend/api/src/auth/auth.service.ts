@@ -94,7 +94,7 @@ export class AuthService {
 	async generateTokens(payload: Payload, flag: boolean): Promise<Tokens> {
 		const jwtToken = await this.jwtService.signAsync(payload, {
 			secret: this.configService.get<string>("JWT_SECRET"),
-			expiresIn: "1s",
+			expiresIn: "15m",
 		});
 		if (flag === ACCESS_TOKEN_FLAG) {
 			return { jwtToken, jwtRefreshToken: null };

@@ -17,7 +17,7 @@ import { JwtRefreshMiddleware } from "./jwtRefresh.middleware";
 				global: true,
 				secretOrPrivateKey: configService.get<string>("JWT_SECRET"),
 				signOptions: {
-					expiresIn: "1s",
+					expiresIn: "15m",
 				},
 			}),
 			inject: [ConfigService],
