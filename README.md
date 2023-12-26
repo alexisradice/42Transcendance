@@ -16,7 +16,7 @@ Note: If you already had `node_modules` installed in either `srcs/backend/api` o
 
 React app written in TypeScript, built with [Vite](https://vitejs.dev/guide/features.html).
 
-It uses [Mantine](https://mantine.dev/overview/) for UI components and styling.
+It uses [Mantine](https://mantine.dev/overview/) for UI components and styling, [SWR](https://swr.vercel.app/) for basic data fetching, [Axios](https://axios-http.com/) for general API calls, and [React Router](https://reactrouter.com/en/main/start/tutorial) for routing.
 
 ### Launch the project
 
@@ -43,17 +43,7 @@ docker compose up postgres -d
 ### Initial setup
 
 ```
-cd srcs/backend/api
-```
-
-```
-npm install -g prisma && prisma migrate dev
-```
-
-If the above doesn't work:
-
-```
-npx prisma migrate dev
+cd srcs/backend/api && npm install -g prisma && prisma generate && prisma migrate dev
 ```
 
 ### Launch
@@ -67,15 +57,12 @@ Your endpoints are testable at [http://localhost:3000/](http://localhost:3000/)
 ### Recommended VSCode extensions
 
 -   **Prettier** (esbenp.prettier-vscode) formats code automatically on file save, so we have consistent code across the project (like the norm but less restrictive and automatic).
+-   **Prisma** (Prisma.prisma) for syntax highlighting and autocompletion in Prisma files.
 
-# Production
+<!-- # Production
 
 This is pretty much only used for correction. Launch project with:
 
 ```bash
 docker-compose up --build
-```
-
-```
-
-```
+``` -->
