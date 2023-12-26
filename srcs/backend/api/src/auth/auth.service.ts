@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import * as argon2 from "argon2";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
 	ACCESS_TOKEN_FLAG,
@@ -15,7 +16,6 @@ import {
 	Tokens,
 } from "src/types";
 import { UserService } from "src/user/user.service";
-import * as argon2 from "argon2";
 
 @Injectable()
 export class AuthService {
@@ -146,7 +146,7 @@ export class AuthService {
 	async logout(login: string) {
 		await this.prisma.user.update({
 			where: { login },
-			data: { refreshToken: "null" },
+			data: { refreshToken: null },
 		});
 	}
 }

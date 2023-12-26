@@ -1,10 +1,11 @@
+import { AspectRatio, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
+import { AVATAR_SIZE } from "../../constants";
+import { useMyData } from "../../hooks/useMyData";
+import { errorNotif } from "../../utils/errorNotif";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
 import UserMenu from "../UserMenu/UserMenu";
 import classes from "./Header.module.css";
-import { Loader } from "@mantine/core";
-import { useMyData } from "../../hooks/useMyData";
-import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,6 +16,12 @@ export default function Header({ setIsLogged }: Props) {
 	if (error) {
 		errorNotif(error);
 	}
+	const getImageSrc = (image: string) => {
+		if (image.startsWith("http")) {
+			return image;
+		}
+		return `data:image/jpeg;base64,${image}`;
+	};
 	return (
 		<div className={classes.header}>
 			<div className={classes.subsection}>
@@ -27,13 +34,16 @@ export default function Header({ setIsLogged }: Props) {
 					<>
 						<div>Howdy, {user.displayName}</div>
 						<UserMenu setIsLogged={setIsLogged}>
-							<img
-								className={classes.avatar}
-								src={user.image}
-								alt="avatar"
-								height="50"
-								width="50"
-							/>
+							<AspectRatio style={{ width: `${AVATAR_SIZE}px` }}>
+								<Image
+									radius="xl"
+									h={AVATAR_SIZE}
+									w={AVATAR_SIZE}
+									className={classes.avatar}
+									src={getImageSrc(user.image)}
+									alt="avatar"
+								/>
+							</AspectRatio>
 						</UserMenu>
 					</>
 				)}

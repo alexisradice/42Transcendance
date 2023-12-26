@@ -1,13 +1,19 @@
 import {
 	Body,
 	Controller,
+	FileTypeValidator,
 	Get,
-	Param,
+	HttpException,
+	MaxFileSizeValidator,
+	ParseFilePipe,
 	Patch,
 	Req,
+	UploadedFile,
 	UseGuards,
+	UseInterceptors,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { UserSettingsDto } from "src/dto";
@@ -34,15 +40,40 @@ export class UserController {
 		};
 	}
 
-	@Get(":login")
-	@UseGuards(JwtGuard)
-	async getUser(@Param("login") login: string) {
-		return await this.userService.findOne({ login });
-	}
+	// @Get(":login")
+	// @UseGuards(JwtGuard)
+	// async getUser(@Param("login") login: string) {
+	// 	return await this.userService.findOne({ login });
+	// }
 
 	@Patch("update")
 	@UseGuards(JwtGuard)
-	async updateUser(@Req() req: Request, @Body() userDto: UserSettingsDto) {
-		return await this.userService.updateUser(req.user["login"], userDto);
+	@UseInterceptors(FileInterceptor("image"))
+	async updateUser(
+		@Req() req: Request,
+		@Body() userDto: UserSettingsDto,
+		@UploadedFile(
+			new ParseFilePipe({
+				validators: [
+					new MaxFileSizeValidator({ maxSize: 5_000_000 }),
+					new FileTypeValidator({ fileType: /image\/(jpeg|png)/ }),
+				],
+				fileIsRequired: false,
+			}),
+		)
+		image?: Express.Multer.File,
+	) {
+		if (image) {
+			// extra protection against file type renaming
+			const valid = this.userService.validateFile(image.buffer);
+			if (!valid) {
+				throw new HttpException("Invalid file type", 400);
+			}
+		}
+		const user = await this.userService.updateUser(req.user["login"], {
+			displayName: userDto.displayName,
+			image: image?.buffer.toString("base64"),
+		});
+		return user;
 	}
 }

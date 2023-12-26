@@ -16,8 +16,4 @@ export class UserSettingsDto {
 			"displayName can only contain alphanumeric characters and underscores",
 	})
 	displayName: string;
-
-	// @IsString()
-	// @IsNotEmpty()
-	// image: string;
 }

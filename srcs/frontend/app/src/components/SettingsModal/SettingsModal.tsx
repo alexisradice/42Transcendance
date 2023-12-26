@@ -1,26 +1,58 @@
-import { Button, Group, Loader, Modal, TextInput } from "@mantine/core";
+import {
+	Button,
+	FileInput,
+	Group,
+	Loader,
+	Modal,
+	TextInput,
+	rem,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { IconPhotoUp } from "@tabler/icons-react";
+import { useMyData } from "../../hooks/useMyData";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
-import { useMyData } from "../../hooks/useMyData";
 
 type Props = {
 	opened: boolean;
 	close: () => void;
 };
 
+type FormValues = {
+	displayName: string;
+	image: string | Blob | null;
+};
+
 const SettingsModal = ({ opened, close }: Props) => {
 	const { user, error, isLoading, mutate } = useMyData();
 
-	const form = useForm({
+	const form = useForm<FormValues>({
 		initialValues: {
 			displayName: "",
+			image: null,
 		},
 		validate: {
-			displayName: (value) =>
-				/^(\w{3,20})?$/.test(value)
-					? null
-					: "Usernames should be between 3-20 characters, and only contain alphanumeric characters or _",
+			displayName: (value) => {
+				if (/^(\w{3,20})?$/.test(value)) {
+					return null;
+				}
+				return "Usernames should be between 3-20 characters, and only contain alphanumeric characters or _";
+			},
+			image: (value: unknown) => {
+				if (!value) {
+					return null;
+				}
+				if (value instanceof File) {
+					if (!["image/png", "image/jpeg"].includes(value.type)) {
+						return "Only png and jpeg files are allowed";
+					}
+					if (value.size > 5_000_000) {
+						return "File size should be less than 5MB";
+					}
+					return null;
+				}
+				return "Invalid file";
+			},
 		},
 	});
 
@@ -41,24 +73,49 @@ const SettingsModal = ({ opened, close }: Props) => {
 			{!error && !isLoading && (
 				<form
 					onSubmit={form.onSubmit(async (values) => {
-						console.log("values", values);
 						try {
-							await axiosPrivate.patch("/user/update", values);
+							const formData = new FormData();
+
+							formData.append("displayName", values.displayName);
+							formData.append("image", values.image || "");
+
+							await axiosPrivate.patch("/user/update", formData, {
+								headers: {
+									"Content-Type": "multipart/form-data",
+								},
+							});
+
 							mutate({
 								...user,
-								displayName: values.displayName,
 							});
+
 							close();
+							form.reset();
 						} catch (err: unknown) {
 							errorNotif(err);
 						}
 					})}
 				>
 					<TextInput
-						label="Change your username"
+						label="Change display name"
 						radius="md"
 						placeholder={user.displayName || ""}
 						{...form.getInputProps("displayName")}
+					/>
+					<FileInput
+						mt="md"
+						accept="image/png,image/jpeg"
+						label="New profile picture"
+						leftSection={
+							<IconPhotoUp
+								style={{ width: rem(18), height: rem(18) }}
+								stroke={1.5}
+							/>
+						}
+						clearable
+						// @ts-expect-error - Mantine types are missing the placeholder prop
+						placeholder="Click here to select a file"
+						{...form.getInputProps("image")}
 					/>
 					{/* <Switch
 					mt="md"
@@ -66,7 +123,7 @@ const SettingsModal = ({ opened, close }: Props) => {
 					{...form.getInputProps("twofa")}
 					checked={data?.twofa}
 				/> */}
-					<Group justify="flex-end" mt="md">
+					<Group justify="flex-end" mt="lg">
 						<Button disabled={!form.isDirty()} type="submit">
 							Submit
 						</Button>
