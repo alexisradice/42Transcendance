@@ -4,6 +4,11 @@ export type MiniUser = {
 	image: string;
 };
 
+export type UserSettings = {
+	displayName?: string;
+	image?: string;
+};
+
 export type FindOneCriteria = {
 	email?: string;
 	login?: string;
