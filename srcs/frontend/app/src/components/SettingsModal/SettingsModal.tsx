@@ -18,7 +18,9 @@ const SettingsModal = ({ opened, close }: Props) => {
 		},
 		validate: {
 			displayName: (value) =>
-				/^(\w{3,20})?$/.test(value) ? null : "Invalid username",
+				/^(\w{3,20})?$/.test(value)
+					? null
+					: "Usernames should be between 3-20 characters, and only contain alphanumeric characters or _",
 		},
 	});
 
