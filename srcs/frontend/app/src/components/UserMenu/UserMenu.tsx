@@ -1,19 +1,24 @@
 import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useContext } from "react";
-import { AuthContext, IAuthContext } from "react-oauth2-code-pkce";
+import { axiosPrivate } from "../../utils/fetcher";
 import SettingsModal from "../SettingsModal/SettingsModal";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	children: JSX.Element;
+	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const UserMenu = ({ children }: Props) => {
+const UserMenu = ({ children, setIsLogged }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
-	const context = useContext<IAuthContext>(AuthContext);
 
-	const logOut = () => {
-		context.logOut();
+	const logOut = async () => {
+		try {
+			await axiosPrivate.patch("/auth/logout");
+			setIsLogged(false);
+		} catch (err: unknown) {
+			errorNotif(err);
+		}
 	};
 
 	return (

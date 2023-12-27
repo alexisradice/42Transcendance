@@ -1,37 +1,71 @@
 import { Button, Group, Modal } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import { useContext } from "react";
-import { AuthContext, IAuthContext } from "react-oauth2-code-pkce";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "../../utils/fetcher";
+import { errorNotif } from "../../utils/errorNotif";
 
-const LoginModal = () => {
-	const { error, login } = useContext<IAuthContext>(AuthContext);
-	if (error) {
-		notifications.show({
-			title: "Uh oh! Something went wrong.",
-			message: error,
-			color: "red",
-			radius: "md",
-			withBorder: true,
+type Props = {
+	setIsLogged: (isLogged: boolean) => void;
+};
+
+const LoginModal = ({ setIsLogged }: Props) => {
+	const [isLoading, setIsLoading] = useState(false);
+
+	useEffect(() => {
+		let isMounted = true;
+		const urlParams = new URLSearchParams(window.location.search);
+		const code = urlParams.get("code");
+		const controller = new AbortController();
+		const getJwtTokens = async () => {
+			try {
+				await axiosInstance.post(
+					"/auth/login",
+					{ code },
+					{ signal: controller.signal, withCredentials: true },
+				);
+				isMounted && setIsLogged(true);
+			} catch (err: unknown) {
+				setIsLoading(false);
+				errorNotif(err);
+			}
+		};
+
+		if (code) {
+			setIsLoading(true);
+			getJwtTokens();
+			window.history.replaceState(null, "", window.location.pathname);
+		}
+
+		return () => {
+			isMounted = false;
+			controller.abort();
+		};
+	}, [setIsLogged]);
+
+	const login = () => {
+		const params = new URLSearchParams({
+			response_type: "code",
+			client_id: import.meta.env.VITE_CLIENT_ID,
+			redirect_uri: import.meta.env.VITE_REDIRECT_URI,
 		});
-	}
+		window.location.replace(
+			`${import.meta.env.VITE_42_AUTH_URL}?${params.toString()}`,
+		);
+	};
+
 	return (
 		<Modal
 			centered
 			opened={true}
 			withCloseButton={false}
 			onClose={() => {}}
-			overlayProps={{
-				backgroundOpacity: 0.55,
-				blur: 8,
-			}}
 		>
 			<Group justify="center">
 				<span>Hey! You must be logged in to use this site.</span>
 				<Button
 					fullWidth={true}
-					onClick={() => {
-						login();
-					}}
+					onClick={login}
+					loading={isLoading}
+					loaderProps={{ type: "dots" }}
 				>
 					Login with your 42 account
 				</Button>
