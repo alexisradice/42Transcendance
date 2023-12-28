@@ -13,15 +13,17 @@
 	},
 	"dependencies": {
 		"@mantine/core": "^7.3.2",
+		"@mantine/form": "^7.3.2",
 		"@mantine/hooks": "^7.3.2",
 		"@mantine/notifications": "^7.3.2",
 		"@tabler/icons-react": "^2.44.0",
+		"axios": "^1.6.2",
 		"clsx": "^2.0.0",
 		"prettier": "^3.1.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-oauth2-code-pkce": "^1.16.0",
-		"react-router-dom": "^6.21.0"
+		"react-router-dom": "^6.21.0",
+		"swr": "^2.2.4"
 	},
 	"devDependencies": {
 		"@types/react": "^18.2.45",
@@ -38,5 +40,8 @@
 		"postcss-simple-vars": "^7.0.1",
 		"typescript": "^5.3.3",
 		"vite": "^5.0.10"
+	},
+	"volta": {
+		"node": "21.4.0"
 	}
 }

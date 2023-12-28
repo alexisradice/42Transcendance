@@ -15,10 +15,12 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   login       String    @unique
-  displayName String
+  displayName String	@unique
   email       String
 
   image       String
+
+  refreshToken	String?
 }
 
 model Message {
@@ -28,3 +30,4 @@ model Message {
 
   content String
 }
+
