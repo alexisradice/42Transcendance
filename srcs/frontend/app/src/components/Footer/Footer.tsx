@@ -2,7 +2,8 @@ import classes from "./Footer.module.css";
 
 const Footer = () => (
 	<footer className={classes.footer}>
-		ft_transcendence by aradice, yanthoma, lmurtin, wburgos
+		<b>ft_transcendence 2023</b>&nbsp;
+		<em>by aradice, yanthoma, lmurtin, wburgos</em>
 	</footer>
 );
 

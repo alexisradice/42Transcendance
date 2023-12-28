@@ -8,9 +8,10 @@ import classes from "./ChannelsList.module.css";
 type Props = {
 	height: number;
 	setSelectedChannel: Dispatch<SetStateAction<Channel>>;
+	setChatOpened: Dispatch<SetStateAction<boolean>>;
 };
 
-const ChannelsList = ({ height, setSelectedChannel }: Props) => {
+const ChannelsList = ({ height, setSelectedChannel, setChatOpened }: Props) => {
 	const { data, error, isLoading } = useSWR("/channel/list", fetcherPrivate);
 
 	return (
@@ -25,6 +26,7 @@ const ChannelsList = ({ height, setSelectedChannel }: Props) => {
 								className={classes.item}
 								onClick={() => {
 									setSelectedChannel(channel);
+									setChatOpened(true);
 								}}
 							>
 								{channel.name}

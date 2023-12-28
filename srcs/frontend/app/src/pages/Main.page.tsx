@@ -15,6 +15,7 @@ export function MainPage() {
 		id: -1,
 		name: "",
 	});
+	const [chatOpened, setChatOpened] = useState(false);
 	const [, setWindowSize] = useState([0, 0]);
 	const leftSectionRef = createRef<HTMLDivElement>();
 	const [leftSectionHeight, setLeftSectionHeight] = useState(0);
@@ -28,7 +29,7 @@ export function MainPage() {
 		return () => {
 			window.removeEventListener("resize", updateSize);
 		};
-	});
+	}, []);
 
 	useEffect(() => {
 		if (leftSectionRef.current) {
@@ -41,12 +42,18 @@ export function MainPage() {
 			{isLogged ? (
 				<div className={classes.main}>
 					<div className={classes.header}>
-						<Header setIsLogged={setIsLogged} />
+						<Header
+							chatOpened={chatOpened}
+							setIsLogged={setIsLogged}
+							setChatOpened={setChatOpened}
+							selectedChannel={selectedChannel.id !== -1}
+						/>
 					</div>
 					<div ref={leftSectionRef} className={classes.channelsList}>
 						<ChannelsList
 							height={leftSectionHeight - 5}
 							setSelectedChannel={setSelectedChannel}
+							setChatOpened={setChatOpened}
 						/>
 					</div>
 					<div className={classes.friendsList}>
@@ -55,7 +62,10 @@ export function MainPage() {
 					<main className={classes.mainFrame}>
 						<MainFrame />
 					</main>
-					<div className={classes.rightDrawer}>
+					<div
+						className={classes.rightDrawer}
+						style={{ display: chatOpened ? "block" : "none" }}
+					>
 						<RightDrawer selectedChannel={selectedChannel} />
 					</div>
 					<div className={classes.footer}>

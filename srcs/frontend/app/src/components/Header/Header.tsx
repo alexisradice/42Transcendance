@@ -1,4 +1,4 @@
-import { Avatar, Image, Loader } from "@mantine/core";
+import { Avatar, Burger, Group, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
@@ -8,10 +8,18 @@ import UserMenu from "../UserMenu/UserMenu";
 import classes from "./Header.module.css";
 
 type Props = {
+	chatOpened: boolean;
+	selectedChannel: boolean;
 	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
+	setChatOpened: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function Header({ setIsLogged }: Props) {
+export default function Header({
+	chatOpened,
+	selectedChannel,
+	setIsLogged,
+	setChatOpened,
+}: Props) {
 	const { user, error, isLoading } = useMyData();
 	if (error) {
 		errorNotif(error);
@@ -25,13 +33,16 @@ export default function Header({ setIsLogged }: Props) {
 	return (
 		<div className={classes.header}>
 			<div className={classes.subsection}>
+				<ColorSchemeToggle />
 				<Link to="/">
-					<Image
-						src={"/pongu.png"}
-						radius="md"
-						h={LOGO_SIZE}
-						w={LOGO_SIZE}
-					/>
+					<Group>
+						<Image
+							src={"/pongu.png"}
+							radius="md"
+							h={LOGO_SIZE}
+							w={LOGO_SIZE}
+						/>
+					</Group>
 				</Link>
 			</div>
 			<div className={classes.subsection}>
@@ -48,9 +59,15 @@ export default function Header({ setIsLogged }: Props) {
 								className={classes.avatar}
 							/>
 						</UserMenu>
+						{selectedChannel && (
+							<Burger
+								opened={chatOpened}
+								onClick={() => setChatOpened(!chatOpened)}
+								aria-label="Toggle navigation"
+							/>
+						)}
 					</>
 				)}
-				<ColorSchemeToggle />
 			</div>
 		</div>
 	);
