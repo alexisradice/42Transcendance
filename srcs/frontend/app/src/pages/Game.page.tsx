@@ -3,16 +3,18 @@ import io from 'socket.io-client';
 
 
 export const GamePage = () => {
-    // useEffect(() => {
-    //     const socket = io('http://localhost:3000');
-    //     socket.emit("hello", "world");
+    useEffect(() => {
+        const socket = io('http://localhost:3000');
+        socket.emit("hello", "world");
 
-    //     socket.on('response', (message) => {
-    //         console.log(message); 
-    //     });
+        socket.on('response', (message) => {
+            console.log(message); 
+        });
 
-    //     return () => socket.disconnect();
-    // }, []);
+		return () => {
+			socket.disconnect();
+		  };
+		}, []);
 
     return <div>Game Page</div>;
 };
