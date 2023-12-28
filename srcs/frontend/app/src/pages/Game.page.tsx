@@ -1,7 +1,20 @@
+import React, { useEffect } from 'react';
+import io from 'socket.io-client';
+
+
 export const GamePage = () => {
-    return (
-        <div>
-            <h1>Game Menu</h1>
-        </div>
-    );
+    // useEffect(() => {
+    //     const socket = io('http://localhost:3000');
+    //     socket.emit("hello", "world");
+
+    //     socket.on('response', (message) => {
+    //         console.log(message); 
+    //     });
+
+    //     return () => socket.disconnect();
+    // }, []);
+
+    return <div>Game Page</div>;
 };
+
+export default GamePage;
