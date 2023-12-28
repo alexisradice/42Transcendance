@@ -8,6 +8,7 @@ import {
 	ParseFilePipe,
 	Patch,
 	Req,
+	UnauthorizedException,
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
@@ -18,6 +19,8 @@ import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { UserSettingsDto } from "src/dto";
 import { UserService } from "./user.service";
+import { AuthService } from "src/auth/auth.service";
+import { PrismaService } from "src/prisma/prisma.service";
 // import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("user")
@@ -25,6 +28,8 @@ export class UserController {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
+		private authService: AuthService,
+		private prisma: PrismaService,
 	) {}
 
 	@Get("me")
@@ -75,5 +80,37 @@ export class UserController {
 			image: image?.buffer.toString("base64"),
 		});
 		return user;
+	}
+
+	@Patch("twofa/generate")
+	@UseGuards(JwtGuard)
+	async generateTwoFA(@Req() req: Request) {
+		const user = await this.userService.findOne({
+			login: req.user["login"],
+		});
+		const { otpAuthUrl } = await this.authService.generateTwoFASecret(user);
+		return this.authService.generateQrCodeDataURL(otpAuthUrl);
+	}
+
+	@Patch("twofa/activate")
+	@UseGuards(JwtGuard)
+	async setTwoFAOnOff(
+		@Body("codeTwoFA") codeTwoFA: string,
+		@Body("enable") enable: boolean,
+		@Req() req: Request,
+	) {
+		const login = req.user["login"];
+		const user = await this.userService.findOne({
+			login,
+		});
+		const isCodeValid = this.authService.verifyTwoFACode(codeTwoFA, user);
+		if (!isCodeValid) {
+			throw new UnauthorizedException("Wrong authentification code");
+		}
+		await this.prisma.user.update({
+			where: { login },
+			data: { twoFA: enable },
+		});
+		return { success: true };
 	}
 }

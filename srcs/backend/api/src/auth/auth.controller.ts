@@ -33,7 +33,6 @@ export class AuthController {
 		if (user.twoFA) {
 			const { otpAuthUrl } =
 				await this.authService.generateTwoFASecret(user);
-			console.log(otpAuthUrl);
 			res.cookie("token", token, {
 				maxAge: 10 * 60 * 1000,
 				httpOnly: true,

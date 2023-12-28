@@ -158,8 +158,17 @@ export class AuthService {
 		return { secret, otpAuthUrl };
 	}
 
+	// returns URL with base64 QR code
 	async generateQrCodeDataURL(otpAuthUrl: string) {
 		return toDataURL(otpAuthUrl);
+	}
+
+	// verify the authentication code with the user's secret
+	async verifyTwoFACode(code: string, user: User) {
+		return authenticator.verify({
+			token: code,
+			secret: user.twoFASecret,
+		});
 	}
 
 	// end of session -> destroys refreshToken in db
