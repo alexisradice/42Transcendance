@@ -8,8 +8,13 @@ import MainFrame from "../components/MainFrame/MainFrame";
 import RightDrawer from "../components/RightDrawer/RightDrawer";
 import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
+import { Channel } from "../types";
 
 export function MainPage() {
+	const [selectedChannel, setSelectedChannel] = useState<Channel>({
+		id: -1,
+		name: "",
+	});
 	const [, setWindowSize] = useState([0, 0]);
 	const leftSectionRef = createRef<HTMLDivElement>();
 	const [leftSectionHeight, setLeftSectionHeight] = useState(0);
@@ -39,7 +44,10 @@ export function MainPage() {
 						<Header setIsLogged={setIsLogged} />
 					</div>
 					<div ref={leftSectionRef} className={classes.channelsList}>
-						<ChannelsList height={leftSectionHeight - 5} />
+						<ChannelsList
+							height={leftSectionHeight - 5}
+							setSelectedChannel={setSelectedChannel}
+						/>
 					</div>
 					<div className={classes.friendsList}>
 						<FriendsList height={leftSectionHeight - 5} />
@@ -48,7 +56,7 @@ export function MainPage() {
 						<MainFrame />
 					</main>
 					<div className={classes.rightDrawer}>
-						<RightDrawer />
+						<RightDrawer selectedChannel={selectedChannel} />
 					</div>
 					<div className={classes.footer}>
 						<Footer />
