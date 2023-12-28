@@ -1,2 +1,10 @@
-.RightDrawer {
+.rightDrawer {
+	padding: var(--mantine-spacing-md);
+}
+
+.title {
+	&::before {
+		content: "# ";
+	}
+	margin-bottom: var(--mantine-spacing-md);
 }
