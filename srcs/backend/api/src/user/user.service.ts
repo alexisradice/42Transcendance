@@ -30,6 +30,8 @@ export class UserService {
 				displayName: user.login,
 				image: user.image,
 				refreshToken: null,
+				twoFA: true,
+				twoFAVerified: true,
 				// init other things
 			},
 		});

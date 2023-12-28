@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "twoFA" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "twoFASecret" TEXT,
+ADD COLUMN     "twoFAVerified" BOOLEAN NOT NULL DEFAULT false;

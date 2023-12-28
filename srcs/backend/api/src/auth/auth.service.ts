@@ -6,7 +6,11 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import { User } from "@prisma/client";
 import * as argon2 from "argon2";
+import { authenticator } from "otplib";
+import { toDataURL, toFileStream } from "qrcode";
+import { Response } from "express";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
 	ACCESS_TOKEN_FLAG,
@@ -26,6 +30,7 @@ export class AuthService {
 		private prisma: PrismaService,
 	) {}
 
+	// send code to 42API to get the access token
 	async get42Token(code: string): Promise<string> {
 		const url = "https://api.intra.42.fr/oauth/token";
 		let status: number;
@@ -52,18 +57,6 @@ export class AuthService {
 		}
 	}
 
-	// takes a 42Token, validates it,
-	// finds associated user in db or create it if new,
-	// then returns jwtTokens with user information
-	async fromOauthToJwtTokens(oauthToken: string): Promise<Tokens> {
-		const userInfo = await this.validateUser(oauthToken);
-		const user = await this.userService.findOrCreate(userInfo);
-		const payload: Payload = { sub: user.login };
-		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
-		await this.updateRefreshToken(userInfo.login, tokens.jwtRefreshToken);
-		return tokens;
-	}
-
 	// handshake with 42API to validate token and get user info
 	async validateUser(accessToken: string): Promise<MiniUser> {
 		const url = "https://api.intra.42.fr/v2/me";
@@ -88,6 +81,14 @@ export class AuthService {
 		} catch (error) {
 			throw new HttpException(error.message, status || 500);
 		}
+	}
+
+	// returns jwtTokens with user information
+	async getJwtTokens(user: User): Promise<Tokens> {
+		const payload: Payload = { sub: user.login };
+		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
+		await this.updateRefreshToken(user.login, tokens.jwtRefreshToken);
+		return tokens;
 	}
 
 	// generates a new jwt access token (always) and a new refresh token (if needed)
@@ -140,6 +141,25 @@ export class AuthService {
 		} catch (error) {
 			throw new HttpException(error.message, error.status || 500);
 		}
+	}
+
+	// 2FA related functions
+	async generateTwoFASecret(user: User) {
+		const secret = authenticator.generateSecret();
+		const otpAuthUrl = authenticator.keyuri(
+			user.login,
+			this.configService.get("TWO_FACTOR_AUTHENTICATION_APP_NAME"),
+			secret,
+		);
+		await this.prisma.user.update({
+			where: { login: user.login },
+			data: { twoFASecret: secret },
+		});
+		return { secret, otpAuthUrl };
+	}
+
+	async generateQrCodeDataURL(otpAuthUrl: string) {
+		return toDataURL(otpAuthUrl);
 	}
 
 	// end of session -> destroys refreshToken in db
