@@ -13,8 +13,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { UserModule } from "./user/user.module";
 import { JwtRefreshMiddleware } from "./auth/jwtRefresh.middleware";
 import { JwtService } from "@nestjs/jwt";
-import { RoomsModule } from "./rooms/rooms.module";
-
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
 	imports: [
@@ -23,7 +22,7 @@ import { RoomsModule } from "./rooms/rooms.module";
 		UserModule,
 		MessageModule,
 		PrismaModule,
-		RoomsModule,
+		ChannelModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, JwtService],

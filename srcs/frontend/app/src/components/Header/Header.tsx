@@ -1,6 +1,6 @@
-import { AspectRatio, Image, Loader } from "@mantine/core";
+import { Avatar, Burger, Group, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
-import { AVATAR_SIZE } from "../../constants";
+import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
 import { errorNotif } from "../../utils/errorNotif";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
@@ -8,10 +8,18 @@ import UserMenu from "../UserMenu/UserMenu";
 import classes from "./Header.module.css";
 
 type Props = {
+	chatOpened: boolean;
+	selectedChannel: boolean;
 	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
+	setChatOpened: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function Header({ setIsLogged }: Props) {
+export default function Header({
+	chatOpened,
+	selectedChannel,
+	setIsLogged,
+	setChatOpened,
+}: Props) {
 	const { user, error, isLoading } = useMyData();
 	if (error) {
 		errorNotif(error);
@@ -25,7 +33,17 @@ export default function Header({ setIsLogged }: Props) {
 	return (
 		<div className={classes.header}>
 			<div className={classes.subsection}>
-				<Link to="/">Pongu!</Link>
+				<ColorSchemeToggle />
+				<Link to="/">
+					<Group>
+						<Image
+							src={"/pongu.png"}
+							radius="md"
+							h={LOGO_SIZE}
+							w={LOGO_SIZE}
+						/>
+					</Group>
+				</Link>
 			</div>
 			<div className={classes.subsection}>
 				{error && <></>}
@@ -34,20 +52,22 @@ export default function Header({ setIsLogged }: Props) {
 					<>
 						<div>Howdy, {user.displayName}</div>
 						<UserMenu setIsLogged={setIsLogged}>
-							<AspectRatio style={{ width: `${AVATAR_SIZE}px` }}>
-								<Image
-									radius="xl"
-									h={AVATAR_SIZE}
-									w={AVATAR_SIZE}
-									className={classes.avatar}
-									src={getImageSrc(user.image)}
-									alt="avatar"
-								/>
-							</AspectRatio>
+							<Avatar
+								src={getImageSrc(user.image)}
+								alt="avatar"
+								size="lg"
+								className={classes.avatar}
+							/>
 						</UserMenu>
+						{selectedChannel && (
+							<Burger
+								opened={chatOpened}
+								onClick={() => setChatOpened(!chatOpened)}
+								aria-label="Toggle navigation"
+							/>
+						)}
 					</>
 				)}
-				<ColorSchemeToggle />
 			</div>
 		</div>
 	);
