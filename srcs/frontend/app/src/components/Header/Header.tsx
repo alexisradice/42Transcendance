@@ -25,7 +25,14 @@ export default function Header({ setIsLogged }: Props) {
 	return (
 		<div className={classes.header}>
 			<div className={classes.subsection}>
-				<Link to="/">Pongu!</Link>
+				<Link to="/">
+					<Image
+						src={"/pongu.png"}
+						radius="md"
+						h={AVATAR_SIZE}
+						w={AVATAR_SIZE}
+					/>
+				</Link>
 			</div>
 			<div className={classes.subsection}>
 				{error && <></>}
