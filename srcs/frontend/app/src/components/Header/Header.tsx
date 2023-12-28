@@ -1,6 +1,6 @@
-import { AspectRatio, Image, Loader } from "@mantine/core";
+import { Avatar, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
-import { AVATAR_SIZE } from "../../constants";
+import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
 import { errorNotif } from "../../utils/errorNotif";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
@@ -29,8 +29,8 @@ export default function Header({ setIsLogged }: Props) {
 					<Image
 						src={"/pongu.png"}
 						radius="md"
-						h={AVATAR_SIZE}
-						w={AVATAR_SIZE}
+						h={LOGO_SIZE}
+						w={LOGO_SIZE}
 					/>
 				</Link>
 			</div>
@@ -41,16 +41,12 @@ export default function Header({ setIsLogged }: Props) {
 					<>
 						<div>Howdy, {user.displayName}</div>
 						<UserMenu setIsLogged={setIsLogged}>
-							<AspectRatio style={{ width: `${AVATAR_SIZE}px` }}>
-								<Image
-									radius="xl"
-									h={AVATAR_SIZE}
-									w={AVATAR_SIZE}
-									className={classes.avatar}
-									src={getImageSrc(user.image)}
-									alt="avatar"
-								/>
-							</AspectRatio>
+							<Avatar
+								src={getImageSrc(user.image)}
+								alt="avatar"
+								size="lg"
+								className={classes.avatar}
+							/>
 						</UserMenu>
 					</>
 				)}
