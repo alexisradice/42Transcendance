@@ -5,6 +5,7 @@ import {
 	Post,
 	Req,
 	Res,
+	UnauthorizedException,
 	UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
@@ -23,6 +24,7 @@ export class AuthController {
 	@Post("login")
 	async auth(
 		@Body("code") code: string,
+		@Body("pinCode") pinCode: string,
 		@Res({ passthrough: true }) res: Response,
 		@Req() req: Request,
 	) {
@@ -30,14 +32,18 @@ export class AuthController {
 			req.cookies.token || (await this.authService.get42Token(code));
 		const userInfo = await this.authService.validateUser(token);
 		const user = await this.userService.findOrCreate(userInfo);
-		if (user.twoFA) {
-			const { otpAuthUrl } =
-				await this.authService.generateTwoFASecret(user);
+
+		if (pinCode) {
+			const isCodeValid = this.authService.verifyTwoFACode(pinCode, user);
+			if (!isCodeValid) {
+				throw new UnauthorizedException("Wrong authentication code");
+			}
+		} else if (user.twoFA) {
 			res.cookie("token", token, {
 				maxAge: 10 * 60 * 1000,
 				httpOnly: true,
 			});
-			return this.authService.generateQrCodeDataURL(otpAuthUrl);
+			return { success: false, needsTwoFa: true };
 		}
 		const tokens = await this.authService.getJwtTokens(user);
 		res.cookie("jwtToken", tokens.jwtToken, {
@@ -49,8 +55,37 @@ export class AuthController {
 			httpOnly: true,
 		});
 		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
+		res.clearCookie("token");
 		return { success: true };
 	}
+
+	// @Post("twofa")
+	// async twoFa(
+	// 	@Body("pinCode") pinCode: string,
+	// 	@Req() req: Request,
+	// 	@Res() res: Response,
+	// ) {
+	// 	const token42 = req.cookies.token;
+	// 	const userInfo = await this.authService.validateUser(token42);
+	// 	const user = await this.userService.findOne({
+	// 		login: userInfo.login,
+	// 	});
+	// 	const isCodeValid = this.authService.verifyTwoFACode(pinCode, user);
+	// 	if (!isCodeValid) {
+	// 		throw new UnauthorizedException("Wrong authentification code");
+	// 	}
+	// 	const tokens = await this.authService.getJwtTokens(user);
+	// 	res.cookie("jwtToken", tokens.jwtToken, {
+	// 		maxAge: 15 * 60 * 1000, // 15 minutes
+	// 		httpOnly: true,
+	// 	});
+	// 	res.cookie("jwtRefreshToken", tokens.jwtRefreshToken, {
+	// 		maxAge: 7 * 24 * 3600 * 1000, // 7 days
+	// 		httpOnly: true,
+	// 	});
+	// 	res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
+	// 	return { success: true };
+	// }
 
 	@UseGuards(JwtGuard)
 	@Patch("logout")

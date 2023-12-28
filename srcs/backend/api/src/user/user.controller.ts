@@ -70,7 +70,7 @@ export class UserController {
 	) {
 		if (image) {
 			// extra protection against file type renaming
-			const valid = this.userService.validateFile(image.buffer);
+			const valid = this.userService.validateAvatar(image.buffer);
 			if (!valid) {
 				throw new HttpException("Invalid file type", 400);
 			}
@@ -95,7 +95,7 @@ export class UserController {
 	@Patch("twofa/activate")
 	@UseGuards(JwtGuard)
 	async setTwoFAOnOff(
-		@Body("codeTwoFA") codeTwoFA: string,
+		@Body("pinCode") pinCode: string,
 		@Body("enable") enable: boolean,
 		@Req() req: Request,
 	) {
@@ -103,7 +103,10 @@ export class UserController {
 		const user = await this.userService.findOne({
 			login,
 		});
-		const isCodeValid = this.authService.verifyTwoFACode(codeTwoFA, user);
+		const isCodeValid = await this.authService.verifyTwoFACode(
+			pinCode,
+			user,
+		);
 		if (!isCodeValid) {
 			throw new UnauthorizedException("Wrong authentification code");
 		}

@@ -6,7 +6,6 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { AuthStrategy } from "./auth.strategy";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtRefreshMiddleware } from "./jwtRefresh.middleware";
 
 @Module({
 	imports: [
