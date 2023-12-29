@@ -36,6 +36,19 @@ export class UserService {
 		return createdUser;
 	}
 
+	async findUserByUsername(login: string) {
+		const user = await this.prisma.user.findFirst({
+			where: {
+				login,
+			},
+		});
+	
+		if (user)
+			return user;
+		else
+			return null;
+	}
+
 	async updateUser(login: string, userSettings: UserSettings) {
 		// if we sent an empty value, then delete the key to not update it in DB
 		Object.keys(userSettings).forEach((key) => {

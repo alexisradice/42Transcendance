@@ -1,30 +1,24 @@
 import { Socket } from 'socket.io';
 
 export class Lobby {
-    id: string;
-    settings: Settings;
-    player1: Player;
-    player2: Player;
-	score: number;
+	id: string;
+	settings: Settings;
+	player1: Player;
+	player2: Player;
 	gameStarted: boolean;
 }
 
 export class Player {
-    name: string;
-    socket: Socket;
+	name: string;
+	socket: Socket;
+	score: number;
 }
 
 export class Settings {
-    ballSpeed: number;
-    paddleSize: string;
-    visibility: string;
-    inviteFriend: string;
+	ballSpeed: number;
+	paddleSize: string;
+	visibility: string;
+	inviteFriend: string;
 	pause: boolean;
 	mode: string;
-}
-
-export class Game {
-    title: string;
-    content: string;
-    authorId: number;
 }
