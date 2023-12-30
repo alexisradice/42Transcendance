@@ -18,7 +18,7 @@ const ChannelsList = ({ height, setSelectedChannel, setChatOpened }: Props) => {
 		<>
 			{!error && isLoading && <div>Loading...</div>}
 			{!error && !isLoading && (
-				<ScrollArea h={height}>
+				<ScrollArea h={height} type="scroll" scrollbars="y">
 					<ul className={classes.list}>
 						{data.map((channel: Channel) => (
 							<li
