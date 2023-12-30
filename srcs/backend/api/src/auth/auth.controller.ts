@@ -5,36 +5,90 @@ import {
 	Post,
 	Req,
 	Res,
+	UnauthorizedException,
 	UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { JwtGuard } from "./jwtToken.guard";
+import { UserService } from "src/user/user.service";
 // import { AuthGuard } from "./auth.guard";
 
 @Controller("auth")
 export class AuthController {
-	constructor(private authService: AuthService) {}
+	constructor(
+		private authService: AuthService,
+		private userService: UserService,
+	) {}
 
 	@Post("login")
 	async auth(
 		@Body("code") code: string,
+		@Body("pinCode") pinCode: string,
 		@Res({ passthrough: true }) res: Response,
+		@Req() req: Request,
 	) {
-		const token = await this.authService.get42Token(code);
-		const { jwtToken, jwtRefreshToken } =
-			await this.authService.fromOauthToJwtTokens(token);
-		res.cookie("jwtToken", jwtToken, {
+		const token =
+			req.cookies.token || (await this.authService.get42Token(code));
+		const userInfo = await this.authService.validateUser(token);
+		const user = await this.userService.findOrCreate(userInfo);
+
+		if (pinCode) {
+			const isCodeValid = await this.authService.verifyTwoFACode(
+				pinCode,
+				user,
+			);
+			if (!isCodeValid) {
+				throw new UnauthorizedException("Wrong authentication code");
+			}
+		} else if (user.twoFA) {
+			res.cookie("token", token, {
+				maxAge: 10 * 60 * 1000,
+				httpOnly: true,
+			});
+			return { success: false, needsTwoFA: true };
+		}
+		const tokens = await this.authService.getJwtTokens(user);
+		res.cookie("jwtToken", tokens.jwtToken, {
 			maxAge: 15 * 60 * 1000, // 15 minutes
 			httpOnly: true,
 		});
-		res.cookie("jwtRefreshToken", jwtRefreshToken, {
+		res.cookie("jwtRefreshToken", tokens.jwtRefreshToken, {
 			maxAge: 7 * 24 * 3600 * 1000, // 7 days
 			httpOnly: true,
 		});
 		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
+		res.clearCookie("token");
 		return { success: true };
 	}
+
+	// @Post("twofa")
+	// async twoFA(
+	// 	@Body("pinCode") pinCode: string,
+	// 	@Req() req: Request,
+	// 	@Res() res: Response,
+	// ) {
+	// 	const token42 = req.cookies.token;
+	// 	const userInfo = await this.authService.validateUser(token42);
+	// 	const user = await this.userService.findOne({
+	// 		login: userInfo.login,
+	// 	});
+	// 	const isCodeValid = this.authService.verifyTwoFACode(pinCode, user);
+	// 	if (!isCodeValid) {
+	// 		throw new UnauthorizedException("Wrong authentification code");
+	// 	}
+	// 	const tokens = await this.authService.getJwtTokens(user);
+	// 	res.cookie("jwtToken", tokens.jwtToken, {
+	// 		maxAge: 15 * 60 * 1000, // 15 minutes
+	// 		httpOnly: true,
+	// 	});
+	// 	res.cookie("jwtRefreshToken", tokens.jwtRefreshToken, {
+	// 		maxAge: 7 * 24 * 3600 * 1000, // 7 days
+	// 		httpOnly: true,
+	// 	});
+	// 	res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
+	// 	return { success: true };
+	// }
 
 	@UseGuards(JwtGuard)
 	@Patch("logout")

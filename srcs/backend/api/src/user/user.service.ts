@@ -30,6 +30,8 @@ export class UserService {
 				displayName: user.login,
 				image: user.image,
 				refreshToken: null,
+				twoFA: false,
+				twoFAVerified: false,
 				// init other things
 			},
 		});
@@ -58,7 +60,7 @@ export class UserService {
 		}
 	}
 
-	validateFile(fileBuffer: Buffer) {
+	validateAvatar(fileBuffer: Buffer) {
 		// Read the first few bytes (magic number) from the file
 		const magicNumberBuffer = fileBuffer.subarray(0, 4);
 

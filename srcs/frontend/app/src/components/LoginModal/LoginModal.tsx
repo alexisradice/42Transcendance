@@ -1,13 +1,15 @@
 import { Button, Group, Modal } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { axiosInstance } from "../../utils/fetcher";
+import { axiosPrivate } from "../../utils/fetcher";
 import { errorNotif } from "../../utils/errorNotif";
+import PinCodeValidator from "../PinCodeValidator/PinCodeValidator";
 
 type Props = {
 	setIsLogged: (isLogged: boolean) => void;
 };
 
 const LoginModal = ({ setIsLogged }: Props) => {
+	const [needsTwoFA, setNeedsTwoFA] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
@@ -15,13 +17,17 @@ const LoginModal = ({ setIsLogged }: Props) => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get("code");
 		const controller = new AbortController();
-		const getJwtTokens = async () => {
+		const callLogin = async () => {
 			try {
-				await axiosInstance.post(
+				const response = await axiosPrivate.post(
 					"/auth/login",
 					{ code },
-					{ signal: controller.signal, withCredentials: true },
+					{ signal: controller.signal },
 				);
+				if (!response.data.success && response.data.needsTwoFA) {
+					setNeedsTwoFA(true);
+					return;
+				}
 				isMounted && setIsLogged(true);
 			} catch (err: unknown) {
 				setIsLoading(false);
@@ -31,7 +37,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 
 		if (code) {
 			setIsLoading(true);
-			getJwtTokens();
+			callLogin();
 			window.history.replaceState(null, "", window.location.pathname);
 		}
 
@@ -42,6 +48,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 	}, [setIsLogged]);
 
 	const login = () => {
+		setIsLoading(true);
 		const params = new URLSearchParams({
 			response_type: "code",
 			client_id: import.meta.env.VITE_CLIENT_ID,
@@ -59,17 +66,27 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			withCloseButton={false}
 			onClose={() => {}}
 		>
-			<Group justify="center">
-				<span>Hey! You must be logged in to use this site.</span>
-				<Button
-					fullWidth={true}
-					onClick={login}
-					loading={isLoading}
-					loaderProps={{ type: "dots" }}
-				>
-					Login with your 42 account
-				</Button>
-			</Group>
+			{needsTwoFA ? (
+				<>
+					<span>Please enter your authenticator code.</span>
+					<PinCodeValidator
+						validationUrl="/auth/login"
+						onSuccess={() => setIsLogged(true)}
+					/>
+				</>
+			) : (
+				<Group justify="center">
+					<span>Hey! You must be logged in to use this site.</span>
+					<Button
+						fullWidth={true}
+						onClick={login}
+						loading={isLoading}
+						loaderProps={{ type: "dots" }}
+					>
+						Login with your 42 account
+					</Button>
+				</Group>
+			)}
 		</Modal>
 	);
 };
