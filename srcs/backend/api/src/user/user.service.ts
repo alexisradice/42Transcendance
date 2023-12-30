@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from "@nestjs/common";
-import { User } from "@prisma/client";
+import { User, Status } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
 	FindOneCriteria as FindOneParam,
@@ -76,5 +76,38 @@ export class UserService {
 		} else {
 			return false;
 		}
+	}
+
+	async updateStatus(login: string, status: Status) {
+		await this.prisma.user.update({
+			where: { login },
+			data: {
+				status: status,
+			},
+		});
+	}
+
+	// /!\ For now, adding a friend does not ask for his approval !
+
+	async addFriendship(loginA: string, loginB: string) {
+		await this.prisma.user.update({
+			where: { login: loginA },
+			data: { friends: { connect: [{ login: loginB }] } },
+		});
+		await this.prisma.user.update({
+			where: { login: loginB },
+			data: { friends: { connect: [{ login: loginA }] } },
+		});
+	}
+
+	async removeFriendship(loginA: string, loginB: string) {
+		await this.prisma.user.update({
+			where: { login: loginA },
+			data: { friends: { disconnect: [{ login: loginB }] } },
+		});
+		await this.prisma.user.update({
+			where: { login: loginB },
+			data: { friends: { disconnect: [{ login: loginA }] } },
+		});
 	}
 }

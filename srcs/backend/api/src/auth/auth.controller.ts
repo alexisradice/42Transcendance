@@ -12,6 +12,7 @@ import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { JwtGuard } from "./jwtToken.guard";
 import { UserService } from "src/user/user.service";
+import { Status } from "@prisma/client";
 // import { AuthGuard } from "./auth.guard";
 
 @Controller("auth")
@@ -59,6 +60,7 @@ export class AuthController {
 		});
 		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
 		res.clearCookie("token");
+		this.userService.updateStatus(user.login, Status.ONLINE);
 		return { success: true };
 	}
 
@@ -69,6 +71,7 @@ export class AuthController {
 		res.clearCookie("jwtToken");
 		res.clearCookie("jwtRefreshToken");
 		res.clearCookie("isLogged");
+		this.userService.updateStatus(req.user["login"], Status.OFFLINE);
 		return res.json({ success: true });
 	}
 }

@@ -13,7 +13,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { UserModule } from "./user/user.module";
 import { JwtRefreshMiddleware } from "./auth/jwtRefresh.middleware";
 import { JwtService } from "@nestjs/jwt";
-import { ChannelModule } from './channel/channel.module';
+import { ChannelModule } from "./channel/channel.module";
 
 @Module({
 	imports: [
