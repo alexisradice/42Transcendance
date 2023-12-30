@@ -5,6 +5,7 @@ import {
 	Get,
 	HttpException,
 	MaxFileSizeValidator,
+	Param,
 	ParseFilePipe,
 	Patch,
 	Post,
@@ -48,11 +49,23 @@ export class UserController {
 		};
 	}
 
-	// @Get(":login")
-	// @UseGuards(JwtGuard)
-	// async getUser(@Param("login") login: string) {
-	// 	return await this.userService.findOne({ login });
-	// }
+	@Get(":login")
+	@UseGuards(JwtGuard)
+	async getUser(@Param("login") login: string) {
+		const user = await this.userService.findOne({ login });
+		return {
+			login: user.login,
+			displayName: user.displayName,
+			image: user.image,
+			status: user.status,
+		};
+	}
+
+	@Get("search/:searchString")
+	@UseGuards(JwtGuard)
+	async searchUser(@Param("searchString") searchString: string) {
+		return await this.userService.searchUser(searchString);
+	}
 
 	@Patch("update")
 	@UseGuards(JwtGuard)

@@ -11,6 +11,23 @@ import {
 export class UserService {
 	constructor(private prisma: PrismaService) {}
 
+	async searchUser(searchString: string) {
+		const users = await this.prisma.user.findMany({
+			where: {
+				login: {
+					contains: searchString,
+				},
+			},
+			select: {
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+		});
+		return users;
+	}
+
 	async findOne(param: FindOneParam) {
 		const user = await this.prisma.user.findFirst({
 			where: param,
