@@ -70,3 +70,9 @@ enum Status {
     OFFLINE
     IN_GAME
 }
+
+enum Roles {
+    OWNER
+    ADMIN
+    MEMBER
+}
