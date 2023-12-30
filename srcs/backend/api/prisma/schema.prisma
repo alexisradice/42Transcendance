@@ -21,6 +21,7 @@ model User {
     twoFA         Boolean   @default(false)
     twoFASecret   String?
     refreshToken  String?
+    status        Status    @default(ONLINE)
     messages      Message[]
     channels      Channel[]
     channelsOwned Channel[] @relation("ownership")
@@ -63,4 +64,16 @@ model Stat {
     losses      Int    @default(0)
     user        User   @relation(fields: [userId], references: [id])
     userId      String @unique
+}
+
+enum Status {
+    ONLINE
+    OFFLINE
+    IN_GAME
+}
+
+enum Roles {
+    OWNER
+    ADMIN
+    MEMBER
 }
