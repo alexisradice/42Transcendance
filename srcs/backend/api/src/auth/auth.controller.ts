@@ -62,34 +62,6 @@ export class AuthController {
 		return { success: true };
 	}
 
-	// @Post("twofa")
-	// async twoFA(
-	// 	@Body("pinCode") pinCode: string,
-	// 	@Req() req: Request,
-	// 	@Res() res: Response,
-	// ) {
-	// 	const token42 = req.cookies.token;
-	// 	const userInfo = await this.authService.validateUser(token42);
-	// 	const user = await this.userService.findOne({
-	// 		login: userInfo.login,
-	// 	});
-	// 	const isCodeValid = this.authService.verifyTwoFACode(pinCode, user);
-	// 	if (!isCodeValid) {
-	// 		throw new UnauthorizedException("Wrong authentification code");
-	// 	}
-	// 	const tokens = await this.authService.getJwtTokens(user);
-	// 	res.cookie("jwtToken", tokens.jwtToken, {
-	// 		maxAge: 15 * 60 * 1000, // 15 minutes
-	// 		httpOnly: true,
-	// 	});
-	// 	res.cookie("jwtRefreshToken", tokens.jwtRefreshToken, {
-	// 		maxAge: 7 * 24 * 3600 * 1000, // 7 days
-	// 		httpOnly: true,
-	// 	});
-	// 	res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
-	// 	return { success: true };
-	// }
-
 	@UseGuards(JwtGuard)
 	@Patch("logout")
 	async logout(@Req() req: Request, @Res() res: Response) {
