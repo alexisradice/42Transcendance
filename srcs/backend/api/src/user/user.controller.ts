@@ -22,6 +22,7 @@ import { UserSettingsDto } from "src/dto";
 import { UserService } from "./user.service";
 import { AuthService } from "src/auth/auth.service";
 import { PrismaService } from "src/prisma/prisma.service";
+import { Status } from "@prisma/client";
 // import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("user")
@@ -82,6 +83,16 @@ export class UserController {
 			image: image?.buffer.toString("base64"),
 		});
 		return user;
+	}
+
+	@Patch("updateStatus")
+	@UseGuards(JwtGuard)
+	async updateUserStatus(
+		@Body("status") status: Status,
+		@Req() req: Request,
+	) {
+		await this.userService.updateStatus(req.user["login"], status);
+		return { success: true };
 	}
 
 	@Get("friends/all")
