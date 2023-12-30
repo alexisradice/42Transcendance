@@ -28,8 +28,6 @@ model User {
     friends       User[]    @relation("friends")
     friendOf      User[]    @relation("friends")
     stats         Stat?
-
-    @@index([login])
 }
 
 model Message {
