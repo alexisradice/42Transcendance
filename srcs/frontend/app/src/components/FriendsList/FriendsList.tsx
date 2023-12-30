@@ -1,6 +1,9 @@
 import {
+	Avatar,
 	Button,
 	Center,
+	Group,
+	Indicator,
 	Input,
 	Loader,
 	Modal,
@@ -17,6 +20,7 @@ import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import classes from "./FriendsList.module.css";
+import { colorFromStatus } from "../../utils/colorFromStatus";
 
 type Props = {
 	height: number;
@@ -100,7 +104,24 @@ const FriendsList = ({ height }: Props) => {
 												className={classes.friend}
 												key={index}
 											>
-												{friend.displayName}
+												<Group>
+													<Indicator
+														inline
+														size={12}
+														offset={7}
+														position="bottom-end"
+														color={colorFromStatus(
+															friend.status,
+														)}
+														withBorder
+													>
+														<Avatar
+															size="md"
+															src={friend.image}
+														/>
+													</Indicator>
+													{friend.displayName}
+												</Group>
 											</li>
 										);
 									},

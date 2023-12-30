@@ -85,13 +85,12 @@ export class UserService {
 		const pngMagicNumber = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 
 		// Compare the read magic number with known magic numbers
-		if (
-			magicNumberBuffer.subarray(0, 2).equals(jpegMagicNumber) ||
-			magicNumberBuffer.equals(pngMagicNumber)
-		) {
-			return true;
+		if (magicNumberBuffer.subarray(0, 2).equals(jpegMagicNumber)) {
+			return "jpeg";
+		} else if (magicNumberBuffer.equals(pngMagicNumber)) {
+			return "png";
 		} else {
-			return false;
+			return null;
 		}
 	}
 

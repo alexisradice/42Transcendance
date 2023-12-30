@@ -1,9 +1,3 @@
-enum Status {
-	ONLINE,
-	OFFLINE,
-	IN_GAME,
-}
-
 export type Channel = {
 	id: number;
 	name: string;
@@ -29,7 +23,7 @@ export type Friend = {
 	login: string;
 	displayName: string;
 	image: string;
-	status: Status;
+	status: string;
 };
 
 export type ProfileSettings = {

@@ -84,16 +84,21 @@ export class UserController {
 		)
 		image?: Express.Multer.File,
 	) {
+		let fileType: string | null;
+		let base64Image: string | null;
 		if (image) {
 			// extra protection against file type renaming
-			const valid = this.userService.validateAvatar(image.buffer);
-			if (!valid) {
+			fileType = this.userService.validateAvatar(image.buffer);
+			if (!fileType) {
 				throw new HttpException("Invalid file type", 400);
 			}
+			base64Image = image.buffer.toString("base64");
 		}
 		const user = await this.userService.updateUser(req.user["login"], {
 			displayName: userDto.displayName,
-			image: image?.buffer.toString("base64"),
+			image: image
+				? `data:image/${fileType};base64,${base64Image}`
+				: undefined,
 		});
 		return user;
 	}

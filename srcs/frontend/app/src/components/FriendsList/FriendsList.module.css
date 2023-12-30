@@ -1,3 +1,7 @@
 .noFriendStack {
 	height: 100%;
 }
+
+.list {
+	list-style: none;
+}
