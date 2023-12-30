@@ -4,11 +4,12 @@ export type Channel = {
 };
 
 export type Message = {
-	id: number;
+	id: string;
+	createdAt: string;
+	updatedAt: string;
 	content: string;
-	sender: string;
-	createdAt: Date;
-	updatedAt: Date | null;
+	author: Partial<User>;
+	channel: Channel;
 };
 
 export type User = {

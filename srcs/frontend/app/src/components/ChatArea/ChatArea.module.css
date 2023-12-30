@@ -1,5 +1,9 @@
 .chatArea {
 	padding: var(--mantine-spacing-md);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
 }
 
 .title {
@@ -7,4 +11,8 @@
 		content: "# ";
 	}
 	margin-bottom: var(--mantine-spacing-md);
+}
+
+.sendButton:hover {
+	cursor: pointer;
 }

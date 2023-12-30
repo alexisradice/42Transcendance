@@ -1,0 +1,21 @@
+.mainContainer {
+	flex: 1;
+}
+
+.messageBubble {
+	background-color: var(--mantine-color-gray-2);
+	border-radius: 10px;
+	padding: 10px;
+	margin: 10px 0;
+	display: inline-block;
+	color: #000;
+	font-size: 16px;
+}
+
+.messageBubbleSelf {
+	composes: messageBubble;
+	float: right;
+	text-align: right;
+	background-color: #147885;
+	color: #fff;
+}
