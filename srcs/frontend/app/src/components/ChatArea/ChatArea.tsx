@@ -30,7 +30,8 @@ const ChatArea = ({ selectedChannel }: Props) => {
 					<MessagesArea messages={messages} />
 					<Input
 						mt="sm"
-						placeholder={`Message ${selectedChannel.name}`}
+						radius="lg"
+						placeholder={`Message #${selectedChannel.name}`}
 						rightSection={
 							<IconSend2
 								className={classes.sendButton}
