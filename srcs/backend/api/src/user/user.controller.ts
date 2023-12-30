@@ -111,7 +111,7 @@ export class UserController {
 				},
 			},
 		});
-		return friends;
+		return friends[0].friends;
 	}
 
 	@Post("friends/add")
