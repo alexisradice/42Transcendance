@@ -21,6 +21,7 @@ model User {
     twoFA         Boolean   @default(false)
     twoFASecret   String?
     refreshToken  String?
+    status        Status    @default(ONLINE)
     messages      Message[]
     channels      Channel[]
     channelsOwned Channel[] @relation("ownership")
