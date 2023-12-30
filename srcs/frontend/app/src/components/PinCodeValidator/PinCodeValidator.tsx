@@ -47,7 +47,7 @@ const PinCodeValidator = ({
 			if (enable != null) {
 				body.enable = enable;
 			}
-			await axiosPrivate.patch(validationUrl, body);
+			await axiosPrivate.post(validationUrl, body);
 			setLoading(false);
 			onSuccess && onSuccess();
 		} catch (err: unknown) {

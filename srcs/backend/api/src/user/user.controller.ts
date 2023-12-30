@@ -7,6 +7,7 @@ import {
 	MaxFileSizeValidator,
 	ParseFilePipe,
 	Patch,
+	Post,
 	Req,
 	UnauthorizedException,
 	UploadedFile,
@@ -83,7 +84,7 @@ export class UserController {
 		return user;
 	}
 
-	@Patch("twofa/generate")
+	@Post("twofa/generate")
 	@UseGuards(JwtGuard)
 	async generateTwoFA(@Req() req: Request) {
 		const user = await this.userService.findOne({
@@ -93,7 +94,7 @@ export class UserController {
 		return this.authService.generateQrCodeDataURL(otpAuthUrl);
 	}
 
-	@Patch("twofa/activate")
+	@Post("twofa/activate")
 	@UseGuards(JwtGuard)
 	async setTwoFAOnOff(
 		@Body("pinCode") pinCode: string,

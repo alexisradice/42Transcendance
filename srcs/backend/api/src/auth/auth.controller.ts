@@ -34,7 +34,10 @@ export class AuthController {
 		const user = await this.userService.findOrCreate(userInfo);
 
 		if (pinCode) {
-			const isCodeValid = this.authService.verifyTwoFACode(pinCode, user);
+			const isCodeValid = await this.authService.verifyTwoFACode(
+				pinCode,
+				user,
+			);
 			if (!isCodeValid) {
 				throw new UnauthorizedException("Wrong authentication code");
 			}

@@ -13,7 +13,7 @@ const TwoFaActivation = ({ user }: Props) => {
 	const [qrCode, setQrCode] = useState<string>("");
 	const twoFAGenerate = async () => {
 		try {
-			const response = await axiosPrivate.patch("/user/twofa/generate");
+			const response = await axiosPrivate.post("/user/twofa/generate");
 			setQrCode(response.data);
 		} catch (err: unknown) {
 			errorNotif(err);

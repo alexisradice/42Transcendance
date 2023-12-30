@@ -22,7 +22,7 @@ const AccountSettings = ({ opened, close }: Props) => {
 
 	const twoFAGenerate = async () => {
 		try {
-			const response = await axiosPrivate.patch("/user/twofa/generate");
+			const response = await axiosPrivate.post("/user/twofa/generate");
 			setQrCode(response.data);
 		} catch (err: unknown) {
 			errorNotif(err);

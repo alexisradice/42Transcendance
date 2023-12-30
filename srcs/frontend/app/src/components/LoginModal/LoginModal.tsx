@@ -48,6 +48,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 	}, [setIsLogged]);
 
 	const login = () => {
+		setIsLoading(true);
 		const params = new URLSearchParams({
 			response_type: "code",
 			client_id: import.meta.env.VITE_CLIENT_ID,
@@ -65,18 +66,27 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			withCloseButton={false}
 			onClose={() => {}}
 		>
-			<Group justify="center">
-				<span>Hey! You must be logged in to use this site.</span>
-				<Button
-					fullWidth={true}
-					onClick={login}
-					loading={isLoading}
-					loaderProps={{ type: "dots" }}
-				>
-					Login with your 42 account
-				</Button>
-			</Group>
-			{needsTwoFa && <PinCodeValidator validationUrl="/auth/login" />}
+			{needsTwoFa ? (
+				<>
+					<span>Please enter your authenticator code.</span>
+					<PinCodeValidator
+						validationUrl="/auth/login"
+						onSuccess={() => setIsLogged(true)}
+					/>
+				</>
+			) : (
+				<Group justify="center">
+					<span>Hey! You must be logged in to use this site.</span>
+					<Button
+						fullWidth={true}
+						onClick={login}
+						loading={isLoading}
+						loaderProps={{ type: "dots" }}
+					>
+						Login with your 42 account
+					</Button>
+				</Group>
+			)}
 		</Modal>
 	);
 };
