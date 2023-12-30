@@ -46,7 +46,7 @@ export class AuthController {
 				maxAge: 10 * 60 * 1000,
 				httpOnly: true,
 			});
-			return { success: false, needsTwoFa: true };
+			return { success: false, needsTwoFA: true };
 		}
 		const tokens = await this.authService.getJwtTokens(user);
 		res.cookie("jwtToken", tokens.jwtToken, {
@@ -63,7 +63,7 @@ export class AuthController {
 	}
 
 	// @Post("twofa")
-	// async twoFa(
+	// async twoFA(
 	// 	@Body("pinCode") pinCode: string,
 	// 	@Req() req: Request,
 	// 	@Res() res: Response,

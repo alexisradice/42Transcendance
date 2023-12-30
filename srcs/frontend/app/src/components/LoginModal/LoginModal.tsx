@@ -9,7 +9,7 @@ type Props = {
 };
 
 const LoginModal = ({ setIsLogged }: Props) => {
-	const [needsTwoFa, setNeedsTwoFa] = useState(false);
+	const [needsTwoFA, setNeedsTwoFA] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
@@ -24,8 +24,8 @@ const LoginModal = ({ setIsLogged }: Props) => {
 					{ code },
 					{ signal: controller.signal },
 				);
-				if (!response.data.success && response.data.needsTwoFa) {
-					setNeedsTwoFa(true);
+				if (!response.data.success && response.data.needsTwoFA) {
+					setNeedsTwoFA(true);
 					return;
 				}
 				isMounted && setIsLogged(true);
@@ -66,7 +66,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			withCloseButton={false}
 			onClose={() => {}}
 		>
-			{needsTwoFa ? (
+			{needsTwoFA ? (
 				<>
 					<span>Please enter your authenticator code.</span>
 					<PinCodeValidator

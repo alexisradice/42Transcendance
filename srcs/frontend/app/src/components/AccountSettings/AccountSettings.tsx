@@ -1,11 +1,11 @@
 import { Button, Center, Group, Loader, Modal } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { IconCheck } from "@tabler/icons-react";
 import { useState } from "react";
 import { useMyData } from "../../hooks/useMyData";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
 import PinCodeValidator from "../PinCodeValidator/PinCodeValidator";
-import { notifications } from "@mantine/notifications";
-import { IconCheck } from "@tabler/icons-react";
 
 type Props = {
 	opened: boolean;
@@ -13,8 +13,9 @@ type Props = {
 };
 
 const AccountSettings = ({ opened, close }: Props) => {
-	const { user, error, isLoading } = useMyData();
+	const { user, error, isLoading, mutate } = useMyData();
 	const [qrCode, setQrCode] = useState<string | null>(null);
+	const [deactivationPinCode, setDeactivationPinCode] = useState(false);
 
 	if (error) {
 		errorNotif(error);
@@ -29,15 +30,29 @@ const AccountSettings = ({ opened, close }: Props) => {
 		}
 	};
 
-	const handlePinSuccess = () => {
-		setQrCode(null);
+	const twoFADeactivate = async () => {
+		setDeactivationPinCode(true);
+	};
+
+	const twoFAStatusChange = (notifMessage: string) => {
 		close();
 		notifications.show({
 			title: "Success",
-			message: "2FA successfully activated",
+			message: notifMessage,
 			color: "green",
 			icon: <IconCheck />,
 		});
+		mutate({ ...user });
+	};
+
+	const activationSuccess = () => {
+		setQrCode(null);
+		twoFAStatusChange("2FA successfully activated");
+	};
+
+	const deactivationSuccess = () => {
+		setDeactivationPinCode(false);
+		twoFAStatusChange("2FA successfully deactivated");
 	};
 
 	return (
@@ -62,9 +77,21 @@ const AccountSettings = ({ opened, close }: Props) => {
 					{!qrCode && (
 						<Group justify="space-between">
 							{user.twoFA ? (
-								<Button color="red" onClick={twoFAGenerate}>
-									Deactivate 2FA
-								</Button>
+								<>
+									<Button
+										color="red"
+										onClick={twoFADeactivate}
+									>
+										Deactivate 2FA
+									</Button>
+									{deactivationPinCode && (
+										<PinCodeValidator
+											validationUrl="/user/twofa/activate"
+											enable={false}
+											onSuccess={deactivationSuccess}
+										/>
+									)}
+								</>
 							) : (
 								<Button color="green" onClick={twoFAGenerate}>
 									Activate 2FA
@@ -88,7 +115,7 @@ const AccountSettings = ({ opened, close }: Props) => {
 							<PinCodeValidator
 								validationUrl="/user/twofa/activate"
 								enable={true}
-								onSuccess={handlePinSuccess}
+								onSuccess={activationSuccess}
 								buttonText="Activate"
 							/>
 						</>
