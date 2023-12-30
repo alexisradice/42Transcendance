@@ -1,11 +1,14 @@
-import { Group, PinInput, Button } from "@mantine/core";
+import { Button, FocusTrap, Group, PinInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { axiosPrivate } from "../../utils/fetcher";
+import { useState } from "react";
 import { errorNotif } from "../../utils/errorNotif";
+import { axiosPrivate } from "../../utils/fetcher";
 
 type Props = {
 	validationUrl: string;
 	enable?: boolean;
+	buttonText?: string;
+	onSuccess?: () => void;
 };
 
 type PinCodeValidationBody = {
@@ -13,7 +16,14 @@ type PinCodeValidationBody = {
 	enable?: boolean;
 };
 
-const PinCodeValidator = ({ validationUrl, enable }: Props) => {
+const PinCodeValidator = ({
+	validationUrl,
+	enable,
+	buttonText,
+	onSuccess,
+}: Props) => {
+	const [loading, setLoading] = useState<boolean>(false);
+
 	const form = useForm({
 		initialValues: {
 			pinCode: "",
@@ -27,7 +37,9 @@ const PinCodeValidator = ({ validationUrl, enable }: Props) => {
 			},
 		},
 	});
+
 	const submitHandler = async (values: { pinCode: string }) => {
+		setLoading(true);
 		try {
 			const body: PinCodeValidationBody = {
 				pinCode: values.pinCode,
@@ -36,21 +48,29 @@ const PinCodeValidator = ({ validationUrl, enable }: Props) => {
 				body.enable = enable;
 			}
 			await axiosPrivate.patch(validationUrl, body);
+			setLoading(false);
+			onSuccess && onSuccess();
 		} catch (err: unknown) {
+			setLoading(false);
 			errorNotif(err);
 		}
 	};
+
 	return (
 		<form onSubmit={form.onSubmit(submitHandler)}>
-			<Group justify="space-between" mt="xl">
-				<PinInput
-					size="sm"
-					length={6}
-					placeholder="-"
-					type="number"
-					{...form.getInputProps("pinCode")}
-				/>
-				<Button type="submit">Submit</Button>
+			<Group justify="space-between" mt="md">
+				<FocusTrap>
+					<PinInput
+						size="sm"
+						length={6}
+						placeholder="-"
+						type="number"
+						{...form.getInputProps("pinCode")}
+					/>
+				</FocusTrap>
+				<Button type="submit" loading={loading} color="green">
+					{buttonText || "Verify"}
+				</Button>
 			</Group>
 		</form>
 	);

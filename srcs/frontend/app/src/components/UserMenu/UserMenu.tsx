@@ -1,8 +1,9 @@
 import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { axiosPrivate } from "../../utils/fetcher";
-import SettingsModal from "../SettingsModal/SettingsModal";
+import ProfileSettings from "../ProfileSettings/ProfileSettings";
 import { errorNotif } from "../../utils/errorNotif";
+import AccountSettings from "../AccountSettings/AccountSettings";
 
 type Props = {
 	children: JSX.Element;
@@ -10,7 +11,10 @@ type Props = {
 };
 
 const UserMenu = ({ children, setIsLogged }: Props) => {
-	const [opened, { open, close }] = useDisclosure(false);
+	const [profileOpened, { open: openProfile, close: closeProfile }] =
+		useDisclosure(false);
+	const [accountOpened, { open: openAccount, close: closeAccount }] =
+		useDisclosure(false);
 
 	const logOut = async () => {
 		try {
@@ -23,12 +27,14 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 
 	return (
 		<>
-			<SettingsModal opened={opened} close={close} />
+			<ProfileSettings opened={profileOpened} close={closeProfile} />
+			<AccountSettings opened={accountOpened} close={closeAccount} />
+
 			<Menu shadow="md" width={150}>
 				<Menu.Target>{children}</Menu.Target>
 				<Menu.Dropdown>
-					<Menu.Item onClick={open}>Settings</Menu.Item>
-					<Menu.Item>Stats</Menu.Item>
+					<Menu.Item onClick={openProfile}>Profile</Menu.Item>
+					<Menu.Item onClick={openAccount}>Account</Menu.Item>
 					<Menu.Item onClick={logOut}>Log out</Menu.Item>
 				</Menu.Dropdown>
 			</Menu>

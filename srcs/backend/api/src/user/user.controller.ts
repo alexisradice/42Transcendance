@@ -42,6 +42,7 @@ export class UserController {
 			login: user.login,
 			displayName: user.displayName,
 			image: user.image,
+			twoFA: user.twoFA,
 		};
 	}
 
