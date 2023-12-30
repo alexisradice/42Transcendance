@@ -61,7 +61,7 @@
 	grid-area: 3 / 1 / 4 / 2;
 }
 
-.rightDrawer {
+.chatArea {
 	composes: contentBlock;
 	width: 340px;
 	grid-area: 2 / 3 / 4 / 4;
@@ -73,7 +73,7 @@
 		width: 40px;
 	}
 
-	.rightDrawer {
+	.chatArea {
 		width: 250px;
 	}
 }
@@ -83,7 +83,7 @@
 	.friendsList {
 		width: 40px;
 	}
-	.rightDrawer {
+	.chatArea {
 		display: none;
 	}
 }

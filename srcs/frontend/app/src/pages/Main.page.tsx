@@ -5,7 +5,7 @@ import FriendsList from "../components/FriendsList/FriendsList";
 import Header from "../components/Header/Header";
 import LoginModal from "../components/LoginModal/LoginModal";
 import MainFrame from "../components/MainFrame/MainFrame";
-import RightDrawer from "../components/RightDrawer/RightDrawer";
+import ChatArea from "../components/ChatArea/ChatArea";
 import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
 import { Channel } from "../types";
@@ -63,10 +63,10 @@ export function MainPage() {
 						<MainFrame />
 					</main>
 					<div
-						className={classes.rightDrawer}
+						className={classes.chatArea}
 						style={{ display: chatOpened ? "block" : "none" }}
 					>
-						<RightDrawer selectedChannel={selectedChannel} />
+						<ChatArea selectedChannel={selectedChannel} />
 					</div>
 					<div className={classes.footer}>
 						<Footer />

@@ -2,14 +2,14 @@ import useSWR from "swr";
 import { Channel, Message } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
-import classes from "./RightDrawer.module.css";
+import classes from "./ChatArea.module.css";
 import { Title } from "@mantine/core";
 
 type Props = {
 	selectedChannel: Channel;
 };
 
-const RightDrawer = ({ selectedChannel }: Props) => {
+const ChatArea = ({ selectedChannel }: Props) => {
 	const { data, error, isLoading } = useSWR(
 		`/channel/messages`,
 		fetcherPrivate,
@@ -19,7 +19,7 @@ const RightDrawer = ({ selectedChannel }: Props) => {
 			{error && errorNotif(error)}
 			{!error && isLoading && <div>Loading...</div>}
 			{!error && !isLoading && (
-				<div className={classes.rightDrawer}>
+				<div className={classes.chatArea}>
 					{selectedChannel.id !== -1 && (
 						<>
 							<Title className={classes.title}>
@@ -36,4 +36,4 @@ const RightDrawer = ({ selectedChannel }: Props) => {
 	);
 };
 
-export default RightDrawer;
+export default ChatArea;
