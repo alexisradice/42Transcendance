@@ -31,7 +31,6 @@ export class UserService {
 				image: user.image,
 				refreshToken: null,
 				twoFA: false,
-				twoFAVerified: false,
 				// init other things
 			},
 		});
