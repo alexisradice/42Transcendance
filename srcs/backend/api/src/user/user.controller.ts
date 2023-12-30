@@ -84,6 +84,45 @@ export class UserController {
 		return user;
 	}
 
+	@Get("friends/all")
+	@UseGuards(JwtGuard)
+	async getFriends(@Req() req: Request) {
+		const friends = await this.prisma.user.findMany({
+			where: { login: req.user["login"] },
+			select: {
+				friends: {
+					select: {
+						login: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+			},
+		});
+		return friends;
+	}
+
+	@Post("friends/add")
+	@UseGuards(JwtGuard)
+	async addFriend(
+		@Body("friendLogin") friendLogin: string,
+		@Req() req: Request,
+	) {
+		await this.userService.addFriendship(req.user["login"], friendLogin);
+		return { success: true };
+	}
+
+	@Post("friends/remove")
+	@UseGuards(JwtGuard)
+	async removeFriend(
+		@Body("friendLogin") friendLogin: string,
+		@Req() req: Request,
+	) {
+		await this.userService.removeFriendship(req.user["login"], friendLogin);
+		return { success: true };
+	}
+
 	@Post("twofa/generate")
 	@UseGuards(JwtGuard)
 	async generateTwoFA(@Req() req: Request) {
