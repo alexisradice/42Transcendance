@@ -42,7 +42,9 @@ const AccountSettings = ({ opened, close }: Props) => {
 			color: "green",
 			icon: <IconCheck />,
 		});
-		mutate({ ...user });
+		setTimeout(() => {
+			mutate({ ...user });
+		}, 500);
 	};
 
 	const activationSuccess = () => {
@@ -60,7 +62,13 @@ const AccountSettings = ({ opened, close }: Props) => {
 			radius="md"
 			centered={true}
 			opened={opened}
-			onClose={close}
+			onClose={() => {
+				close();
+				setTimeout(() => {
+					setQrCode(null);
+					setDeactivationPinCode(false);
+				}, 500);
+			}}
 			title="Account Settings"
 			overlayProps={{
 				backgroundOpacity: 0.55,
