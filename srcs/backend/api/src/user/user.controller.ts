@@ -152,6 +152,39 @@ export class UserController {
 		return { success: true };
 	}
 
+	@Get("blocked/all")
+	@UseGuards(JwtGuard)
+	async getBlocked(@Req() req: Request) {
+		const blocked = await this.prisma.user.findMany({
+			where: { login: req.user["login"] },
+			select: {
+				blocked: {
+					select: {
+						login: true,
+					},
+				},
+			},
+		});
+		return blocked[0].blocked;
+	}
+
+	@Post("block")
+	@UseGuards(JwtGuard)
+	async blockUser(@Body("userLogin") userLogin: string, @Req() req: Request) {
+		await this.userService.blockUser(req.user["login"], userLogin);
+		return { success: true };
+	}
+
+	@Post("unblock")
+	@UseGuards(JwtGuard)
+	async unblockUser(
+		@Body("userLogin") userLogin: string,
+		@Req() req: Request,
+	) {
+		await this.userService.unblockUser(req.user["login"], userLogin);
+		return { success: true };
+	}
+
 	@Post("twofa/generate")
 	@UseGuards(JwtGuard)
 	async generateTwoFA(@Req() req: Request) {

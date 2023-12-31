@@ -103,27 +103,72 @@ export class UserService {
 		});
 	}
 
-	// /!\ For now, adding a friend does not ask for his approval !
+	// /!\ For now, adding a friend is NOT bilateral !
 
 	async addFriendship(loginA: string, loginB: string) {
-		await this.prisma.user.update({
-			where: { login: loginA },
-			data: { friends: { connect: [{ login: loginB }] } },
-		});
-		await this.prisma.user.update({
-			where: { login: loginB },
-			data: { friends: { connect: [{ login: loginA }] } },
-		});
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { friends: { connect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
+		// await this.prisma.user.update({
+		// 	where: { login: loginB },
+		// 	data: { friends: { connect: [{ login: loginA }] } },
+		// });
 	}
 
 	async removeFriendship(loginA: string, loginB: string) {
-		await this.prisma.user.update({
-			where: { login: loginA },
-			data: { friends: { disconnect: [{ login: loginB }] } },
-		});
-		await this.prisma.user.update({
-			where: { login: loginB },
-			data: { friends: { disconnect: [{ login: loginA }] } },
-		});
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { friends: { disconnect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
+		// await this.prisma.user.update({
+		// 	where: { login: loginB },
+		// 	data: { friends: { disconnect: [{ login: loginA }] } },
+		// });
+	}
+
+	async blockUser(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: {
+					blocked: { connect: [{ login: loginB }] },
+					friends: { disconnect: [{ login: loginB }] },
+				},
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
+	}
+
+	async unblockUser(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { blocked: { disconnect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
 	}
 }
