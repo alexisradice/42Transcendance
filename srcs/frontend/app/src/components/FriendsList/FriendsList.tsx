@@ -1,16 +1,17 @@
 import {
 	Button,
 	Center,
-	Input,
 	Loader,
 	Modal,
 	ScrollArea,
 	Stack,
 	Text,
+	TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
+import { AxiosError } from "axios";
 import { useState } from "react";
 import useSWR from "swr";
 import { Friend } from "../../types";
@@ -26,6 +27,9 @@ type Props = {
 const FriendsList = ({ height }: Props) => {
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [addFriendLoading, setAddFriendLoading] = useState<boolean>(false);
+	const [addFriendError, setAddFriendError] = useState<string | undefined>(
+		undefined,
+	);
 	const {
 		data: friends,
 		error,
@@ -54,10 +58,27 @@ const FriendsList = ({ height }: Props) => {
 				friendLogin: values.friendLogin,
 			});
 			setAddFriendLoading(false);
+			setAddFriendError(undefined);
 			close();
 			mutate({ ...friends });
+			form.reset();
 		} catch (err: unknown) {
 			setAddFriendLoading(false);
+			if (err instanceof AxiosError && err.response?.status === 404) {
+				setAddFriendError(err.response?.data.message);
+			} else {
+				errorNotif(err);
+			}
+		}
+	};
+
+	const removeFriend = async (friendLogin: string) => {
+		try {
+			await axiosPrivate.post("user/friends/remove", {
+				friendLogin,
+			});
+			mutate({ ...friends });
+		} catch (err: unknown) {
 			errorNotif(err);
 		}
 	};
@@ -79,7 +100,7 @@ const FriendsList = ({ height }: Props) => {
 						centered
 					>
 						<form onSubmit={form.onSubmit(submitHandler)}>
-							<Input
+							<TextInput
 								placeholder="Type their login to find someone"
 								{...form.getInputProps("friendLogin")}
 								rightSection={
@@ -87,6 +108,7 @@ const FriendsList = ({ height }: Props) => {
 										<Loader type="dots" />
 									) : null
 								}
+								error={addFriendError}
 								disabled={addFriendLoading}
 							/>
 						</form>
@@ -98,7 +120,10 @@ const FriendsList = ({ height }: Props) => {
 									(friend: Friend, index: number) => {
 										return (
 											<li key={index}>
-												<FriendCard friend={friend} />
+												<FriendCard
+													friend={friend}
+													removeFriend={removeFriend}
+												/>
 											</li>
 										);
 									},
@@ -109,6 +134,7 @@ const FriendsList = ({ height }: Props) => {
 					{friends.length === 0 && (
 						<>
 							<Stack
+								visibleFrom="lg"
 								justify="center"
 								align="center"
 								className={classes.noFriendStack}
@@ -121,9 +147,14 @@ const FriendsList = ({ height }: Props) => {
 									leftSection={<IconPlus />}
 									onClick={open}
 								>
-									Add friend
+									<Text>Add friend</Text>
 								</Button>
 							</Stack>
+							<Center style={{ height: "100%" }} hiddenFrom="lg">
+								<Button variant="transparent" onClick={open}>
+									<IconPlus />
+								</Button>
+							</Center>
 						</>
 					)}
 				</>

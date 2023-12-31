@@ -1,31 +1,76 @@
-import { Box, Group, Indicator, Avatar, Text } from "@mantine/core";
-import { getStatusColor, getStatusText } from "../../utils/status";
+import { Avatar, Box, Group, Indicator, Menu, Text, rem } from "@mantine/core";
+import {
+	IconChevronRight,
+	IconDeviceGamepad2,
+	IconMessageCircle,
+} from "@tabler/icons-react";
 import { Friend } from "../../types";
+import { getStatusColor } from "../../utils/status";
 import classes from "./FriendCard.module.css";
 
 type Props = {
 	friend: Friend;
+	removeFriend: (friendLogin: string) => void;
 };
 
-const FriendCard = ({ friend }: Props) => {
+const FriendCard = ({ friend, removeFriend }: Props) => {
 	return (
-		<Box p="xs" className={classes.card}>
-			<Group>
-				<Indicator
-					inline
-					size={12}
-					offset={7}
-					position="bottom-end"
-					color={getStatusColor(friend.status)}
-				>
-					<Avatar size="md" src={friend.image} />
-				</Indicator>
-				<Box visibleFrom="lg">
-					{friend.displayName}
-					<Text size="xs">{getStatusText(friend.status)}</Text>
+		<Menu position="right">
+			<Menu.Target>
+				<Box p="xs" className={classes.card}>
+					<Group align="center">
+						<Indicator
+							inline
+							size={12}
+							offset={7}
+							position="bottom-end"
+							color={getStatusColor(friend.status)}
+						>
+							<Avatar src={friend.image} />
+						</Indicator>
+						<Box style={{ flex: 1 }} visibleFrom="lg">
+							<Text size="md" fw={500}>
+								{friend.displayName}
+							</Text>
+
+							<Text c="dimmed" size="sm">
+								{friend.login}
+							</Text>
+						</Box>
+						<Box visibleFrom="lg">
+							<IconChevronRight size="1rem" />
+						</Box>
+					</Group>
 				</Box>
-			</Group>
-		</Box>
+			</Menu.Target>
+			<Menu.Dropdown>
+				<Menu.Item
+					leftSection={
+						<IconMessageCircle
+							style={{ width: rem(14), height: rem(14) }}
+						/>
+					}
+				>
+					Messages
+				</Menu.Item>
+				<Menu.Item
+					leftSection={
+						<IconDeviceGamepad2
+							style={{ width: rem(14), height: rem(14) }}
+						/>
+					}
+				>
+					Invite to play
+				</Menu.Item>
+				<Menu.Item
+					color="red"
+					onClick={() => removeFriend(friend.login)}
+				>
+					Remove friend
+				</Menu.Item>
+				<Menu.Item color="red">Block friend</Menu.Item>
+			</Menu.Dropdown>
+		</Menu>
 	);
 };
 
