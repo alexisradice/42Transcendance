@@ -21,10 +21,11 @@ const FriendCard = ({ friend, removeFriend }: Props) => {
 					<Group align="center">
 						<Indicator
 							inline
-							size={12}
-							offset={7}
+							size={14}
+							offset={5}
 							position="bottom-end"
 							color={getStatusColor(friend.status)}
+							withBorder
 						>
 							<Avatar src={friend.image} />
 						</Indicator>

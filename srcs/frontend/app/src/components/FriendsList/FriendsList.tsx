@@ -64,7 +64,7 @@ const FriendsList = ({ height }: Props) => {
 			form.reset();
 		} catch (err: unknown) {
 			setAddFriendLoading(false);
-			if (err instanceof AxiosError && err.response?.status === 404) {
+			if (err instanceof AxiosError && err.response?.status === 400) {
 				setAddFriendError(err.response?.data.message);
 			} else {
 				errorNotif(err);

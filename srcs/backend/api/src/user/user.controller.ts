@@ -138,6 +138,9 @@ export class UserController {
 		@Body("friendLogin") friendLogin: string,
 		@Req() req: Request,
 	) {
+		if (req.user["login"] === friendLogin) {
+			throw new HttpException("That's you!", 400);
+		}
 		await this.userService.addFriendship(req.user["login"], friendLogin);
 		return { success: true };
 	}

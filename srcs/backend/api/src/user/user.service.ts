@@ -113,7 +113,7 @@ export class UserService {
 			});
 		} catch (e) {
 			if (e.code === "P2025") {
-				throw new HttpException("This user does not exist.", 404);
+				throw new HttpException("This user does not exist.", 400);
 			}
 			throw e;
 		}
