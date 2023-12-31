@@ -1,10 +1,10 @@
 import {
+	Box,
 	Button,
 	Center,
 	Loader,
 	Modal,
 	ScrollArea,
-	Stack,
 	Text,
 	TextInput,
 } from "@mantine/core";
@@ -83,6 +83,12 @@ const FriendsList = ({ height }: Props) => {
 		}
 	};
 
+	const closeModal = () => {
+		close();
+		form.reset();
+		setAddFriendError(undefined);
+	};
+
 	return (
 		<>
 			{error && <></>}
@@ -95,7 +101,7 @@ const FriendsList = ({ height }: Props) => {
 				<>
 					<Modal
 						opened={addFriendOpened}
-						onClose={close}
+						onClose={closeModal}
 						title="Add new friend"
 						centered
 					>
@@ -113,8 +119,16 @@ const FriendsList = ({ height }: Props) => {
 							/>
 						</form>
 					</Modal>
+					<Center>
+						<Button onClick={open} variant="subtle" fullWidth>
+							<Box hiddenFrom="lg">
+								<IconPlus size="sm" />
+							</Box>
+							<Text visibleFrom="lg">Add a new friend</Text>
+						</Button>
+					</Center>
 					{friends.length > 0 && (
-						<ScrollArea h={height} type="scroll">
+						<ScrollArea h={height - 36} type="scroll">
 							<ul className={classes.list}>
 								{friends.map(
 									(friend: Friend, index: number) => {
@@ -128,32 +142,26 @@ const FriendsList = ({ height }: Props) => {
 										);
 									},
 								)}
+								{/* <li>
+									<FriendCard
+										friend={{
+											displayName: "test",
+											login: "test",
+											image: "test",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+									/>
+								</li> */}
 							</ul>
 						</ScrollArea>
 					)}
 					{friends.length === 0 && (
 						<>
-							<Stack
-								visibleFrom="lg"
-								justify="center"
-								align="center"
-								className={classes.noFriendStack}
-							>
+							<Center className={classes.maxHeight}>
 								<Text fs="italic">
 									It's a bit empty around here.
 								</Text>
-								<Button
-									color="cyan.7"
-									leftSection={<IconPlus />}
-									onClick={open}
-								>
-									<Text>Add friend</Text>
-								</Button>
-							</Stack>
-							<Center style={{ height: "100%" }} hiddenFrom="lg">
-								<Button variant="transparent" onClick={open}>
-									<IconPlus />
-								</Button>
 							</Center>
 						</>
 					)}
