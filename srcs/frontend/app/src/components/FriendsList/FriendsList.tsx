@@ -1,9 +1,6 @@
 import {
-	Avatar,
 	Button,
 	Center,
-	Group,
-	Indicator,
 	Input,
 	Loader,
 	Modal,
@@ -19,8 +16,8 @@ import useSWR from "swr";
 import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
-import { colorFromStatus } from "../../utils/colorFromStatus";
 
 type Props = {
 	height: number;
@@ -100,28 +97,8 @@ const FriendsList = ({ height }: Props) => {
 								{friends.map(
 									(friend: Friend, index: number) => {
 										return (
-											<li
-												className={classes.friend}
-												key={index}
-											>
-												<Group>
-													<Indicator
-														inline
-														size={12}
-														offset={7}
-														position="bottom-end"
-														color={colorFromStatus(
-															friend.status,
-														)}
-														withBorder
-													>
-														<Avatar
-															size="md"
-															src={friend.image}
-														/>
-													</Indicator>
-													{friend.displayName}
-												</Group>
+											<li key={index}>
+												<FriendCard friend={friend} />
 											</li>
 										);
 									},
