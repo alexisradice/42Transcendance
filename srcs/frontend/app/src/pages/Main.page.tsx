@@ -76,7 +76,20 @@ export function MainPage() {
 					</div>
 				</div>
 			) : (
-				<LoginModal setIsLogged={setIsLogged} />
+				<>
+					<LoginModal setIsLogged={setIsLogged} />
+					<div className={classes.main}>
+						<div className={classes.header}></div>
+						<div ref={ref} className={classes.channelsList}></div>
+						<div
+							className={classes.friendsList}
+							style={{ height: channelsHeight }}
+						></div>
+						<main className={classes.mainFrame}></main>
+						<div className={classes.chatArea}></div>
+						<div className={classes.footer}></div>
+					</div>
+				</>
 			)}
 		</>
 	);
