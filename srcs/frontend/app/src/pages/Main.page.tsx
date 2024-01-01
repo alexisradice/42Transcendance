@@ -13,11 +13,7 @@ import classes from "./Main.module.css";
 import { Socket, io } from "socket.io-client";
 
 export function MainPage() {
-	const [chatSocket] = useState<Socket>(
-		io(`${import.meta.env.VITE_API_URL}/chat`, {
-			query: { token: jwtToken() },
-		}),
-	);
+	const [chatSocket, setChatSocket] = useState<Socket | null>(null);
 	const { ref, height: channelsHeight } = useElementSize();
 	const [selectedChannel, setSelectedChannel] = useState<Channel>({
 		id: -1,
@@ -27,12 +23,20 @@ export function MainPage() {
 	const [isLogged, setIsLogged] = useState(isLoggedCookie());
 
 	useEffect(() => {
+		if (isLogged && !chatSocket) {
+			setChatSocket(
+				io(`${import.meta.env.VITE_API_URL}/chat`, {
+					query: { token: jwtToken() },
+				}),
+			);
+		}
 		return () => {
-			chatSocket.disconnect();
+			chatSocket?.disconnect();
 		};
-	}, [chatSocket]);
+	}, [chatSocket, isLogged]);
 
 	const joinChannel = (channel: Channel) => {
+		chatSocket?.emit("join-chatroom", channel.id);
 		setSelectedChannel(channel);
 	};
 

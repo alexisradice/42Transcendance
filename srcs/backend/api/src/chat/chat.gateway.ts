@@ -7,6 +7,7 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 } from "@nestjs/websockets";
+import { Channel } from "@prisma/client";
 import { Socket } from "socket.io";
 import { UserService } from "src/user/user.service";
 
@@ -39,6 +40,16 @@ export class ChatGateway implements OnGatewayConnection {
 			console.error(e);
 			client.disconnect();
 		}
+	}
+
+	@SubscribeMessage("join-chatroom")
+	handleJoinChatroom(
+		@ConnectedSocket() socket: Socket,
+		@MessageBody() channel: Channel,
+	): string {
+		socket.join(channel.id);
+		// TODO: verify if user is allowed to join the channel
+		return channel.id;
 	}
 
 	@SubscribeMessage("message")

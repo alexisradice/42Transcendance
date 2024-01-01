@@ -45,18 +45,18 @@ model Message {
 }
 
 model Channel {
-    id          String    @id @default(uuid())
-    createdAt   DateTime  @default(now())
-    updatedAt   DateTime  @updatedAt
-    name        String
-    messages    Message[]
-    users       User[]
-    admins      User[]    @relation("admins")
-    owner       User      @relation("ownership", fields: [ownerId], references: [id])
-    ownerId     String
-    isDM        Boolean   @default(false)
-    isProtected Boolean   @default(false)
-    password    String?
+    id         String            @id @default(uuid())
+    createdAt  DateTime          @default(now())
+    updatedAt  DateTime          @updatedAt
+    name       String
+    messages   Message[]
+    users      User[]
+    admins     User[]            @relation("admins")
+    owner      User              @relation("ownership", fields: [ownerId], references: [id])
+    ownerId    String
+    isDM       Boolean           @default(false)
+    visibility ChannelVisibility @default(PUBLIC)
+    password   String?
 }
 
 model Stat {
@@ -78,4 +78,10 @@ enum Roles {
     OWNER
     ADMIN
     MEMBER
+}
+
+enum ChannelVisibility {
+    PUBLIC
+    PRIVATE
+    PROTECTED
 }

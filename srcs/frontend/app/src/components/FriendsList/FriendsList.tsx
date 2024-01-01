@@ -23,7 +23,7 @@ import { Socket } from "socket.io-client";
 
 type Props = {
 	height: number;
-	chatSocket: Socket;
+	chatSocket: Socket | null;
 };
 
 const FriendsList = ({ height, chatSocket }: Props) => {
@@ -103,7 +103,7 @@ const FriendsList = ({ height, chatSocket }: Props) => {
 	};
 
 	const openChat = (friendLogin: string) => {
-		chatSocket.emit("join", friendLogin);
+		chatSocket?.emit("join", friendLogin);
 	};
 
 	return (

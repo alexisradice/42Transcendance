@@ -3,9 +3,7 @@ export const isLoggedCookie = () => {
 };
 
 export const jwtToken = () => {
-	const jwt = readCookie("jwtToken");
-	console.log("jwt", jwt);
-	return jwt;
+	return readCookie("jwtToken");
 };
 
 const readCookie = (name: string) => {

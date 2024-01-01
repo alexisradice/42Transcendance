@@ -21,6 +21,7 @@ export type Tokens = {
 
 export type Payload = {
 	sub: string;
+	id: string;
 };
 
 export const ACCESS_TOKEN_FLAG = true;
