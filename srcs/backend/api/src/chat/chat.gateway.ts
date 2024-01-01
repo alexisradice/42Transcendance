@@ -1,10 +1,14 @@
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import {
 	ConnectedSocket,
 	MessageBody,
+	OnGatewayConnection,
 	SubscribeMessage,
 	WebSocketGateway,
 } from "@nestjs/websockets";
 import { Socket } from "socket.io";
+import { UserService } from "src/user/user.service";
 
 @WebSocketGateway({
 	cors: {
@@ -12,7 +16,31 @@ import { Socket } from "socket.io";
 	},
 	namespace: "chat",
 })
-export class ChatGateway {
+export class ChatGateway implements OnGatewayConnection {
+	constructor(
+		private jwtService: JwtService,
+		private configService: ConfigService,
+		private userService: UserService,
+	) {}
+
+	async handleConnection(client: Socket) {
+		const jwtToken = client.handshake.query.token;
+		const token = Array.isArray(jwtToken) ? jwtToken[0] : jwtToken;
+		try {
+			const user = this.jwtService.verify(token, {
+				secret: this.configService.get<string>("JWT_SECRET"),
+			});
+			if (!user) {
+				client.disconnect();
+			}
+			const dbUser = await this.userService.findOne({ login: user.sub });
+			client.data.user = dbUser;
+		} catch (e) {
+			console.error(e);
+			client.disconnect();
+		}
+	}
+
 	@SubscribeMessage("message")
 	handleMessage(
 		@ConnectedSocket() socket: Socket,

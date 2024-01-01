@@ -8,13 +8,15 @@ import Header from "../components/Header/Header";
 import LoginModal from "../components/LoginModal/LoginModal";
 import MainFrame from "../components/MainFrame/MainFrame";
 import { Channel } from "../types";
-import { isLoggedCookie } from "../utils/readCookie";
+import { isLoggedCookie, jwtToken } from "../utils/readCookie";
 import classes from "./Main.module.css";
 import { Socket, io } from "socket.io-client";
 
 export function MainPage() {
 	const [chatSocket] = useState<Socket>(
-		io(`${import.meta.env.VITE_API_URL}/chat`),
+		io(`${import.meta.env.VITE_API_URL}/chat`, {
+			query: { token: jwtToken() },
+		}),
 	);
 	const { ref, height: channelsHeight } = useElementSize();
 	const [selectedChannel, setSelectedChannel] = useState<Channel>({
