@@ -1,5 +1,4 @@
 import {
-	Box,
 	Button,
 	Center,
 	Loader,
@@ -13,13 +12,13 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
+import { Socket } from "socket.io-client";
 import useSWR from "swr";
 import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
-import { Socket } from "socket.io-client";
 
 type Props = {
 	height: number;
@@ -108,10 +107,9 @@ const FriendsList = ({ height, chatSocket }: Props) => {
 
 	return (
 		<>
-			{error && <></>}
 			{!error && isLoading && (
 				<Center>
-					<Loader />
+					<Loader type="dots" />
 				</Center>
 			)}
 			{!error && !isLoading && (
@@ -138,10 +136,8 @@ const FriendsList = ({ height, chatSocket }: Props) => {
 					</Modal>
 					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
-							<Box hiddenFrom="lg">
-								<IconPlus size={16} />
-							</Box>
-							<Text visibleFrom="lg">Add a new friend</Text>
+							<IconPlus size={16} />
+							<Text visibleFrom="lg">&nbsp;Add a new friend</Text>
 						</Button>
 					</Center>
 					{friends.length > 0 && (

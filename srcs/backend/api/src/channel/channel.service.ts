@@ -6,8 +6,8 @@ import { PrismaService } from "src/prisma/prisma.service";
 export class ChannelService {
 	constructor(private prisma: PrismaService) {}
 
-	getChannelList(login: string) {
-		return this.prisma.channel.findMany({
+	async getChannelList(login: string) {
+		return await this.prisma.channel.findMany({
 			where: {
 				OR: [
 					{ visibility: ChannelVisibility.PUBLIC },
@@ -17,16 +17,28 @@ export class ChannelService {
 		});
 	}
 
-	// createChannel(login: string, channelName: string) {
-	// 	return this.prisma.channel.create({
-	// 		data: {
-	// 			name: channelName,
-	// 			users: {
-	// 				connect: {
-	// 					login: login,
-	// 				},
-	// 			},
-	// 		},
-	// 	});
-	// }
+	async createChannel(
+		id: string,
+		name: string,
+		visibility: ChannelVisibility,
+		password: string,
+	) {
+		return await this.prisma.channel.create({
+			data: {
+				name,
+				owner: {
+					connect: {
+						id,
+					},
+				},
+				users: {
+					connect: {
+						id,
+					},
+				},
+				visibility,
+				password,
+			},
+		});
+	}
 }
