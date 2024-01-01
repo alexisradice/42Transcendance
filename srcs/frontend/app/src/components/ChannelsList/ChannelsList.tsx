@@ -7,11 +7,11 @@ import classes from "./ChannelsList.module.css";
 
 type Props = {
 	height: number;
-	setSelectedChannel: Dispatch<SetStateAction<Channel>>;
+	joinChannel: (channel: Channel) => void;
 	setChatOpened: Dispatch<SetStateAction<boolean>>;
 };
 
-const ChannelsList = ({ height, setSelectedChannel, setChatOpened }: Props) => {
+const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 	const { data, error, isLoading } = useSWR("/channel/list", fetcherPrivate);
 
 	return (
@@ -25,7 +25,7 @@ const ChannelsList = ({ height, setSelectedChannel, setChatOpened }: Props) => {
 								key={channel.id}
 								className={classes.item}
 								onClick={() => {
-									setSelectedChannel(channel);
+									joinChannel(channel);
 									setChatOpened(true);
 								}}
 							>

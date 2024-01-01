@@ -1,5 +1,5 @@
 import { useElementSize } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChannelsList from "../components/ChannelsList/ChannelsList";
 import ChatArea from "../components/ChatArea/ChatArea";
 import Footer from "../components/Footer/Footer";
@@ -10,8 +10,12 @@ import MainFrame from "../components/MainFrame/MainFrame";
 import { Channel } from "../types";
 import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
+import { Socket, io } from "socket.io-client";
 
 export function MainPage() {
+	const [chatSocket] = useState<Socket>(
+		io(`${import.meta.env.VITE_API_URL}/chat`),
+	);
 	const { ref, height: channelsHeight } = useElementSize();
 	const [selectedChannel, setSelectedChannel] = useState<Channel>({
 		id: -1,
@@ -19,6 +23,16 @@ export function MainPage() {
 	});
 	const [chatOpened, setChatOpened] = useState(false);
 	const [isLogged, setIsLogged] = useState(isLoggedCookie());
+
+	useEffect(() => {
+		return () => {
+			chatSocket.disconnect();
+		};
+	}, [chatSocket]);
+
+	const joinChannel = (channel: Channel) => {
+		setSelectedChannel(channel);
+	};
 
 	return (
 		<>
@@ -35,7 +49,7 @@ export function MainPage() {
 					<div ref={ref} className={classes.channelsList}>
 						<ChannelsList
 							height={channelsHeight - 5}
-							setSelectedChannel={setSelectedChannel}
+							joinChannel={joinChannel}
 							setChatOpened={setChatOpened}
 						/>
 					</div>
@@ -43,7 +57,10 @@ export function MainPage() {
 						className={classes.friendsList}
 						style={{ height: channelsHeight }}
 					>
-						<FriendsList height={channelsHeight - 5} />
+						<FriendsList
+							chatSocket={chatSocket}
+							height={channelsHeight - 5}
+						/>
 					</div>
 					<main className={classes.mainFrame}>
 						<MainFrame />

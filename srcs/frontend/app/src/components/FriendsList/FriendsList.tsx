@@ -19,12 +19,14 @@ import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
+import { Socket } from "socket.io-client";
 
 type Props = {
 	height: number;
+	chatSocket: Socket;
 };
 
-const FriendsList = ({ height }: Props) => {
+const FriendsList = ({ height, chatSocket }: Props) => {
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [addFriendLoading, setAddFriendLoading] = useState<boolean>(false);
 	const [addFriendError, setAddFriendError] = useState<string | undefined>(
@@ -100,6 +102,10 @@ const FriendsList = ({ height }: Props) => {
 		setAddFriendError(undefined);
 	};
 
+	const openChat = (friendLogin: string) => {
+		chatSocket.emit("join", friendLogin);
+	};
+
 	return (
 		<>
 			{error && <></>}
@@ -146,6 +152,7 @@ const FriendsList = ({ height }: Props) => {
 										return (
 											<li key={index}>
 												<FriendCard
+													openChat={openChat}
 													friend={friend}
 													removeFriend={removeFriend}
 													blockFriend={blockFriend}
@@ -154,17 +161,6 @@ const FriendsList = ({ height }: Props) => {
 										);
 									},
 								)}
-								{/* <li>
-									<FriendCard
-										friend={{
-											displayName: "test",
-											login: "test",
-											image: "test",
-											status: "ONLINE",
-										}}
-										removeFriend={removeFriend}
-									/>
-								</li> */}
 							</ul>
 						</ScrollArea>
 					)}
