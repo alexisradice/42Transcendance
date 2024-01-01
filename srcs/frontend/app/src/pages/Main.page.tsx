@@ -36,7 +36,7 @@ export function MainPage() {
 	}, [chatSocket, isLogged]);
 
 	const joinChannel = (channel: Channel) => {
-		chatSocket?.emit("join-chatroom", channel.id);
+		chatSocket?.emit("join-chatroom", channel);
 		setSelectedChannel(channel);
 	};
 
@@ -75,7 +75,10 @@ export function MainPage() {
 						className={classes.chatArea}
 						style={{ display: chatOpened ? "block" : "none" }}
 					>
-						<ChatArea selectedChannel={selectedChannel} />
+						<ChatArea
+							selectedChannel={selectedChannel}
+							chatSocket={chatSocket}
+						/>
 					</div>
 					<div className={classes.footer}>
 						<Footer />

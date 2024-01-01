@@ -6,9 +6,10 @@ import {
 	OnGatewayConnection,
 	SubscribeMessage,
 	WebSocketGateway,
+	WebSocketServer,
 } from "@nestjs/websockets";
 import { Channel } from "@prisma/client";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { UserService } from "src/user/user.service";
 
 @WebSocketGateway({
@@ -24,7 +25,11 @@ export class ChatGateway implements OnGatewayConnection {
 		private userService: UserService,
 	) {}
 
+	@WebSocketServer()
+	server: Server;
+
 	async handleConnection(client: Socket) {
+		console.log("connected to chat");
 		const jwtToken = client.handshake.query.token;
 		const token = Array.isArray(jwtToken) ? jwtToken[0] : jwtToken;
 		try {
@@ -44,20 +49,28 @@ export class ChatGateway implements OnGatewayConnection {
 
 	@SubscribeMessage("join-chatroom")
 	handleJoinChatroom(
-		@ConnectedSocket() socket: Socket,
+		@ConnectedSocket() client: Socket,
 		@MessageBody() channel: Channel,
 	): string {
-		socket.join(channel.id);
+		console.log("joined room " + channel.id);
+		// client.data.user ==> infos user
+		// TODO: find channel in db with channel id
+		client.join(channel.id);
 		// TODO: verify if user is allowed to join the channel
 		return channel.id;
 	}
 
-	@SubscribeMessage("message")
+	@SubscribeMessage("send-message")
 	handleMessage(
-		@ConnectedSocket() socket: Socket,
-		@MessageBody() payload: { message: string; room: string },
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { message: string; channel: string },
 	): string {
-		socket.to(payload.room).emit("message", payload.message);
-		return payload.message;
+		const { message, channel } = payload;
+		console.log('received message "' + message + '"');
+		console.log('sending to room "' + channel + '"');
+		// TODO: Ajouter le message en DB
+		// TODO: renvoyer l'objet Message de la DB au lieu de la string
+		this.server.to(channel).emit("display-message", message);
+		return message;
 	}
 }
