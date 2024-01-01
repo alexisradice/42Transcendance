@@ -133,7 +133,7 @@ const FriendsList = ({ height }: Props) => {
 					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
 							<Box hiddenFrom="lg">
-								<IconPlus size="sm" />
+								<IconPlus size={16} />
 							</Box>
 							<Text visibleFrom="lg">Add a new friend</Text>
 						</Button>
@@ -170,7 +170,10 @@ const FriendsList = ({ height }: Props) => {
 					)}
 					{friends.length === 0 && (
 						<>
-							<Center className={classes.maxHeight}>
+							<Center
+								className={classes.maxHeight}
+								visibleFrom="lg"
+							>
 								<Text fs="italic">
 									It's a bit empty around here.
 								</Text>

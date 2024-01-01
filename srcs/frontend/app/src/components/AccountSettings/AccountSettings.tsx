@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useMyData } from "../../hooks/useMyData";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
+import BlockedUsers from "../BlockedUsers/BlockedUsers";
 import PinCodeValidator from "../PinCodeValidator/PinCodeValidator";
 
 type Props = {
@@ -57,6 +58,11 @@ const AccountSettings = ({ opened, close }: Props) => {
 		twoFAStatusChange("2FA successfully deactivated");
 	};
 
+	const resetModal = () => {
+		setQrCode(null);
+		setDeactivationPinCode(false);
+	};
+
 	return (
 		<Modal
 			radius="md"
@@ -64,10 +70,7 @@ const AccountSettings = ({ opened, close }: Props) => {
 			opened={opened}
 			onClose={() => {
 				close();
-				setTimeout(() => {
-					setQrCode(null);
-					setDeactivationPinCode(false);
-				}, 500);
+				setTimeout(resetModal, 500);
 			}}
 			title="Account Settings"
 			overlayProps={{
@@ -128,6 +131,7 @@ const AccountSettings = ({ opened, close }: Props) => {
 							/>
 						</>
 					)}
+					<BlockedUsers />
 				</>
 			)}
 		</Modal>
