@@ -1,0 +1,17 @@
+.card {
+	@media (min-width: 1200px) {
+		margin: 0.5rem;
+	}
+	border-radius: 0.5rem;
+}
+
+.card:hover {
+	cursor: pointer;
+	@mixin light {
+		background-color: var(--mantine-color-gray-3);
+	}
+
+	@mixin dark {
+		background-color: var(--mantine-color-dark-4);
+	}
+}

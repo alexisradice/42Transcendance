@@ -1,41 +1,24 @@
-import { createRef, useEffect, useState } from "react";
+import { useElementSize } from "@mantine/hooks";
+import { useState } from "react";
 import ChannelsList from "../components/ChannelsList/ChannelsList";
+import ChatArea from "../components/ChatArea/ChatArea";
 import Footer from "../components/Footer/Footer";
 import FriendsList from "../components/FriendsList/FriendsList";
 import Header from "../components/Header/Header";
 import LoginModal from "../components/LoginModal/LoginModal";
 import MainFrame from "../components/MainFrame/MainFrame";
-import RightDrawer from "../components/RightDrawer/RightDrawer";
+import { Channel } from "../types";
 import { isLoggedCookie } from "../utils/readCookie";
 import classes from "./Main.module.css";
-import { Channel } from "../types";
 
 export function MainPage() {
+	const { ref, height: channelsHeight } = useElementSize();
 	const [selectedChannel, setSelectedChannel] = useState<Channel>({
 		id: -1,
 		name: "",
 	});
 	const [chatOpened, setChatOpened] = useState(false);
-	const [, setWindowSize] = useState([0, 0]);
-	const leftSectionRef = createRef<HTMLDivElement>();
-	const [leftSectionHeight, setLeftSectionHeight] = useState(0);
 	const [isLogged, setIsLogged] = useState(isLoggedCookie());
-
-	useEffect(() => {
-		const updateSize = () => {
-			setWindowSize([window.innerWidth, window.innerHeight]);
-		};
-		window.addEventListener("resize", updateSize);
-		return () => {
-			window.removeEventListener("resize", updateSize);
-		};
-	}, []);
-
-	useEffect(() => {
-		if (leftSectionRef.current) {
-			setLeftSectionHeight(leftSectionRef.current?.clientHeight);
-		}
-	}, [leftSectionRef]);
 
 	return (
 		<>
@@ -49,24 +32,27 @@ export function MainPage() {
 							selectedChannel={selectedChannel.id !== -1}
 						/>
 					</div>
-					<div ref={leftSectionRef} className={classes.channelsList}>
+					<div ref={ref} className={classes.channelsList}>
 						<ChannelsList
-							height={leftSectionHeight - 5}
+							height={channelsHeight - 5}
 							setSelectedChannel={setSelectedChannel}
 							setChatOpened={setChatOpened}
 						/>
 					</div>
-					<div className={classes.friendsList}>
-						<FriendsList height={leftSectionHeight - 5} />
+					<div
+						className={classes.friendsList}
+						style={{ height: channelsHeight }}
+					>
+						<FriendsList height={channelsHeight - 5} />
 					</div>
 					<main className={classes.mainFrame}>
 						<MainFrame />
 					</main>
 					<div
-						className={classes.rightDrawer}
+						className={classes.chatArea}
 						style={{ display: chatOpened ? "block" : "none" }}
 					>
-						<RightDrawer selectedChannel={selectedChannel} />
+						<ChatArea selectedChannel={selectedChannel} />
 					</div>
 					<div className={classes.footer}>
 						<Footer />

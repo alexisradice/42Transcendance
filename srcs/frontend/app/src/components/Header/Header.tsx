@@ -24,12 +24,6 @@ export default function Header({
 	if (error) {
 		errorNotif(error);
 	}
-	const getImageSrc = (image: string) => {
-		if (image.startsWith("http")) {
-			return image;
-		}
-		return `data:image/jpeg;base64,${image}`;
-	};
 	return (
 		<div className={classes.header}>
 			<div className={classes.subsection}>
@@ -53,7 +47,7 @@ export default function Header({
 						<div>Howdy, {user.displayName}</div>
 						<UserMenu setIsLogged={setIsLogged}>
 							<Avatar
-								src={getImageSrc(user.image)}
+								src={user.image}
 								alt="avatar"
 								size="lg"
 								className={classes.avatar}

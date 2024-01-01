@@ -13,6 +13,12 @@
 	a:hover {
 		text-decoration: underline;
 	}
+
+	ul {
+		padding: 0px;
+		margin: 0px;
+		list-style-type: none;
+	}
 }
 
 .main {
@@ -61,7 +67,7 @@
 	grid-area: 3 / 1 / 4 / 2;
 }
 
-.rightDrawer {
+.chatArea {
 	composes: contentBlock;
 	width: 340px;
 	grid-area: 2 / 3 / 4 / 4;
@@ -70,10 +76,10 @@
 @media (max-width: 1200px) {
 	.channelsList,
 	.friendsList {
-		width: 40px;
+		width: 55px;
 	}
 
-	.rightDrawer {
+	.chatArea {
 		width: 250px;
 	}
 }
@@ -81,9 +87,9 @@
 @media (max-width: 768px) {
 	.channelsList,
 	.friendsList {
-		width: 40px;
+		width: 55px;
 	}
-	.rightDrawer {
+	.chatArea {
 		display: none;
 	}
 }

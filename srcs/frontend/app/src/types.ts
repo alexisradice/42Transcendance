@@ -4,11 +4,12 @@ export type Channel = {
 };
 
 export type Message = {
-	id: number;
+	id: string;
+	createdAt: string;
+	updatedAt: string;
 	content: string;
-	sender: string;
-	createdAt: Date;
-	updatedAt: Date | null;
+	author: Partial<User>;
+	channel: Channel;
 };
 
 export type User = {
@@ -16,6 +17,13 @@ export type User = {
 	displayName: string;
 	image: string;
 	twoFA: boolean;
+};
+
+export type Friend = {
+	login: string;
+	displayName: string;
+	image: string;
+	status: string;
 };
 
 export type ProfileSettings = {

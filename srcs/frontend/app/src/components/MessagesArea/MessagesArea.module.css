@@ -1,0 +1,13 @@
+.mainContainer {
+	flex: 1;
+	height: 0%;
+}
+
+.messageBubbleSelf {
+	@mixin dark {
+		background-color: var(--mantine-color-indigo-9);
+	}
+	@mixin light {
+		background-color: var(--mantine-color-indigo-1);
+	}
+}

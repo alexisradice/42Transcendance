@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from "@nestjs/common";
-import { User } from "@prisma/client";
+import { User, Status } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import {
 	FindOneCriteria as FindOneParam,
@@ -10,6 +10,23 @@ import {
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) {}
+
+	async searchUser(searchString: string) {
+		const users = await this.prisma.user.findMany({
+			where: {
+				login: {
+					contains: searchString,
+				},
+			},
+			select: {
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+		});
+		return users;
+	}
 
 	async findOne(param: FindOneParam) {
 		const user = await this.prisma.user.findFirst({
@@ -68,13 +85,114 @@ export class UserService {
 		const pngMagicNumber = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 
 		// Compare the read magic number with known magic numbers
-		if (
-			magicNumberBuffer.subarray(0, 2).equals(jpegMagicNumber) ||
-			magicNumberBuffer.equals(pngMagicNumber)
-		) {
-			return true;
+		if (magicNumberBuffer.subarray(0, 2).equals(jpegMagicNumber)) {
+			return "jpeg";
+		} else if (magicNumberBuffer.equals(pngMagicNumber)) {
+			return "png";
 		} else {
-			return false;
+			return null;
+		}
+	}
+
+	async updateStatus(login: string, status: Status) {
+		await this.prisma.user.update({
+			where: { login },
+			data: {
+				status: status,
+			},
+		});
+	}
+
+	async isBlocked(loginA: string, loginB: string) {
+		const user = await this.prisma.user.findFirst({
+			where: { login: loginA },
+			select: {
+				blocked: {
+					where: { login: loginB },
+				},
+			},
+		});
+		return user.blocked.length > 0;
+	}
+
+	async isBlockedBy(loginA: string, loginB: string) {
+		const user = await this.prisma.user.findFirst({
+			where: { login: loginB },
+			select: {
+				blocked: {
+					where: { login: loginA },
+				},
+			},
+		});
+		return user.blocked.length > 0;
+	}
+
+	// /!\ For now, adding a friend is NOT bilateral !
+
+	async addFriendship(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { friends: { connect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 400);
+			}
+			throw e;
+		}
+		// await this.prisma.user.update({
+		// 	where: { login: loginB },
+		// 	data: { friends: { connect: [{ login: loginA }] } },
+		// });
+	}
+
+	async removeFriendship(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { friends: { disconnect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
+		// await this.prisma.user.update({
+		// 	where: { login: loginB },
+		// 	data: { friends: { disconnect: [{ login: loginA }] } },
+		// });
+	}
+
+	async blockUser(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: {
+					blocked: { connect: [{ login: loginB }] },
+					friends: { disconnect: [{ login: loginB }] },
+				},
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
+		}
+	}
+
+	async unblockUser(loginA: string, loginB: string) {
+		try {
+			await this.prisma.user.update({
+				where: { login: loginA },
+				data: { blocked: { disconnect: [{ login: loginB }] } },
+			});
+		} catch (e) {
+			if (e.code === "P2025") {
+				throw new HttpException("This user does not exist.", 404);
+			}
+			throw e;
 		}
 	}
 }
