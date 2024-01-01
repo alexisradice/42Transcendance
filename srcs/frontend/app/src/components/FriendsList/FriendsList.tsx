@@ -51,7 +51,7 @@ const FriendsList = ({ height }: Props) => {
 		},
 	});
 
-	const submitHandler = async (values: { friendLogin: string }) => {
+	const addFriend = async (values: { friendLogin: string }) => {
 		setAddFriendLoading(true);
 		try {
 			await axiosPrivate.post("user/friends/add", {
@@ -116,7 +116,7 @@ const FriendsList = ({ height }: Props) => {
 						title="Add new friend"
 						centered
 					>
-						<form onSubmit={form.onSubmit(submitHandler)}>
+						<form onSubmit={form.onSubmit(addFriend)}>
 							<TextInput
 								placeholder="Type their login to find someone"
 								{...form.getInputProps("friendLogin")}

@@ -138,10 +138,22 @@ export class UserController {
 		@Body("friendLogin") friendLogin: string,
 		@Req() req: Request,
 	) {
-		if (req.user["login"] === friendLogin) {
+		const login = req.user["login"];
+		if (login === friendLogin) {
 			throw new HttpException("That's you!", 400);
 		}
-		await this.userService.addFriendship(req.user["login"], friendLogin);
+		const isBlocked = await this.userService.isBlocked(login, friendLogin);
+		if (isBlocked) {
+			throw new HttpException("You blocked this user.", 400);
+		}
+		const isBlockedBy = await this.userService.isBlockedBy(
+			login,
+			friendLogin,
+		);
+		if (isBlockedBy) {
+			throw new HttpException("This user blocked you.", 400);
+		}
+		await this.userService.addFriendship(login, friendLogin);
 		return { success: true };
 	}
 
