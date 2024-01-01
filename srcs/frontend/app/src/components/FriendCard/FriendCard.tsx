@@ -11,9 +11,26 @@ import classes from "./FriendCard.module.css";
 type Props = {
 	friend: Friend;
 	removeFriend: (friendLogin: string) => void;
+	blockFriend: (friendLogin: string) => void;
 };
 
-const FriendCard = ({ friend, removeFriend }: Props) => {
+const FriendCard = ({ friend, removeFriend, blockFriend }: Props) => {
+	const handleRemove = () => {
+		if (
+			window.confirm(`Are you sure you want to remove ${friend.login}?`)
+		) {
+			removeFriend(friend.login);
+		}
+	};
+	const handleBlock = () => {
+		if (
+			window.confirm(
+				`Are you sure you want to block ${friend.login}? This will also remove them from your friends list.`,
+			)
+		) {
+			blockFriend(friend.login);
+		}
+	};
 	return (
 		<Menu position="right">
 			<Menu.Target>
@@ -35,7 +52,7 @@ const FriendCard = ({ friend, removeFriend }: Props) => {
 							</Text>
 
 							<Text c="dimmed" size="sm">
-								{friend.login}
+								@{friend.login}
 							</Text>
 						</Box>
 						<Box visibleFrom="lg">
@@ -63,13 +80,12 @@ const FriendCard = ({ friend, removeFriend }: Props) => {
 				>
 					Invite to play
 				</Menu.Item>
-				<Menu.Item
-					color="red"
-					onClick={() => removeFriend(friend.login)}
-				>
+				<Menu.Item color="red" onClick={handleRemove}>
 					Remove friend
 				</Menu.Item>
-				<Menu.Item color="red">Block friend</Menu.Item>
+				<Menu.Item color="red" onClick={handleBlock}>
+					Block friend
+				</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>
 	);

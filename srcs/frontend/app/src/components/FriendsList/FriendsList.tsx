@@ -83,6 +83,17 @@ const FriendsList = ({ height }: Props) => {
 		}
 	};
 
+	const blockFriend = async (friendLogin: string) => {
+		try {
+			await axiosPrivate.post("user/block", {
+				userLogin: friendLogin,
+			});
+			mutate({ ...friends });
+		} catch (err: unknown) {
+			errorNotif(err);
+		}
+	};
+
 	const closeModal = () => {
 		close();
 		form.reset();
@@ -137,6 +148,7 @@ const FriendsList = ({ height }: Props) => {
 												<FriendCard
 													friend={friend}
 													removeFriend={removeFriend}
+													blockFriend={blockFriend}
 												/>
 											</li>
 										);
