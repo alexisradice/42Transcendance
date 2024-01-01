@@ -104,27 +104,41 @@ export class UserService {
 	}
 
 	async isBlocked(loginA: string, loginB: string) {
-		const user = await this.prisma.user.findFirst({
-			where: { login: loginA },
-			select: {
-				blocked: {
-					where: { login: loginB },
+		try {
+			const user = await this.prisma.user.findFirst({
+				where: { login: loginA },
+				select: {
+					blocked: {
+						where: { login: loginB },
+					},
 				},
-			},
-		});
-		return user.blocked.length > 0;
+			});
+			return user.blocked?.length > 0;
+		} catch (e) {
+			if (e.code === "P2025") {
+				return false;
+			}
+			throw e;
+		}
 	}
 
 	async isBlockedBy(loginA: string, loginB: string) {
-		const user = await this.prisma.user.findFirst({
-			where: { login: loginB },
-			select: {
-				blocked: {
-					where: { login: loginA },
+		try {
+			const user = await this.prisma.user.findFirst({
+				where: { login: loginB },
+				select: {
+					blocked: {
+						where: { login: loginA },
+					},
 				},
-			},
-		});
-		return user.blocked.length > 0;
+			});
+			return user?.blocked?.length > 0;
+		} catch (e) {
+			if (e.code === "P2025") {
+				return false;
+			}
+			throw e;
+		}
 	}
 
 	// /!\ For now, adding a friend is NOT bilateral !
