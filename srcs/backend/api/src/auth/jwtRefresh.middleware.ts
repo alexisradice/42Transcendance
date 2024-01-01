@@ -23,7 +23,6 @@ export class JwtRefreshMiddleware implements NestMiddleware {
 				await this.authService.refreshTokens(refreshToken);
 			res.cookie("jwtToken", jwtToken, {
 				maxAge: 15 * 60 * 1000, // 15 minutes
-				httpOnly: true,
 			});
 			req.cookies.jwtToken = jwtToken;
 		} else {
@@ -37,7 +36,6 @@ export class JwtRefreshMiddleware implements NestMiddleware {
 						await this.authService.refreshTokens(refreshToken);
 					res.cookie("jwtToken", jwtToken, {
 						maxAge: 15 * 60 * 1000, // 15 minutes
-						httpOnly: true,
 					});
 					req.cookies.jwtToken = jwtToken;
 				} else {
