@@ -8,8 +8,6 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 } from "@nestjs/websockets";
-import { Channel } from "@prisma/client";
-import { channel } from "diagnostics_channel";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { UserService } from "src/user/user.service";
@@ -61,6 +59,7 @@ export class ChatGateway implements OnGatewayConnection {
 		if (this.channelService.isUserInChannel(user, channelId)) {
 			console.log("User already in channel, joining " + channelId);
 			client.join(channelId);
+			return channelId;
 		}
 		// check if user isnt banned in channel
 		const isAllowedInChannel = await this.channelService.checkPermissions(

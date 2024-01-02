@@ -16,7 +16,7 @@ const MessagesArea = ({ messages }: Props) => {
 	const mainContainerRef = createRef<HTMLDivElement>();
 
 	const scrollToBottom = () =>
-		viewport.current!.scrollTo({
+		viewport.current?.scrollTo({
 			top: viewport.current!.scrollHeight,
 			behavior: "smooth",
 		});

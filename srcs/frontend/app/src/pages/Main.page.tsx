@@ -11,6 +11,7 @@ import { Channel } from "../types";
 import { isLoggedCookie, jwtToken } from "../utils/readCookie";
 import classes from "./Main.module.css";
 import { Socket, io } from "socket.io-client";
+import { axiosPrivate } from "../utils/fetcher";
 
 export function MainPage() {
 	const [chatSocket, setChatSocket] = useState<Socket | null>(null);
@@ -18,17 +19,25 @@ export function MainPage() {
 	const [selectedChannel, setSelectedChannel] = useState<Channel>({
 		id: -1,
 		name: "",
+		visibility: "",
 	});
 	const [chatOpened, setChatOpened] = useState(false);
 	const [isLogged, setIsLogged] = useState(isLoggedCookie());
 
 	useEffect(() => {
 		if (isLogged && !chatSocket) {
-			setChatSocket(
-				io(`${import.meta.env.VITE_API_URL}/chat`, {
-					query: { token: jwtToken() },
-				}),
-			);
+			axiosPrivate
+				.get("/user/me")
+				.then(() => {
+					setChatSocket(
+						io(`${import.meta.env.VITE_API_URL}/chat`, {
+							query: { token: jwtToken() },
+						}),
+					);
+				})
+				.catch((err) => {
+					console.error(err);
+				});
 		}
 		return () => {
 			chatSocket?.disconnect();
@@ -36,7 +45,7 @@ export function MainPage() {
 	}, [chatSocket, isLogged]);
 
 	const joinChannel = (channel: Channel) => {
-		chatSocket?.emit("join-chatroom", channel);
+		chatSocket?.emit("join-chatroom", { channelId: channel.id });
 		setSelectedChannel(channel);
 	};
 
