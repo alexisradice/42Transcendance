@@ -7,11 +7,12 @@ import FriendsList from "../components/FriendsList/FriendsList";
 import Header from "../components/Header/Header";
 import LoginModal from "../components/LoginModal/LoginModal";
 import MainFrame from "../components/MainFrame/MainFrame";
-import { Channel } from "../types";
+import { Channel, SocketResponse } from "../types";
 import { isLoggedCookie, jwtToken } from "../utils/readCookie";
 import classes from "./Main.module.css";
 import { Socket, io } from "socket.io-client";
 import { axiosPrivate } from "../utils/fetcher";
+import { errorNotif } from "../utils/errorNotif";
 
 export function MainPage() {
 	const [chatSocket, setChatSocket] = useState<Socket | null>(null);
@@ -45,8 +46,17 @@ export function MainPage() {
 	}, [chatSocket, isLogged]);
 
 	const joinChannel = (channel: Channel) => {
-		chatSocket?.emit("join-chatroom", { channelId: channel.id });
-		setSelectedChannel(channel);
+		chatSocket?.emit(
+			"join-chatroom",
+			{ channelId: channel.id },
+			(response: SocketResponse) => {
+				if (!response.success || response.error) {
+					errorNotif(response.error);
+				} else {
+					setSelectedChannel(channel);
+				}
+			},
+		);
 	};
 
 	return (
@@ -84,10 +94,12 @@ export function MainPage() {
 						className={classes.chatArea}
 						style={{ display: chatOpened ? "block" : "none" }}
 					>
-						<ChatArea
-							selectedChannel={selectedChannel}
-							chatSocket={chatSocket}
-						/>
+						{selectedChannel.id !== -1 && (
+							<ChatArea
+								selectedChannel={selectedChannel}
+								chatSocket={chatSocket}
+							/>
+						)}
 					</div>
 					<div className={classes.footer}>
 						<Footer />

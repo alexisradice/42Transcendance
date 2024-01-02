@@ -4,7 +4,7 @@ import { IconSend2 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import useSWR from "swr";
-import { Channel } from "../../types";
+import { Channel, Message } from "../../types";
 import { fetcherPrivate } from "../../utils/fetcher";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
@@ -20,11 +20,12 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 		error,
 		isLoading,
 		mutate,
-	} = useSWR("/channel/messages", fetcherPrivate);
+	} = useSWR(`/channel/${selectedChannel.id}/messages`, fetcherPrivate);
 
 	useEffect(() => {
-		chatSocket?.on("display-message", (message: string) => {
+		chatSocket?.on("display-message", (message: Message) => {
 			console.log("message", message);
+			mutate([...messages]);
 		});
 
 		return () => {
@@ -34,22 +35,22 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	const form = useForm({
 		initialValues: {
-			message: "",
+			content: "",
 		},
 	});
 
 	const sendMessage = () => {
-		const message = form.values.message;
+		const content = form.values.content;
 		chatSocket?.emit("send-message", {
-			message,
-			channel: selectedChannel.id,
+			content,
+			channelId: selectedChannel.id,
 		});
 	};
 
 	return (
 		<>
 			{!error && isLoading && <div>Loading...</div>}
-			{!error && !isLoading && selectedChannel.id !== -1 && (
+			{!error && !isLoading && (
 				<div className={classes.chatArea}>
 					<Tooltip label={selectedChannel.name}>
 						<Title className={classes.title} lineClamp={1}>
@@ -69,7 +70,7 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 								/>
 							}
 							rightSectionPointerEvents="all"
-							{...form.getInputProps("message")}
+							{...form.getInputProps("content")}
 						/>
 					</form>
 				</div>

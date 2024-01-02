@@ -7,10 +7,8 @@ export type Channel = {
 export type Message = {
 	id: string;
 	createdAt: string;
-	updatedAt: string;
 	content: string;
 	author: Partial<User>;
-	channel: Channel;
 };
 
 export type User = {
@@ -30,4 +28,9 @@ export type Friend = {
 export type ProfileSettings = {
 	displayName: string;
 	image: string | Blob | null;
+};
+
+export type SocketResponse = {
+	success: boolean;
+	error: unknown;
 };

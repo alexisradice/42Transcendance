@@ -8,6 +8,26 @@ import * as argon2 from "argon2";
 export class ChannelService {
 	constructor(private prisma: PrismaService) {}
 
+	async getChannelMessages(channelId: string) {
+		return await this.prisma.message.findMany({
+			where: {
+				channelId,
+			},
+			select: {
+				id: true,
+				content: true,
+				createdAt: true,
+				author: {
+					select: {
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+			},
+		});
+	}
+
 	async getChannelList(login: string) {
 		return await this.prisma.channel.findMany({
 			where: {
@@ -84,7 +104,7 @@ export class ChannelService {
 	}
 
 	async isUserInChannel(user: User, channelId: string) {
-		const chan = await this.prisma.channel.findUnique({
+		const chan = await this.prisma.channel.findFirst({
 			where: {
 				id: channelId,
 				members: { some: { id: user.id } },

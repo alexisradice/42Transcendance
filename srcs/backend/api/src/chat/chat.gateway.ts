@@ -11,6 +11,8 @@ import {
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { UserService } from "src/user/user.service";
+import { ChatService } from "./chat.service";
+import { Message } from "@prisma/client";
 
 @WebSocketGateway({
 	cors: {
@@ -24,6 +26,7 @@ export class ChatGateway implements OnGatewayConnection {
 		private configService: ConfigService,
 		private userService: UserService,
 		private channelService: ChannelService,
+		private chatService: ChatService,
 	) {}
 
 	@WebSocketServer()
@@ -53,39 +56,71 @@ export class ChatGateway implements OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; password?: string },
 	) {
+		const response = { success: false, error: "" };
 		const { channelId, password } = payload;
 		const user = client.data.user;
-		const channel = await this.channelService.findById(channelId);
-		if (this.channelService.isUserInChannel(user, channelId)) {
-			console.log("User already in channel, joining " + channelId);
-			client.join(channelId);
-			return channelId;
+		try {
+			const channel = await this.channelService.findById(channelId);
+			const isUserInChannel = await this.channelService.isUserInChannel(
+				user,
+				channelId,
+			);
+			if (isUserInChannel) {
+				console.log("User already in channel, joining " + channelId);
+				client.join(channelId);
+				response.success = true;
+				return response;
+			}
+			// check if user isnt banned in channel
+			const isAllowedInChannel =
+				await this.channelService.checkPermissions(
+					user,
+					channel,
+					password,
+				);
+			if (isAllowedInChannel) {
+				await this.channelService.addUserToChannel(user, channelId);
+				console.log("User added in channel, joining " + channelId);
+				client.join(channelId);
+				response.success = true;
+			}
+			return response;
+		} catch (err) {
+			response.error = err;
+			return response;
 		}
-		// check if user isnt banned in channel
-		const isAllowedInChannel = await this.channelService.checkPermissions(
-			user,
-			channel,
-			password,
-		);
-		if (isAllowedInChannel) {
-			await this.channelService.addUserToChannel(user, channelId);
-			console.log("User added in channel, joining " + channelId);
-			client.join(channelId);
-		}
-		return channelId;
 	}
 
 	@SubscribeMessage("send-message")
-	handleMessage(
+	async handleMessage(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() payload: { message: string; channel: string },
-	): string {
-		const { message, channel } = payload;
-		console.log('received message "' + message + '"');
-		console.log('sending to room "' + channel + '"');
-		// TODO: Ajouter le message en DB
-		// TODO: renvoyer l'objet Message de la DB au lieu de la string
-		this.server.to(channel).emit("display-message", message);
-		return message;
+		@MessageBody() payload: { channelId: string; content: string },
+	): Promise<Message> {
+		const { channelId, content } = payload;
+		const author = client.data.user;
+		console.log('received message "' + content + '"');
+		console.log('sending to room "' + channelId + '"');
+		const isUserInChannel = await this.channelService.isUserInChannel(
+			author,
+			channelId,
+		);
+		// TODO: check if user isnt muted
+		if (isUserInChannel) {
+			const message = await this.chatService.createMessage(
+				channelId,
+				author.id,
+				content,
+			);
+			this.server.to(channelId).emit("display-message", {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					displayName: author.displayName,
+					image: author.image,
+				},
+			});
+			return message;
+		}
 	}
 }

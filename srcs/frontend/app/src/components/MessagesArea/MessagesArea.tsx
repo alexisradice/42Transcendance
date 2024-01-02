@@ -53,7 +53,7 @@ const MessagesArea = ({ messages }: Props) => {
 						viewportRef={viewport}
 					>
 						{messages.map((message: Message, index: number) => {
-							const isSelf = message.author === user.login;
+							const isSelf = message.author.login === user.login;
 							return (
 								<Group
 									key={index}
@@ -68,7 +68,7 @@ const MessagesArea = ({ messages }: Props) => {
 										radius="lg"
 										shadow="md"
 										p="sm"
-										mt="md"
+										mt="xs"
 										withBorder
 									>
 										{message.content}

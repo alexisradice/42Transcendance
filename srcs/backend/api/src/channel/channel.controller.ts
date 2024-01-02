@@ -3,14 +3,15 @@ import {
 	Controller,
 	Get,
 	HttpException,
+	Param,
 	Post,
 	Req,
 	UseGuards,
 } from "@nestjs/common";
-import { JwtGuard } from "src/auth/jwtToken.guard";
-import { Request } from "express";
-import { ChannelService } from "./channel.service";
 import { ChannelVisibility } from "@prisma/client";
+import { Request } from "express";
+import { JwtGuard } from "src/auth/jwtToken.guard";
+import { ChannelService } from "./channel.service";
 
 @Controller("channel")
 export class ChannelController {
@@ -47,9 +48,21 @@ export class ChannelController {
 		return { success: true };
 	}
 
-	@Get("messages")
+	@Get(":channelId/messages")
 	@UseGuards(JwtGuard)
-	async getChannelMessages() {
-		return [];
+	async getChannelMessages(
+		@Req() req: Request,
+		@Param("channelId") channelId: string,
+	) {
+		const isUserInChannel = await this.channelService.isUserInChannel(
+			req.user["id"],
+			channelId,
+		);
+		if (!isUserInChannel) {
+			throw new HttpException("User is not in channel", 403);
+		}
+		const messages =
+			await this.channelService.getChannelMessages(channelId);
+		return messages || [];
 	}
 }
