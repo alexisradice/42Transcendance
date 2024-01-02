@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ChannelVisibility } from "@prisma/client";
+import { Channel, ChannelVisibility, User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -15,6 +15,13 @@ export class ChannelService {
 				],
 			},
 		});
+	}
+
+	async findById(id: string) {
+		const channel = await this.prisma.channel.findFirst({
+			where: { id },
+		});
+		return channel;
 	}
 
 	async createChannel(
@@ -41,4 +48,46 @@ export class ChannelService {
 			},
 		});
 	}
+
+	async checkPermissions(
+		user: User,
+		channel: Channel,
+		password: string | null,
+	) {
+		// owner = always can join
+		if (channel.ownerId === user.id) {
+			return true;
+		}
+		// TODO: find list of banned users for the channel
+
+		// private channel = user can join only if he was already in
+		if (channel.visibility === "PRIVATE") {
+			if (!this.isUserInChannel(user, channel)) {
+				return false;
+			}
+		}
+		// protected channel = if user have the right password
+		// if (channel.visibility === 'PROTECTED') {
+
+		// }
+		//
+	}
+
+	async isUserInChannel(user: User, channel: Channel) {
+		const chan = await this.prisma.channel.findUnique({
+			where: {
+				id: channel.id,
+				users: { some: { id: user.id } },
+			},
+		});
+		return channel ? true : false;
+	}
 }
+
+// const exists = !!await prisma.place.findFirst(
+// 	{
+// 	  where: {
+// 		name: "abc"
+// 	  }
+// 	}
+//   );

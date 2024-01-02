@@ -10,6 +10,7 @@ import {
 } from "@nestjs/websockets";
 import { Channel } from "@prisma/client";
 import { Server, Socket } from "socket.io";
+import { ChannelService } from "src/channel/channel.service";
 import { UserService } from "src/user/user.service";
 
 @WebSocketGateway({
@@ -23,6 +24,7 @@ export class ChatGateway implements OnGatewayConnection {
 		private jwtService: JwtService,
 		private configService: ConfigService,
 		private userService: UserService,
+		private channelService: ChannelService,
 	) {}
 
 	@WebSocketServer()
@@ -48,15 +50,17 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 
 	@SubscribeMessage("join-chatroom")
-	handleJoinChatroom(
+	async handleJoinChatroom(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() channel: Channel,
-	): string {
+		@MessageBody() channel: Channel, //ou juste channel id ?
+	) {
 		console.log("joined room " + channel.id);
-		// client.data.user ==> infos user
-		// TODO: find channel in db with channel id
-		client.join(channel.id);
+		const user = client.data.user;
+		const chan = await this.channelService.findById(channel.id);
 		// TODO: verify if user is allowed to join the channel
+		if (this.channelService.isUserInChannel(user, chan)) {
+			client.join(channel.id);
+		}
 		return channel.id;
 	}
 
