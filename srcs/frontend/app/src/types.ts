@@ -33,4 +33,5 @@ export type ProfileSettings = {
 export type SocketResponse = {
 	success: boolean;
 	error: unknown;
+	payload?: unknown;
 };

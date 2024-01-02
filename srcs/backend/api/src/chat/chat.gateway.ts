@@ -13,6 +13,8 @@ import { ChannelService } from "src/channel/channel.service";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
 import { Message } from "@prisma/client";
+import { SocketResponse } from "src/types";
+import { response } from "express";
 
 @WebSocketGateway({
 	cors: {
@@ -55,7 +57,7 @@ export class ChatGateway implements OnGatewayConnection {
 	async handleJoinChatroom(
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; password?: string },
-	) {
+	): Promise<SocketResponse> {
 		const response = { success: false, error: "" };
 		const { channelId, password } = payload;
 		const user = client.data.user;
@@ -95,32 +97,46 @@ export class ChatGateway implements OnGatewayConnection {
 	async handleMessage(
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; content: string },
-	): Promise<Message> {
+	): Promise<SocketResponse> {
+		const response: SocketResponse = {
+			success: false,
+			error: "",
+		};
 		const { channelId, content } = payload;
 		const author = client.data.user;
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
-		const isUserInChannel = await this.channelService.isUserInChannel(
-			author,
-			channelId,
-		);
-		// TODO: check if user isnt muted
-		if (isUserInChannel) {
-			const message = await this.chatService.createMessage(
+		try {
+			const isUserInChannel = await this.channelService.isUserInChannel(
+				author,
 				channelId,
-				author.id,
-				content,
 			);
-			this.server.to(channelId).emit("display-message", {
-				id: message.id,
-				createdAt: message.createdAt,
-				content: message.content,
-				author: {
-					displayName: author.displayName,
-					image: author.image,
-				},
-			});
-			return message;
+			// TODO: check if user isnt muted
+			if (isUserInChannel) {
+				const message = await this.chatService.createMessage(
+					channelId,
+					author.id,
+					content,
+				);
+				return {
+					success: true,
+					error: "",
+					payload: {
+						id: message.id,
+						createdAt: message.createdAt,
+						content: message.content,
+						author: {
+							login: author.login,
+							displayName: author.displayName,
+							image: author.image,
+						},
+					},
+				};
+			}
+		} catch (err) {
+			console.error(err);
+			response.error = err;
+			return response;
 		}
 	}
 }

@@ -24,5 +24,11 @@ export type Payload = {
 	id: string;
 };
 
+export type SocketResponse = {
+	success: boolean;
+	error: string;
+	payload?: any;
+};
+
 export const ACCESS_TOKEN_FLAG = true;
 export const BOTH_TOKEN_FLAG = false;

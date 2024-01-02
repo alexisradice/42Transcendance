@@ -1,13 +1,13 @@
 import { TextInput, Title, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconSend2 } from "@tabler/icons-react";
-import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import useSWR from "swr";
-import { Channel, Message } from "../../types";
+import { Channel, SocketResponse } from "../../types";
 import { fetcherPrivate } from "../../utils/fetcher";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	selectedChannel: Channel;
@@ -22,17 +22,6 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 		mutate,
 	} = useSWR(`/channel/${selectedChannel.id}/messages`, fetcherPrivate);
 
-	useEffect(() => {
-		chatSocket?.on("display-message", (message: Message) => {
-			console.log("message", message);
-			mutate([...messages]);
-		});
-
-		return () => {
-			chatSocket?.off("display-message");
-		};
-	}, [chatSocket, mutate, messages]);
-
 	const form = useForm({
 		initialValues: {
 			content: "",
@@ -41,10 +30,21 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	const sendMessage = () => {
 		const content = form.values.content;
-		chatSocket?.emit("send-message", {
-			content,
-			channelId: selectedChannel.id,
-		});
+		chatSocket?.emit(
+			"send-message",
+			{
+				content,
+				channelId: selectedChannel.id,
+			},
+			(response: SocketResponse) => {
+				form.reset();
+				if (!response.success) {
+					errorNotif(response.error);
+				} else {
+					mutate([...messages, response.payload]);
+				}
+			},
+		);
 	};
 
 	return (
@@ -66,7 +66,7 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 							rightSection={
 								<IconSend2
 									className={classes.sendButton}
-									onClick={() => form.onSubmit(sendMessage)}
+									onClick={sendMessage}
 								/>
 							}
 							rightSectionPointerEvents="all"
