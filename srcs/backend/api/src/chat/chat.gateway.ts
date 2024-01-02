@@ -9,6 +9,7 @@ import {
 	WebSocketServer,
 } from "@nestjs/websockets";
 import { Channel } from "@prisma/client";
+import { channel } from "diagnostics_channel";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { UserService } from "src/user/user.service";
@@ -52,16 +53,27 @@ export class ChatGateway implements OnGatewayConnection {
 	@SubscribeMessage("join-chatroom")
 	async handleJoinChatroom(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() channel: Channel, //ou juste channel id ?
+		@MessageBody() payload: { channelId: string; password?: string },
 	) {
-		console.log("joined room " + channel.id);
+		const { channelId, password } = payload;
 		const user = client.data.user;
-		const chan = await this.channelService.findById(channel.id);
-		// TODO: verify if user is allowed to join the channel
-		if (this.channelService.isUserInChannel(user, chan)) {
-			client.join(channel.id);
+		const channel = await this.channelService.findById(channelId);
+		if (this.channelService.isUserInChannel(user, channelId)) {
+			console.log("User already in channel, joining " + channelId);
+			client.join(channelId);
 		}
-		return channel.id;
+		// check if user isnt banned in channel
+		const isAllowedInChannel = await this.channelService.checkPermissions(
+			user,
+			channel,
+			password,
+		);
+		if (isAllowedInChannel) {
+			await this.channelService.addUserToChannel(user, channelId);
+			console.log("User added in channel, joining " + channelId);
+			client.join(channelId);
+		}
+		return channelId;
 	}
 
 	@SubscribeMessage("send-message")

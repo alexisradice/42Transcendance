@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Channel, ChannelVisibility, User } from "@prisma/client";
+import { channel } from "diagnostics_channel";
 import { PrismaService } from "src/prisma/prisma.service";
+import * as argon2 from "argon2";
 
 @Injectable()
 export class ChannelService {
@@ -11,7 +13,7 @@ export class ChannelService {
 			where: {
 				OR: [
 					{ visibility: ChannelVisibility.PUBLIC },
-					{ users: { some: { login: login } } },
+					{ members: { some: { login: login } } },
 				],
 			},
 		});
@@ -30,6 +32,7 @@ export class ChannelService {
 		visibility: ChannelVisibility,
 		password: string,
 	) {
+		const hashedPassword = await argon2.hash(password);
 		return await this.prisma.channel.create({
 			data: {
 				name,
@@ -38,49 +41,63 @@ export class ChannelService {
 						id,
 					},
 				},
-				users: {
+				members: {
 					connect: {
 						id,
 					},
 				},
 				visibility,
-				password,
+				password: hashedPassword,
 			},
 		});
 	}
 
-	async checkPermissions(
-		user: User,
-		channel: Channel,
-		password: string | null,
-	) {
-		// owner = always can join
-		if (channel.ownerId === user.id) {
-			return true;
-		}
-		// TODO: find list of banned users for the channel
+	async checkPermissions(user: User, channel: Channel, password?: string) {
+		const isBannedFromChannel = await this.prisma.channel.findFirst({
+			where: {
+				id: channel.id,
+				banned: { some: { id: user.id } },
+			},
+		});
 
-		// private channel = user can join only if he was already in
-		if (channel.visibility === "PRIVATE") {
-			if (!this.isUserInChannel(user, channel)) {
+		if (isBannedFromChannel || channel.visibility === "PRIVATE") {
+			return false;
+		}
+
+		if (channel.visibility === "PROTECTED") {
+			const passwordValid = await argon2.verify(
+				channel.password,
+				password,
+			);
+			if (!passwordValid) {
 				return false;
 			}
 		}
-		// protected channel = if user have the right password
-		// if (channel.visibility === 'PROTECTED') {
 
-		// }
-		//
+		return true;
 	}
 
-	async isUserInChannel(user: User, channel: Channel) {
+	async isUserInChannel(user: User, channelId: string) {
 		const chan = await this.prisma.channel.findUnique({
 			where: {
-				id: channel.id,
-				users: { some: { id: user.id } },
+				id: channelId,
+				members: { some: { id: user.id } },
 			},
 		});
-		return channel ? true : false;
+		return chan ? true : false;
+	}
+
+	async addUserToChannel(user: User, channelId: string) {
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				members: {
+					connect: {
+						id: user.id,
+					},
+				},
+			},
+		});
 	}
 }
 
