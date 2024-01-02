@@ -8,11 +8,6 @@
 		border-radius: 8px;
 	}
 
-	li::before {
-		content: "#";
-		margin-right: 5px;
-	}
-
 	li:hover {
 		cursor: pointer;
 		@mixin light {

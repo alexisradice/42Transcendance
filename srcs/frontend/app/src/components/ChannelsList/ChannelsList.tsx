@@ -12,13 +12,13 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { IconPlus } from "@tabler/icons-react";
+import { IconLock, IconPlus } from "@tabler/icons-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import useSWR from "swr";
 import { Channel } from "../../types";
+import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import classes from "./ChannelsList.module.css";
-import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	height: number;
@@ -185,7 +185,13 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 										setChatOpened(true);
 									}}
 								>
-									{channel.name}
+									<Group align="center" gap={5}>
+										<Text size="xl">#</Text>
+										<Text>{channel.name}</Text>
+										{channel.visibility === "PROTECTED" && (
+											<IconLock size={18} />
+										)}
+									</Group>
 								</li>
 							))}
 						</ul>

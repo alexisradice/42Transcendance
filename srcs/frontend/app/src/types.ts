@@ -1,6 +1,7 @@
 export type Channel = {
 	id: number;
 	name: string;
+	visibility: string;
 };
 
 export type Message = {

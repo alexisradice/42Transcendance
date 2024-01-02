@@ -13,8 +13,14 @@ export class ChannelService {
 			where: {
 				OR: [
 					{ visibility: ChannelVisibility.PUBLIC },
+					{ visibility: ChannelVisibility.PROTECTED },
 					{ members: { some: { login: login } } },
 				],
+			},
+			select: {
+				id: true,
+				name: true,
+				visibility: true,
 			},
 		});
 	}
