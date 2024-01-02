@@ -1,5 +1,4 @@
 import {
-	Box,
 	Button,
 	Center,
 	Loader,
@@ -13,6 +12,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
+import { Socket } from "socket.io-client";
 import useSWR from "swr";
 import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
@@ -22,9 +22,10 @@ import classes from "./FriendsList.module.css";
 
 type Props = {
 	height: number;
+	chatSocket: Socket | null;
 };
 
-const FriendsList = ({ height }: Props) => {
+const FriendsList = ({ height, chatSocket }: Props) => {
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [addFriendLoading, setAddFriendLoading] = useState<boolean>(false);
 	const [addFriendError, setAddFriendError] = useState<string | undefined>(
@@ -100,12 +101,15 @@ const FriendsList = ({ height }: Props) => {
 		setAddFriendError(undefined);
 	};
 
+	const openChat = (friendLogin: string) => {
+		chatSocket?.emit("join", friendLogin);
+	};
+
 	return (
 		<>
-			{error && <></>}
 			{!error && isLoading && (
 				<Center>
-					<Loader />
+					<Loader type="dots" />
 				</Center>
 			)}
 			{!error && !isLoading && (
@@ -132,10 +136,8 @@ const FriendsList = ({ height }: Props) => {
 					</Modal>
 					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
-							<Box hiddenFrom="lg">
-								<IconPlus size={16} />
-							</Box>
-							<Text visibleFrom="lg">Add a new friend</Text>
+							<IconPlus size={16} />
+							<Text visibleFrom="lg">&nbsp;Add a new friend</Text>
 						</Button>
 					</Center>
 					{friends.length > 0 && (
@@ -146,6 +148,7 @@ const FriendsList = ({ height }: Props) => {
 										return (
 											<li key={index}>
 												<FriendCard
+													openChat={openChat}
 													friend={friend}
 													removeFriend={removeFriend}
 													blockFriend={blockFriend}
@@ -154,17 +157,6 @@ const FriendsList = ({ height }: Props) => {
 										);
 									},
 								)}
-								{/* <li>
-									<FriendCard
-										friend={{
-											displayName: "test",
-											login: "test",
-											image: "test",
-											status: "ONLINE",
-										}}
-										removeFriend={removeFriend}
-									/>
-								</li> */}
 							</ul>
 						</ScrollArea>
 					)}

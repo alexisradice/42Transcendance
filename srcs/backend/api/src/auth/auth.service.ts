@@ -85,7 +85,7 @@ export class AuthService {
 
 	// returns jwtTokens with user information
 	async getJwtTokens(user: User): Promise<Tokens> {
-		const payload: Payload = { sub: user.login };
+		const payload: Payload = { sub: user.login, id: user.id };
 		const tokens = await this.generateTokens(payload, BOTH_TOKEN_FLAG);
 		await this.updateRefreshToken(user.login, tokens.jwtRefreshToken);
 		return tokens;
@@ -133,7 +133,7 @@ export class AuthService {
 				throw new ForbiddenException("Access Denied");
 			}
 			const tokens: Tokens = await this.generateTokens(
-				{ sub: user.login },
+				{ sub: user.login, id: user.id },
 				ACCESS_TOKEN_FLAG,
 			);
 			tokens.jwtRefreshToken = refreshToken;

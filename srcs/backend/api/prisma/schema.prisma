@@ -11,26 +11,28 @@ datasource db {
 }
 
 model User {
-    id            String    @id @default(uuid())
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
-    login         String    @unique
-    displayName   String    @unique
-    email         String
-    image         String
-    twoFA         Boolean   @default(false)
-    twoFASecret   String?
-    refreshToken  String?
-    status        Status    @default(ONLINE)
-    messages      Message[]
-    channels      Channel[]
-    channelsOwned Channel[] @relation("ownership")
-    channelsAdmin Channel[] @relation("admins")
-    friends       User[]    @relation("friends")
-    friendOf      User[]    @relation("friends")
-    blocked       User[]    @relation("blocked")
-    blockedBy     User[]    @relation("blocked")
-    stats         Stat?
+    id           String    @id @default(uuid())
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    login        String    @unique
+    displayName  String    @unique
+    email        String
+    image        String
+    twoFA        Boolean   @default(false)
+    twoFASecret  String?
+    refreshToken String?
+    status       Status    @default(ONLINE)
+    messages     Message[]
+    memberOf     Channel[] @relation("members")
+    ownerOf      Channel[] @relation("ownership")
+    adminOf      Channel[] @relation("admins")
+    bannedFrom   Channel[] @relation("banned")
+    mutedFrom    Channel[] @relation("muted")
+    friends      User[]    @relation("friends")
+    friendOf     User[]    @relation("friends")
+    blocked      User[]    @relation("blocked")
+    blockedBy    User[]    @relation("blocked")
+    stats        Stat?
 }
 
 model Message {
@@ -45,18 +47,20 @@ model Message {
 }
 
 model Channel {
-    id          String    @id @default(uuid())
-    createdAt   DateTime  @default(now())
-    updatedAt   DateTime  @updatedAt
-    name        String
-    messages    Message[]
-    users       User[]
-    admins      User[]    @relation("admins")
-    owner       User      @relation("ownership", fields: [ownerId], references: [id])
-    ownerId     String
-    isDM        Boolean   @default(false)
-    isProtected Boolean   @default(false)
-    password    String?
+    id         String            @id @default(uuid())
+    createdAt  DateTime          @default(now())
+    updatedAt  DateTime          @updatedAt
+    name       String
+    messages   Message[]
+    members    User[]            @relation("members")
+    banned     User[]            @relation("banned")
+    muted      User[]            @relation("muted")
+    admins     User[]            @relation("admins")
+    owner      User              @relation("ownership", fields: [ownerId], references: [id])
+    ownerId    String
+    isDM       Boolean           @default(false)
+    visibility ChannelVisibility @default(PUBLIC)
+    password   String?
 }
 
 model Stat {
@@ -78,4 +82,10 @@ enum Roles {
     OWNER
     ADMIN
     MEMBER
+}
+
+enum ChannelVisibility {
+    PUBLIC
+    PRIVATE
+    PROTECTED
 }

@@ -10,11 +10,12 @@ import classes from "./FriendCard.module.css";
 
 type Props = {
 	friend: Friend;
+	openChat: (friendLogin: string) => void;
 	removeFriend: (friendLogin: string) => void;
 	blockFriend: (friendLogin: string) => void;
 };
 
-const FriendCard = ({ friend, removeFriend, blockFriend }: Props) => {
+const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 	const handleRemove = () => {
 		if (
 			window.confirm(`Are you sure you want to remove ${friend.login}?`)
@@ -68,6 +69,9 @@ const FriendCard = ({ friend, removeFriend, blockFriend }: Props) => {
 							style={{ width: rem(14), height: rem(14) }}
 						/>
 					}
+					onClick={() => {
+						openChat(friend.login);
+					}}
 				>
 					Messages
 				</Menu.Item>

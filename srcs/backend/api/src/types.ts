@@ -21,6 +21,13 @@ export type Tokens = {
 
 export type Payload = {
 	sub: string;
+	id: string;
+};
+
+export type SocketResponse = {
+	success: boolean;
+	error: string;
+	payload?: any;
 };
 
 export const ACCESS_TOKEN_FLAG = true;

@@ -65,6 +65,9 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			opened={true}
 			withCloseButton={false}
 			onClose={() => {}}
+			overlayProps={{
+				backgroundOpacity: 1,
+			}}
 		>
 			{needsTwoFA ? (
 				<>
