@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import io from 'socket.io-client';
 import { useMyData } from "../hooks/useMyData";
 import createLobby from '../utils/createLobby';
+import sendSettings from '../utils/sendSettings';
 
 export const GamePage = () => {
     const { user } = useMyData();
@@ -13,8 +14,9 @@ export const GamePage = () => {
         socket.emit("hello", "world");
         socket.emit("login", user.login);
 
-        const lobby = createLobby(socket);
-        socket.emit("lobby", lobby);
+        //const lobby = createLobby(socket);
+        const settings = sendSettings();
+        socket.emit("queue", settings, user.login);
 
         socket.on('response', (message) => {
             console.log(message); 

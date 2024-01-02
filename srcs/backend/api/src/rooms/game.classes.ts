@@ -12,6 +12,7 @@ export class Player {
 	name: string;
 	socket: Socket;
 	score: number;
+	settings: Settings;
 }
 
 export class Settings {

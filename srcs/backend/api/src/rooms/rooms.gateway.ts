@@ -9,7 +9,7 @@ import { Server, Socket } from "socket.io";
 import { RoomsService } from "./rooms.service";
 import { AuthService } from '../auth/auth.service';
 import { UserService } from '../user/user.service';
-import { Player, Lobby } from './game.classes';
+import { Player, Lobby, Settings } from './game.classes';
 
 
 @WebSocketGateway({ cors: true})
@@ -43,37 +43,41 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		//console.log("\n");
 		//console.log(client.handshake.secure); /* whether the connection is secure */
 
-		console.log("cconnection!");
+		console.log("connection!");
 		client.emit('hello', "connection!");
 	}
 	
 	async handleDisconnect(client: Socket) {
-		console.log("discconnection!");
+		console.log("disconnection!");
 		client.emit('hello', "disconnection!");
-		//cleanClient(client);
+		this.roomsService.cleanClient(client);;
 	}
 
 	@SubscribeMessage('login')
 	async loginFunction(client: Socket, username: string) {
-		console.log("username!", username);
+		//console.log("username!", username);
 		const user = await this.userService.findUserByUsername(username);
-		console.log("user!", user);
-		client.data = user;
-		console.log("client.data.login!", client.data.login);
+		//console.log("user!", user);
 	}
 
-	@SubscribeMessage('lobby')
-	lobbyFunction(client: Socket, code: string) {
-		console.log("code!", code);
-		console.log("client.data.login2!", client.data.login);
+	@SubscribeMessage('queue')
+	async lobbyFunction(client: Socket, settings: Settings) {
+		//console.log("settings!", settings);
+		//console.log("client.data.login2!", settings[1]);
+		//const user = await this.userService.findUserByUsername(settings[1]);
+		//console.log("user!", user);
 
 		const player = new Player();
-		player.name = client.data.login; //not working
+		player.name = settings[1];
 		player.socket = client;
 		player.score = 0;
+		player.settings = settings;
 
-		const lobby = this.roomsService.lobbyCreateOrFind(code);
-		this.roomsService.lobbyJoin(player, client, lobby);
+		this.roomsService.addPlayerToQueue(player);
+
+
+		//const lobby = this.roomsService.lobbyCreateOrFind();
+		//this.roomsService.lobbyJoin(player, client, lobby);
 	}
 	
 	@SubscribeMessage('hello')

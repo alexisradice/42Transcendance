@@ -36,9 +36,3 @@ export type SettingsType = {
     pause: boolean;
     mode: string;
 };
-
-export type GameType = {
-    title: string;
-    content: string;
-    authorId: number;
-};
