@@ -1,4 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import {
+	HttpException,
+	Injectable,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { Channel, ChannelVisibility, User } from "@prisma/client";
 import { channel } from "diagnostics_channel";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -7,6 +11,34 @@ import * as argon2 from "argon2";
 @Injectable()
 export class ChannelService {
 	constructor(private prisma: PrismaService) {}
+
+	// get all channels accessible to the user:
+	// default -> the ones he's already joined
+	// + the Public and Protected ones
+	async getChannelList(login: string) {
+		return await this.prisma.channel.findMany({
+			where: {
+				OR: [
+					{ visibility: ChannelVisibility.PUBLIC },
+					{ visibility: ChannelVisibility.PROTECTED },
+					{ members: { some: { login: login } } },
+				],
+				NOT: { banned: { some: { login: login } } },
+			},
+			select: {
+				id: true,
+				name: true,
+				visibility: true,
+			},
+		});
+	}
+
+	async findChannelById(id: string) {
+		const channel = await this.prisma.channel.findFirst({
+			where: { id },
+		});
+		return channel;
+	}
 
 	async getChannelMessages(channelId: string) {
 		return await this.prisma.message.findMany({
@@ -22,34 +54,11 @@ export class ChannelService {
 						login: true,
 						displayName: true,
 						image: true,
+						blockedBy: true,
 					},
 				},
 			},
 		});
-	}
-
-	async getChannelList(login: string) {
-		return await this.prisma.channel.findMany({
-			where: {
-				OR: [
-					{ visibility: ChannelVisibility.PUBLIC },
-					{ visibility: ChannelVisibility.PROTECTED },
-					{ members: { some: { login: login } } },
-				],
-			},
-			select: {
-				id: true,
-				name: true,
-				visibility: true,
-			},
-		});
-	}
-
-	async findById(id: string) {
-		const channel = await this.prisma.channel.findFirst({
-			where: { id },
-		});
-		return channel;
 	}
 
 	async createChannel(
@@ -67,6 +76,11 @@ export class ChannelService {
 						id,
 					},
 				},
+				admins: {
+					connect: {
+						id,
+					},
+				},
 				members: {
 					connect: {
 						id,
@@ -78,6 +92,9 @@ export class ChannelService {
 		});
 	}
 
+	// user has been banned = cannot re-enter
+	// private channel = nobody new can enter
+	// wrong password (protected chan)
 	async checkPermissions(user: User, channel: Channel, password?: string) {
 		const isBannedFromChannel = await this.prisma.channel.findFirst({
 			where: {
@@ -85,7 +102,6 @@ export class ChannelService {
 				banned: { some: { id: user.id } },
 			},
 		});
-
 		if (isBannedFromChannel || channel.visibility === "PRIVATE") {
 			return false;
 		}
@@ -103,7 +119,22 @@ export class ChannelService {
 		return true;
 	}
 
-	async isUserInChannel(user: User, channelId: string) {
+	async addUserToChannel(user: User, channelId: string) {
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				members: {
+					connect: {
+						id: user.id,
+					},
+				},
+			},
+		});
+	}
+
+	// FUNCTIONS TO CHECK USER'S ROLE
+
+	async isChannelMember(user: User, channelId: string) {
 		const chan = await this.prisma.channel.findFirst({
 			where: {
 				id: channelId,
@@ -113,14 +144,113 @@ export class ChannelService {
 		return chan ? true : false;
 	}
 
-	async addUserToChannel(user: User, channelId: string) {
+	async isChannelAdmin(user: User, channelId: string) {
+		const chan = await this.prisma.channel.findFirst({
+			where: {
+				id: channelId,
+				admins: { some: { id: user.id } },
+			},
+		});
+		return chan ? true : false;
+	}
+
+	async isChannelOwner(user: User, channel: Channel) {
+		if (user.id === channel.ownerId) {
+			return true;
+		}
+		return false;
+	}
+
+	// ADMIN FUNCTIONS
+
+	// kicked user isn't a member anymore
+	async kickUser(kicker: User, user: User, channelId: string) {
+		const isAdmin = this.isChannelAdmin(kicker, channelId);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				`You don't have permission to kick ${user.displayName}`,
+			);
+		}
 		return await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
-					connect: {
-						id: user.id,
-					},
+					disconnect: { id: user.id },
+				},
+			},
+		});
+	}
+
+	// banned user isn't a member anymore and cannot join
+	async banUser(admin: User, user: User, channelId: string) {
+		const isAdmin = this.isChannelAdmin(admin, channelId);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				`You don't have permission to ban ${user.displayName}`,
+			);
+		}
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				banned: {
+					connect: { id: user.id },
+				},
+				members: {
+					disconnect: { id: user.id },
+				},
+			},
+		});
+	}
+
+	// unbanned does not put user back in channel members,
+	// he must re-join
+	async unbanUser(admin: User, user: User, channelId: string) {
+		const isAdmin = this.isChannelAdmin(admin, channelId);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				`You don't have permission to unban ${user.displayName}`,
+			);
+		}
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				banned: {
+					disconnect: { id: user.id },
+				},
+			},
+		});
+	}
+
+	// muted user is still a member : can join but read-only
+	async muteUser(admin: User, user: User, channelId: string) {
+		const isAdmin = this.isChannelAdmin(admin, channelId);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				`You don't have permission to mute ${user.displayName}`,
+			);
+		}
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				muted: {
+					connect: { id: user.id },
+				},
+			},
+		});
+	}
+
+	async unmuteUser(admin: User, user: User, channelId: string) {
+		const isAdmin = this.isChannelAdmin(admin, channelId);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				`You don't have permission to unmute ${user.displayName}`,
+			);
+		}
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				muted: {
+					disconnect: { id: user.id },
 				},
 			},
 		});

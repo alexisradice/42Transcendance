@@ -54,7 +54,7 @@ export class ChannelController {
 		@Req() req: Request,
 		@Param("channelId") channelId: string,
 	) {
-		const isUserInChannel = await this.channelService.isUserInChannel(
+		const isUserInChannel = await this.channelService.isChannelMember(
 			req.user["id"],
 			channelId,
 		);
