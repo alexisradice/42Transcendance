@@ -44,7 +44,10 @@ export class ChannelService {
 		return await this.prisma.message.findMany({
 			where: {
 				channelId,
-				NOT: { author: { blockedBy: { some: { id: userId } } } },
+				NOT: [
+					{ author: { blockedBy: { some: { id: userId } } } },
+					{ author: { bannedFrom: { some: { id: channelId } } } },
+				],
 			},
 			select: {
 				id: true,
