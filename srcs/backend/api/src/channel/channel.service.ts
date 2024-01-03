@@ -40,10 +40,11 @@ export class ChannelService {
 		return channel;
 	}
 
-	async getChannelMessages(channelId: string) {
+	async getChannelMessages(userId: string, channelId: string) {
 		return await this.prisma.message.findMany({
 			where: {
 				channelId,
+				NOT: { author: { blockedBy: { some: { id: userId } } } },
 			},
 			select: {
 				id: true,
@@ -54,10 +55,10 @@ export class ChannelService {
 						login: true,
 						displayName: true,
 						image: true,
-						blockedBy: true,
 					},
 				},
 			},
+			orderBy: { createdAt: "asc" },
 		});
 	}
 

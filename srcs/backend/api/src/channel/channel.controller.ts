@@ -61,8 +61,10 @@ export class ChannelController {
 		if (!isUserInChannel) {
 			throw new HttpException("User is not in channel", 403);
 		}
-		const messages =
-			await this.channelService.getChannelMessages(channelId);
+		const messages = await this.channelService.getChannelMessages(
+			req.user["id"],
+			channelId,
+		);
 		return messages || [];
 	}
 }
