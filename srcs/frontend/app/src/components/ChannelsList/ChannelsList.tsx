@@ -1,4 +1,5 @@
 import {
+	AppShell,
 	Button,
 	Center,
 	Group,
@@ -21,14 +22,12 @@ import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import classes from "./ChannelsList.module.css";
 
 type Props = {
-	height: number;
 	joinChannel: (channel: Channel) => void;
 	setChatOpened: Dispatch<SetStateAction<boolean>>;
 };
 
-const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
-	const [showPassword, setShowPassword] = useState<boolean>(false);
-	const [createChannelOpened, { open, close }] = useDisclosure(false);
+const ChannelsList = ({ joinChannel, setChatOpened }: Props) => {
+	const [createModalOpened, { open, close }] = useDisclosure(false);
 	const [createChannelLoading, setCreateChannelLoading] =
 		useState<boolean>(false);
 	const { data, error, isLoading, mutate } = useSWR(
@@ -56,7 +55,6 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 				return "Invalid visibility";
 			},
 			password: (value: string) => {
-				console.log("form.values.visibility", form.values.visibility);
 				if (
 					form.values.visibility !== "PROTECTED" ||
 					value.length >= 8
@@ -71,7 +69,6 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 	const closeModal = () => {
 		close();
 		setCreateChannelLoading(false);
-		setShowPassword(false);
 		form.reset();
 	};
 
@@ -97,7 +94,7 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 			{!error && !isLoading && (
 				<>
 					<Modal
-						opened={createChannelOpened}
+						opened={createModalOpened}
 						onClose={closeModal}
 						title="Create new channel"
 						centered
@@ -132,11 +129,6 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 									{ value: "PROTECTED", label: "Protected" },
 								]}
 								onChange={(value) => {
-									if (value === "PROTECTED") {
-										setShowPassword(true);
-									} else {
-										setShowPassword(false);
-									}
 									form.setFieldValue(
 										"visibility",
 										value || "PUBLIC",
@@ -144,7 +136,7 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 								}}
 								defaultValue="PUBLIC"
 							/>
-							{showPassword && (
+							{form.values.visibility === "PROTECTED" && (
 								<PasswordInput
 									mt="md"
 									label="Password"
@@ -170,11 +162,18 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 							</Group>
 						</form>
 					</Modal>
-					<ScrollArea h={height} type="scroll" scrollbars="y">
+					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
 							<IconPlus size={16} />
-							<Text visibleFrom="lg">&nbsp;Create channel</Text>
+							<Text>&nbsp;Create channel</Text>
 						</Button>
+					</Center>
+					<AppShell.Section
+						component={ScrollArea}
+						type="scroll"
+						className="h-100"
+						style={{ flex: 1 }}
+					>
 						<ul className={classes.list}>
 							{data.map((channel: Channel) => (
 								<li
@@ -195,7 +194,7 @@ const ChannelsList = ({ height, joinChannel, setChatOpened }: Props) => {
 								</li>
 							))}
 						</ul>
-					</ScrollArea>
+					</AppShell.Section>
 				</>
 			)}
 		</>

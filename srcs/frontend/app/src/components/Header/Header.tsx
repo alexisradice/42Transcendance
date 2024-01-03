@@ -2,12 +2,13 @@ import { Avatar, Burger, Group, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
-import { errorNotif } from "../../utils/errorNotif";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
 import UserMenu from "../UserMenu/UserMenu";
 import classes from "./Header.module.css";
 
 type Props = {
+	leftSectionOpened: boolean;
+	toggleLeftSection: () => void;
 	chatOpened: boolean;
 	selectedChannel: boolean;
 	setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,18 +16,23 @@ type Props = {
 };
 
 export default function Header({
+	leftSectionOpened,
+	toggleLeftSection,
 	chatOpened,
 	selectedChannel,
 	setIsLogged,
 	setChatOpened,
 }: Props) {
 	const { user, error, isLoading } = useMyData();
-	if (error) {
-		errorNotif(error);
-	}
 	return (
-		<div className={classes.header}>
-			<div className={classes.subsection}>
+		<Group justify="space-between">
+			<Group>
+				<Burger
+					hiddenFrom="sm"
+					opened={leftSectionOpened}
+					onClick={toggleLeftSection}
+					aria-label="Toggle navigation"
+				/>
 				<ColorSchemeToggle />
 				<Link to="/">
 					<Group>
@@ -38,10 +44,10 @@ export default function Header({
 						/>
 					</Group>
 				</Link>
-			</div>
-			<div className={classes.subsection}>
+			</Group>
+			<Group>
 				{error && <></>}
-				{!error && isLoading && <Loader size="xs"></Loader>}
+				{!error && isLoading && <Loader type="dots" />}
 				{!error && !isLoading && (
 					<>
 						<div>Howdy, {user.displayName}</div>
@@ -62,7 +68,7 @@ export default function Header({
 						)}
 					</>
 				)}
-			</div>
-		</div>
+			</Group>
+		</Group>
 	);
 }

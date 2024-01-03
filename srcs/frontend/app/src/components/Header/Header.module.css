@@ -1,17 +1,3 @@
-.header {
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px;
-}
-
-.subsection {
-	display: flex;
-	align-items: center;
-	gap: var(--mantine-spacing-md);
-}
-
 .avatar {
 	cursor: pointer;
 }

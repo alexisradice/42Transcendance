@@ -1,13 +1,13 @@
-import { TextInput, Title, Tooltip } from "@mantine/core";
+import { Center, Loader, TextInput, Title, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconSend2 } from "@tabler/icons-react";
 import { Socket } from "socket.io-client";
 import useSWR from "swr";
 import { Channel, SocketResponse } from "../../types";
+import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
-import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	selectedChannel: Channel;
@@ -49,7 +49,11 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	return (
 		<>
-			{!error && isLoading && <div>Loading...</div>}
+			{!error && isLoading && (
+				<Center className="h-100">
+					<Loader type="dots" />
+				</Center>
+			)}
 			{!error && !isLoading && (
 				<div className={classes.chatArea}>
 					<Tooltip label={selectedChannel.name}>

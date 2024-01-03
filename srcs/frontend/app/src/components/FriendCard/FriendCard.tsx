@@ -33,7 +33,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 		}
 	};
 	return (
-		<Menu position="right">
+		<Menu>
 			<Menu.Target>
 				<Box p="xs" className={classes.card}>
 					<Group align="center">
@@ -47,7 +47,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 						>
 							<Avatar src={friend.image} />
 						</Indicator>
-						<Box style={{ flex: 1 }} visibleFrom="lg">
+						<Box style={{ flex: 1 }}>
 							<Text size="md" fw={500}>
 								{friend.displayName}
 							</Text>
@@ -56,7 +56,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 								@{friend.login}
 							</Text>
 						</Box>
-						<Box visibleFrom="lg">
+						<Box>
 							<IconChevronRight size="1rem" />
 						</Box>
 					</Group>

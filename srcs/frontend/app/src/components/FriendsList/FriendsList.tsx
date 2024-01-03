@@ -1,4 +1,5 @@
 import {
+	AppShell,
 	Button,
 	Center,
 	Loader,
@@ -21,11 +22,10 @@ import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
 
 type Props = {
-	height: number;
 	chatSocket: Socket | null;
 };
 
-const FriendsList = ({ height, chatSocket }: Props) => {
+const FriendsList = ({ chatSocket }: Props) => {
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [addFriendLoading, setAddFriendLoading] = useState<boolean>(false);
 	const [addFriendError, setAddFriendError] = useState<string | undefined>(
@@ -137,11 +137,16 @@ const FriendsList = ({ height, chatSocket }: Props) => {
 					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
 							<IconPlus size={16} />
-							<Text visibleFrom="lg">&nbsp;Add a new friend</Text>
+							<Text>&nbsp;Add a new friend</Text>
 						</Button>
 					</Center>
-					{friends.length > 0 && (
-						<ScrollArea h={height - 36} type="scroll">
+					<AppShell.Section
+						component={ScrollArea}
+						type="scroll"
+						className="h-100"
+						style={{ flex: 1 }}
+					>
+						{friends.length > 0 && (
 							<ul className={classes.list}>
 								{friends.map(
 									(friend: Friend, index: number) => {
@@ -157,21 +162,174 @@ const FriendsList = ({ height, chatSocket }: Props) => {
 										);
 									},
 								)}
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+								<li>
+									<FriendCard
+										openChat={openChat}
+										friend={{
+											login: "lmurtin",
+											displayName: "lmurtin",
+											image: "",
+											status: "ONLINE",
+										}}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
 							</ul>
-						</ScrollArea>
-					)}
-					{friends.length === 0 && (
-						<>
+						)}
+						{friends.length === 0 && (
 							<Center
-								className={classes.maxHeight}
-								visibleFrom="lg"
+								component={Text}
+								className="h-100"
+								fs="italic"
 							>
-								<Text fs="italic">
-									It's a bit empty around here.
-								</Text>
+								It's a bit empty around here.
 							</Center>
-						</>
-					)}
+						)}
+					</AppShell.Section>
 				</>
 			)}
 		</>
