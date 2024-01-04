@@ -15,6 +15,7 @@ import { JwtRefreshMiddleware } from "./auth/jwtRefresh.middleware";
 import { JwtService } from "@nestjs/jwt";
 import { ChannelModule } from "./channel/channel.module";
 import { ChatModule } from "./chat/chat.module";
+import { RoomsModule } from "./rooms/rooms.module";
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import { ChatModule } from "./chat/chat.module";
 		PrismaModule,
 		ChannelModule,
 		ChatModule,
+		RoomsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, JwtService],

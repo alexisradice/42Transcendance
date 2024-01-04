@@ -1,5 +1,3 @@
-// MainFrame.tsx
-
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from '@mantine/core';
 import classes from "./MainFrame.module.css";
@@ -17,8 +15,12 @@ const MainFrame = () => {
         <div className={classes.mainFrame}>
             {location.pathname === '/' && (
                 <>
-                    <Button onClick={goToGame}>Play Game</Button>
-                    <SettingsComponent />
+                    <Button className={classes.PlayButton} onClick={goToGame}>
+						Play Game
+					</Button>
+                    <div className={classes.settingsComponent}>
+                        <SettingsComponent />
+                    </div>
                 </>
             )}
             <Outlet />
