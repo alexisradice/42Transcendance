@@ -1,3 +1,4 @@
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import {
@@ -8,17 +9,17 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 } from "@nestjs/websockets";
+import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
+import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
-import { Message } from "@prisma/client";
-import { SocketResponse } from "src/types";
-import { response } from "express";
 
 @WebSocketGateway({
 	cors: {
 		origin: "http://localhost:5173",
+		credentials: true,
 	},
 	namespace: "chat",
 })
@@ -31,25 +32,73 @@ export class ChatGateway implements OnGatewayConnection {
 		private chatService: ChatService,
 	) {}
 
+	extractCookie = (cookieString: string, key: string) => {
+		if (!cookieString) return null;
+		const cookies = cookieString.split("; ");
+		for (const cookie of cookies) {
+			const [cookieName, cookieValue] = cookie.split("=");
+			if (cookieName === key) {
+				return cookieValue;
+			}
+		}
+		return null;
+	};
+
+	userFromRefreshToken = async (refreshToken: string) => {
+		const payload = await this.jwtService.verifyAsync(refreshToken, {
+			secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+		});
+		const user = await this.userService.findOne({ login: payload.sub });
+		if (!user || !user.refreshToken)
+			throw new UnauthorizedException("Access Denied");
+		const refreshTokenMatches = await argon2.verify(
+			user.refreshToken,
+			refreshToken,
+		);
+		if (!refreshTokenMatches) {
+			throw new ForbiddenException("Access Denied");
+		}
+		return user;
+	};
+
 	@WebSocketServer()
 	server: Server;
 
 	async handleConnection(client: Socket) {
 		console.log("connected to chat");
-		const jwtToken = client.handshake.query.token;
-		const token = Array.isArray(jwtToken) ? jwtToken[0] : jwtToken;
-		try {
-			const user = this.jwtService.verify(token, {
-				secret: this.configService.get<string>("JWT_SECRET"),
-			});
-			if (!user) {
+		const jwtToken = this.extractCookie(
+			client.handshake.headers.cookie,
+			"jwtToken",
+		);
+		const refreshToken = this.extractCookie(
+			client.handshake.headers.cookie,
+			"jwtRefreshToken",
+		);
+		if (!jwtToken) {
+			if (!refreshToken) {
+				console.error(new UnauthorizedException("No token provided"));
 				client.disconnect();
 			}
-			const dbUser = await this.userService.findOne({ login: user.sub });
-			client.data.user = dbUser;
-		} catch (e) {
-			console.error(e);
-			client.disconnect();
+			try {
+				const user = await this.userFromRefreshToken(refreshToken);
+				client.data.user = user;
+			} catch (err) {
+				console.error(err);
+				client.disconnect();
+			}
+		} else {
+			try {
+				const user = await this.jwtService.verifyAsync(jwtToken, {
+					secret: this.configService.get<string>("JWT_SECRET"),
+				});
+				const dbUser = await this.userService.findOne({
+					login: user.sub,
+				});
+				client.data.user = dbUser;
+			} catch (err) {
+				console.error(err);
+				client.disconnect();
+			}
 		}
 	}
 

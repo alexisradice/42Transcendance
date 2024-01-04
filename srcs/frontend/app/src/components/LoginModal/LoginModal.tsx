@@ -1,11 +1,11 @@
 import { Button, Group, Modal } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/fetcher";
 import { errorNotif } from "../../utils/errorNotif";
 import PinCodeValidator from "../PinCodeValidator/PinCodeValidator";
 
 type Props = {
-	setIsLogged: (isLogged: boolean) => void;
+	setIsLogged: Dispatch<SetStateAction<boolean>>;
 };
 
 const LoginModal = ({ setIsLogged }: Props) => {

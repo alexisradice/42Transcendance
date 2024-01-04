@@ -1,17 +1,17 @@
 import { Center, Loader, TextInput, Title, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconSend2 } from "@tabler/icons-react";
-import { Socket } from "socket.io-client";
 import useSWR from "swr";
 import { Channel, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
+import { Socket } from "socket.io-client";
 
 type Props = {
 	selectedChannel: Channel;
-	chatSocket: Socket | null;
+	chatSocket: Socket;
 };
 
 const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
@@ -30,7 +30,7 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	const sendMessage = () => {
 		const content = form.values.content;
-		chatSocket?.emit(
+		chatSocket.emit(
 			"send-message",
 			{
 				content,

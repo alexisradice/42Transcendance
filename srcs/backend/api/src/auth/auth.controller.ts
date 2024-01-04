@@ -52,6 +52,7 @@ export class AuthController {
 		const tokens = await this.authService.getJwtTokens(user);
 		res.cookie("jwtToken", tokens.jwtToken, {
 			maxAge: 15 * 60 * 1000, // 15 minutes
+			httpOnly: true,
 		});
 		res.cookie("jwtRefreshToken", tokens.jwtRefreshToken, {
 			maxAge: 7 * 24 * 3600 * 1000, // 7 days
