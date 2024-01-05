@@ -96,6 +96,14 @@ export class ChannelService {
 		});
 	}
 
+	async destroyChannel(channelId: string) {
+		return await this.prisma.channel.delete({
+			where: {
+				id: channelId,
+			},
+		});
+	}
+
 	// user has been banned = cannot re-enter
 	// private channel = nobody new can enter
 	// wrong password (protected chan)
@@ -136,6 +144,24 @@ export class ChannelService {
 		});
 	}
 
+	async removeUserFromChannel(user: User, channelId: string) {
+		return await this.prisma.channel.update({
+			where: { id: channelId },
+			data: {
+				members: {
+					disconnect: {
+						id: user.id,
+					},
+				},
+				admins: {
+					disconnect: {
+						id: user.id,
+					},
+				},
+			},
+		});
+	}
+
 	// FUNCTIONS TO CHECK USER'S ROLE
 
 	async isChannelMember(user: User, channelId: string) {
@@ -163,6 +189,39 @@ export class ChannelService {
 			return true;
 		}
 		return false;
+	}
+
+	async changeOwnership(channel: Channel) {
+		let heir = await this.prisma.user.findFirst({
+			where: {
+				adminOf: { some: { id: channel.id } },
+			},
+			orderBy: {
+				createdAt: "asc",
+			},
+		});
+		if (!heir) {
+			heir = await this.prisma.user.findFirst({
+				where: {
+					memberOf: { some: { id: channel.id } },
+				},
+				orderBy: {
+					createdAt: "asc",
+				},
+			});
+		}
+		if (heir) {
+			await this.prisma.channel.update({
+				where: {
+					id: channel.id,
+				},
+				data: {
+					ownerId: heir.id,
+				},
+			});
+			return false;
+		}
+		return true;
 	}
 
 	// ADMIN FUNCTIONS
