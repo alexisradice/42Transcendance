@@ -54,15 +54,17 @@ export class ChannelController {
 		@Req() req: Request,
 		@Param("channelId") channelId: string,
 	) {
-		const isUserInChannel = await this.channelService.isUserInChannel(
+		const isUserInChannel = await this.channelService.isChannelMember(
 			req.user["id"],
 			channelId,
 		);
 		if (!isUserInChannel) {
 			throw new HttpException("User is not in channel", 403);
 		}
-		const messages =
-			await this.channelService.getChannelMessages(channelId);
+		const messages = await this.channelService.getChannelMessages(
+			req.user["id"],
+			channelId,
+		);
 		return messages || [];
 	}
 }

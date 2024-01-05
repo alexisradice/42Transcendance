@@ -111,18 +111,22 @@ export class ChatGateway implements OnGatewayConnection {
 		const { channelId, password } = payload;
 		const user = client.data.user;
 		try {
-			const channel = await this.channelService.findById(channelId);
-			const isUserInChannel = await this.channelService.isUserInChannel(
+			const channel =
+				await this.channelService.findChannelById(channelId);
+			const isUserInChannel = await this.channelService.isChannelMember(
 				user,
 				channelId,
 			);
+			// user was already in channel = no further checks
 			if (isUserInChannel) {
-				console.log("User already in channel, joining " + channelId);
+				console.log(
+					"User already in channel, socket joining " + channelId,
+				);
 				client.join(channelId);
 				response.success = true;
 				return response;
 			}
-			// check if user isnt banned in channel
+			// check if user allowed to enter channel
 			const isAllowedInChannel =
 				await this.channelService.checkPermissions(
 					user,
@@ -131,7 +135,9 @@ export class ChatGateway implements OnGatewayConnection {
 				);
 			if (isAllowedInChannel) {
 				await this.channelService.addUserToChannel(user, channelId);
-				console.log("User added in channel, joining " + channelId);
+				console.log(
+					"User added in channel, socket joining " + channelId,
+				);
 				client.join(channelId);
 				response.success = true;
 			}
@@ -156,7 +162,7 @@ export class ChatGateway implements OnGatewayConnection {
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
-			const isUserInChannel = await this.channelService.isUserInChannel(
+			const isUserInChannel = await this.channelService.isChannelMember(
 				author,
 				channelId,
 			);
