@@ -1,35 +1,45 @@
 // GamePage.tsx
-import React, { useEffect } from 'react';
-import io from 'socket.io-client';
-import { useMyData } from "../hooks/useMyData";
+import React, { useEffect, useRef, useState } from 'react';
 import { useSocket } from "../hooks/useSocket";
-import createLobby from '../utils/createLobby';
+import { LobbyType } from '../types';
 import sendSettings from '../utils/sendSettings';
 
+const PendingPopup = () => {
+    return (
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <p>Waiting for another player...</p>
+        </div>
+    );
+};
+
 export const GamePage = () => {
-    const { user } = useMyData();
-	const  gameSocket = useSocket("game");
+    const gameSocket = useSocket("game");
+    const canvasRef = useRef(null);
+    const [lobby, setLobby] = useState<LobbyType | null>(null);
+    const [isPending, setIsPending] = useState(true);
 
     useEffect(() => {
-        
-
-        gameSocket.emit("hello", "world");
-
-        //const lobby = createLobby(socket);
         const settings = sendSettings();
         gameSocket.emit("queue", settings);
 
-        gameSocket.on('response', (message) => {
-            console.log(message); 
+        gameSocket.on('launch', (receivedLobby: LobbyType) => {
+            console.log('Lobby data received:', receivedLobby);
+            setLobby(receivedLobby);
+            setIsPending(false);
         });
 
         return () => {
-			gameSocket.off('response');
+            gameSocket.off('launch');
             gameSocket.disconnect();
         };
-    }, [gameSocket]); 
+    }, [gameSocket]);
 
-    return <div>Game Page</div>;
+	return (
+        <div>
+            {isPending && <PendingPopup />}
+            <canvas ref={canvasRef} width="800" height="600" />
+        </div>
+    );
 };
 
 export default GamePage;
