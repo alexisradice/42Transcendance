@@ -67,4 +67,31 @@ export class ChannelController {
 		);
 		return messages || [];
 	}
+
+	@Post("admin/promote")
+	@UseGuards(JwtGuard)
+	async promoteAdmin(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("adminableId") adminableId: string,
+	) {
+		try {
+			const channel =
+				await this.channelService.findChannelById(channelId);
+			const isAllowed = await this.channelService.isChannelOwner(
+				req.user["id"],
+				channel,
+			);
+			const isAdminable = await this.channelService.isChannelMember(
+				adminableId,
+				channelId,
+			);
+			if (isAllowed && isAdminable) {
+				await this.channelService.promoteAdmin(adminableId, channelId);
+			}
+			return { success: true };
+		} catch (e) {
+			return { success: false };
+		}
+	}
 }
