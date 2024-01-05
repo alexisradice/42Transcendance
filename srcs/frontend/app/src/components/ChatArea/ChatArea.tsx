@@ -11,7 +11,7 @@ import { Socket } from "socket.io-client";
 
 type Props = {
 	selectedChannel: Channel;
-	chatSocket: Socket;
+	chatSocket: Socket | null;
 };
 
 const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
@@ -30,7 +30,7 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	const sendMessage = () => {
 		const content = form.values.content;
-		chatSocket.emit(
+		chatSocket?.emit(
 			"send-message",
 			{
 				content,

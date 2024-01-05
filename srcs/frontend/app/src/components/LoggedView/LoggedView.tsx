@@ -25,7 +25,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		visibility: "",
 	});
 	const joinChannel = (channel: Channel) => {
-		chatSocket.emit(
+		chatSocket?.emit(
 			"join-chatroom",
 			{ channelId: channel.id },
 			(response: SocketResponse) => {
@@ -43,7 +43,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			footer={{ height: 40 }}
 			navbar={{
 				width: 300,
-				breakpoint: "md",
+				breakpoint: "sm",
 				collapsed: {
 					mobile: !leftSectionOpened,
 				},
