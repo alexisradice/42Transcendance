@@ -226,6 +226,7 @@ export class ChannelService {
 	}
 
 	// muted user is still a member : can join but read-only
+	// mute is 5 minutes for now
 	async muteUser(admin: User, user: User, channelId: string) {
 		const isAdmin = this.isChannelAdmin(admin, channelId);
 		if (!isAdmin) {
@@ -233,11 +234,26 @@ export class ChannelService {
 				`You don't have permission to mute ${user.displayName}`,
 			);
 		}
-		return await this.prisma.channel.update({
-			where: { id: channelId },
+		// await this.prisma.channel.update({
+		// 	where: { id: channelId },
+		// 	data: {
+		// 		muted: {
+		// 			connect: { id: user.id },
+		// 		},
+		// 	},
+		// });
+		return await this.prisma.mute.create({
 			data: {
-				muted: {
-					connect: { id: user.id },
+				expiresAt: new Date(Date.now() + 5 * 60000),
+				user: {
+					connect: {
+						id: user.id,
+					},
+				},
+				channel: {
+					connect: {
+						id: channelId,
+					},
 				},
 			},
 		});
@@ -250,14 +266,41 @@ export class ChannelService {
 				`You don't have permission to unmute ${user.displayName}`,
 			);
 		}
-		return await this.prisma.channel.update({
-			where: { id: channelId },
-			data: {
-				muted: {
-					disconnect: { id: user.id },
-				},
+		// return await this.prisma.channel.update({
+		// 	where: { id: channelId },
+		// 	data: {
+		// 		muted: {
+		// 			disconnect: { id: user.id },
+		// 		},
+		// 	},
+		// });
+		return await this.prisma.mute.deleteMany({
+			where: {
+				AND: [{ channelId: channelId }, { userId: user.id }],
 			},
 		});
+	}
+
+	async IsMuted(userId: string, channelId: string) {
+		const muted = await this.prisma.mute.findFirst({
+			where: {
+				AND: [{ channelId }, { userId }],
+			},
+		});
+		if (!muted) {
+			return false;
+		}
+		const expireDate = muted.expiresAt;
+		const now = new Date(Date.now());
+		if (now < expireDate) {
+			return true;
+		}
+		await this.prisma.mute.deleteMany({
+			where: {
+				AND: [{ channelId }, { userId }],
+			},
+		});
+		return false;
 	}
 }
 

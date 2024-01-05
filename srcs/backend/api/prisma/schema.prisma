@@ -27,7 +27,8 @@ model User {
     ownerOf      Channel[] @relation("ownership")
     adminOf      Channel[] @relation("admins")
     bannedFrom   Channel[] @relation("banned")
-    mutedFrom    Channel[] @relation("muted")
+    // mutedFrom    Channel[] @relation("muted")
+    muted        Mute[]    @relation("mutes")
     friends      User[]    @relation("friends")
     friendOf     User[]    @relation("friends")
     blocked      User[]    @relation("blocked")
@@ -54,13 +55,24 @@ model Channel {
     messages   Message[]
     members    User[]            @relation("members")
     banned     User[]            @relation("banned")
-    muted      User[]            @relation("muted")
+    // muted      User[]            @relation("muted")
+    muted      Mute[]            @relation("mutes")
     admins     User[]            @relation("admins")
     owner      User              @relation("ownership", fields: [ownerId], references: [id])
     ownerId    String
     isDM       Boolean           @default(false)
     visibility ChannelVisibility @default(PUBLIC)
     password   String?
+}
+
+model Mute {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+    user      User     @relation("mutes", fields: [userId], references: [id])
+    userId    String
+    channel   Channel  @relation("mutes", fields: [channelId], references: [id])
+    channelId String
 }
 
 model Stat {

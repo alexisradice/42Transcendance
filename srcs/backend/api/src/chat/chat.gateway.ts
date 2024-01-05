@@ -166,8 +166,11 @@ export class ChatGateway implements OnGatewayConnection {
 				author,
 				channelId,
 			);
-			// TODO: check if user isnt muted
-			if (isUserInChannel) {
+			const isUserMuted = await this.channelService.IsMuted(
+				author,
+				channelId,
+			);
+			if (isUserInChannel && !isUserMuted) {
 				const message = await this.chatService.createMessage(
 					channelId,
 					author.id,
