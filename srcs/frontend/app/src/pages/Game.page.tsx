@@ -1,5 +1,6 @@
 // GamePage.tsx
 import React, { useEffect, useRef, useState } from 'react';
+import { useMyData } from "../hooks/useMyData";
 import { useSocket } from "../hooks/useSocket";
 import { LobbyType } from '../types';
 import sendSettings from '../utils/sendSettings';
@@ -13,6 +14,7 @@ const PendingPopup = () => {
 };
 
 export const GamePage = () => {
+	const { user } = useMyData();
     const gameSocket = useSocket("game");
     const canvasRef = useRef(null);
     const [lobby, setLobby] = useState<LobbyType | null>(null);
@@ -20,7 +22,7 @@ export const GamePage = () => {
 
     useEffect(() => {
         const settings = sendSettings();
-        gameSocket.emit("queue", settings);
+        gameSocket.emit("queue", settings, user.login);
 
         gameSocket.on('launch', (receivedLobby: LobbyType) => {
             console.log('Lobby data received:', receivedLobby);
