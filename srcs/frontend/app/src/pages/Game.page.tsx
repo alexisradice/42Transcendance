@@ -2,30 +2,32 @@
 import React, { useEffect } from 'react';
 import io from 'socket.io-client';
 import { useMyData } from "../hooks/useMyData";
+import { useSocket } from "../hooks/useSocket";
 import createLobby from '../utils/createLobby';
 import sendSettings from '../utils/sendSettings';
 
 export const GamePage = () => {
     const { user } = useMyData();
+	const  gameSocket = useSocket("game");
 
     useEffect(() => {
-        const socket = io(import.meta.env.VITE_API_URL);
+        
 
-        socket.emit("hello", "world");
-        socket.emit("login", user.login);
+        gameSocket.emit("hello", "world");
 
         //const lobby = createLobby(socket);
         const settings = sendSettings();
-        socket.emit("queue", settings, user.login);
+        gameSocket.emit("queue", settings);
 
-        socket.on('response', (message) => {
+        gameSocket.on('response', (message) => {
             console.log(message); 
         });
 
         return () => {
-            socket.disconnect();
+			gameSocket.off('response');
+            gameSocket.disconnect();
         };
-    }, [user.login]); 
+    }, [gameSocket]); 
 
     return <div>Game Page</div>;
 };

@@ -146,7 +146,7 @@ export class RoomsService {
 			lobby.settings = lobby.player1.settings;
 			console.log("Lobby Info: ID", lobby.id, " Settings: ", lobby.settings, " Player1: ", lobby.player1, " Player2: ", lobby.player2," GameStarted: ", lobby.gameStarted,);
 
-			//socket.emit("launch", lobby);
+			socket.emit("launch", lobby);
 		}
 	}
 }
