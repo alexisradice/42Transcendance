@@ -25,7 +25,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		visibility: "",
 	});
 	const joinChannel = (channel: Channel) => {
-		chatSocket?.emit(
+		chatSocket.emit(
 			"join-chatroom",
 			{ channelId: channel.id },
 			(response: SocketResponse) => {
