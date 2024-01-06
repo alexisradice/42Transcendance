@@ -151,6 +151,43 @@ export class ChatGateway implements OnGatewayConnection {
 		}
 	}
 
+	@SubscribeMessage("leave-chatroom")
+	async handleLeaveChatroom(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { channelId: string },
+	): Promise<SocketResponse> {
+		const response = { success: false, error: "" };
+		const { channelId } = payload;
+		const user = client.data.user;
+		let wasAlone = false;
+		try {
+			const channel =
+				await this.channelService.findChannelById(channelId);
+			const isOwner = await this.channelService.isChannelOwner(
+				user,
+				channel,
+			);
+			if (isOwner) {
+				wasAlone = await this.channelService.changeOwnership(channel);
+			}
+			//leave channel in db
+			await this.channelService.removeUserFromChannel(user, channelId);
+			console.log(
+				"User removed from channel, socket leaving " + channelId,
+			);
+			if (wasAlone) {
+				await this.channelService.destroyChannel(channelId);
+			}
+			//leave channel socket room
+			client.leave(channelId);
+			response.success = true;
+			return response;
+		} catch (err) {
+			response.error = err;
+			return response;
+		}
+	}
+
 	@SubscribeMessage("send-message")
 	async handleMessage(
 		@ConnectedSocket() client: Socket,
@@ -169,8 +206,11 @@ export class ChatGateway implements OnGatewayConnection {
 				author,
 				channelId,
 			);
-			// TODO: check if user isnt muted
-			if (isUserInChannel) {
+			const isUserMuted = await this.channelService.IsMuted(
+				author,
+				channelId,
+			);
+			if (isUserInChannel && !isUserMuted) {
 				const message = await this.chatService.createMessage(
 					channelId,
 					author.id,
