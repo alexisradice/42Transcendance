@@ -1,5 +1,7 @@
 // GamePage.tsx
 import React, { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+import PongGame from '../components/Game/PongGame';
 import { useMyData } from "../hooks/useMyData";
 import { useSocket } from "../hooks/useSocket";
 import { LobbyType } from '../types';
@@ -15,31 +17,31 @@ const PendingPopup = () => {
 
 export const GamePage = () => {
 	const { user } = useMyData();
-    const gameSocket = useSocket("game");
     const canvasRef = useRef(null);
     const [lobby, setLobby] = useState<LobbyType | null>(null);
     const [isPending, setIsPending] = useState(true);
+	const gameSocket = useSocket("game");
+	const Socket = io(import.meta.env.VITE_API_URL);
 
     useEffect(() => {
         const settings = sendSettings();
-        gameSocket.emit("queue", settings, user.login);
-
-        gameSocket.on('launch', (receivedLobby: LobbyType) => {
-            console.log('Lobby data received:', receivedLobby);
-            setLobby(receivedLobby);
-            setIsPending(false);
-        });
-
-        return () => {
-            gameSocket.off('launch');
-            gameSocket.disconnect();
-        };
-    }, [gameSocket]);
+        Socket.emit("queue", settings, user.login);
+		console.log("queue sent");
+		Socket.on('launch', (playerName, lobbyId, settings) => {
+			console.log('Launch event received:', playerName, lobbyId, settings);
+			setIsPending(false);
+		});
+	
+		return () => {
+			Socket.off('launch');
+			Socket.disconnect();
+		};
+	}, [Socket]);
 
 	return (
         <div>
             {isPending && <PendingPopup />}
-            <canvas ref={canvasRef} width="800" height="600" />
+			{!isPending && <PongGame />}
         </div>
     );
 };
