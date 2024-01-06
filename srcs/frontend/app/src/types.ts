@@ -1,9 +1,12 @@
-import { Socket } from 'socket.io-client';
+import { Socket } from "socket.io-client";
 
 export type Channel = {
-	id: number;
+	id: string;
 	name: string;
 	visibility: string;
+	members: Partial<User>[];
+	owner: Partial<User>;
+	admins: Partial<User>[];
 };
 
 export type Message = {
@@ -39,25 +42,25 @@ export type SocketResponse = {
 };
 
 export type LobbyType = {
-    id: string;
-    settings: SettingsType;
-    player1: PlayerType;
-    player2: PlayerType;
-    score: number;
-    gameStarted: boolean;
+	id: string;
+	settings: SettingsType;
+	player1: PlayerType;
+	player2: PlayerType;
+	score: number;
+	gameStarted: boolean;
 };
 
 export type PlayerType = {
-    name: string;
-    socket: Socket;
-	score: number; 
+	name: string;
+	socket: Socket;
+	score: number;
 };
 
 export type SettingsType = {
-    ballSpeed: number;
-    paddleSize: string;
-    visibility: string;
-    inviteFriend: string;
-    pause: boolean;
-    mode: string;
+	ballSpeed: number;
+	paddleSize: string;
+	visibility: string;
+	inviteFriend: string;
+	pause: boolean;
+	mode: string;
 };

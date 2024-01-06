@@ -2,6 +2,7 @@ import {
 	AppShell,
 	Button,
 	Center,
+	Group,
 	Loader,
 	Modal,
 	ScrollArea,
@@ -27,7 +28,7 @@ type Props = {
 
 const FriendsList = ({ chatSocket }: Props) => {
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
-	const [addFriendLoading, setAddFriendLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false);
 	const [addFriendError, setAddFriendError] = useState<string | undefined>(
 		undefined,
 	);
@@ -53,18 +54,18 @@ const FriendsList = ({ chatSocket }: Props) => {
 	});
 
 	const addFriend = async (values: { friendLogin: string }) => {
-		setAddFriendLoading(true);
+		setLoading(true);
 		try {
 			await axiosPrivate.post("user/friends/add", {
 				friendLogin: values.friendLogin,
 			});
-			setAddFriendLoading(false);
+			setLoading(false);
 			setAddFriendError(undefined);
 			close();
 			mutate({ ...friends });
 			form.reset();
 		} catch (err: unknown) {
-			setAddFriendLoading(false);
+			setLoading(false);
 			if (err instanceof AxiosError && err.response?.status === 400) {
 				setAddFriendError(err.response?.data.message);
 			} else {
@@ -117,21 +118,27 @@ const FriendsList = ({ chatSocket }: Props) => {
 					<Modal
 						opened={addFriendOpened}
 						onClose={closeModal}
-						title="Add new friend"
+						title="Add a new friend"
 						centered
 					>
 						<form onSubmit={form.onSubmit(addFriend)}>
 							<TextInput
-								placeholder="Type their login to find someone"
+								placeholder="Friend login"
 								{...form.getInputProps("friendLogin")}
-								rightSection={
-									addFriendLoading ? (
-										<Loader type="dots" />
-									) : null
-								}
 								error={addFriendError}
-								disabled={addFriendLoading}
+								disabled={loading}
+								data-autofocus
 							/>
+							<Group justify="flex-end" align="center">
+								<Button
+									type="submit"
+									color="blue"
+									disabled={loading}
+									mt="md"
+								>
+									{loading ? <Loader type="dots" /> : "Add"}
+								</Button>
+							</Group>
 						</form>
 					</Modal>
 					<Center>
@@ -143,8 +150,7 @@ const FriendsList = ({ chatSocket }: Props) => {
 					<AppShell.Section
 						component={ScrollArea}
 						type="scroll"
-						className="h-100"
-						style={{ flex: 1 }}
+						className="h-100 flex-1"
 					>
 						{friends.length > 0 && (
 							<ul className={classes.list}>

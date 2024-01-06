@@ -15,6 +15,7 @@ import { ChannelService } from "src/channel/channel.service";
 import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
+import { Channel } from "@prisma/client";
 
 @WebSocketGateway({
 	cors: {
@@ -107,7 +108,7 @@ export class ChatGateway implements OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; password?: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: "" };
+		const response = { success: false, error: null };
 		const { channelId, password } = payload;
 		const user = client.data.user;
 		try {
@@ -140,6 +141,8 @@ export class ChatGateway implements OnGatewayConnection {
 				);
 				client.join(channelId);
 				response.success = true;
+			} else {
+				response.error = new ForbiddenException("Access Denied");
 			}
 			return response;
 		} catch (err) {

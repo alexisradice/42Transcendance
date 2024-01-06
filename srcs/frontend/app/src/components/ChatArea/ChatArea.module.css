@@ -7,10 +7,14 @@
 }
 
 .title {
-	&::before {
-		content: "# ";
-	}
-	margin-bottom: var(--mantine-spacing-md);
+	font-size: 24px;
+	flex: 1;
+}
+
+.titleGroup {
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
 }
 
 .sendButton:hover {

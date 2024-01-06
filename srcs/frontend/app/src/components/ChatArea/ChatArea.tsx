@@ -1,26 +1,28 @@
-import { Center, Loader, TextInput, Title, Tooltip } from "@mantine/core";
+import { Center, Group, Loader, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconSend2 } from "@tabler/icons-react";
+import { Socket } from "socket.io-client";
 import useSWR from "swr";
-import { Channel, SocketResponse } from "../../types";
+import { Visibility } from "../../constants";
+import { SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
+import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
-import { Socket } from "socket.io-client";
 
 type Props = {
-	selectedChannel: Channel;
-	chatSocket: Socket | null;
+	channelId: string;
+	chatSocket: Socket;
 };
 
-const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
+const ChatArea = ({ channelId, chatSocket }: Props) => {
 	const {
-		data: messages,
+		data: channel,
 		error,
 		isLoading,
-		mutate,
-	} = useSWR(`/channel/${selectedChannel.id}/messages`, fetcherPrivate);
+		// mutate,
+	} = useSWR(`/channel/${channelId}`, fetcherPrivate);
 
 	const form = useForm({
 		initialValues: {
@@ -30,18 +32,18 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 
 	const sendMessage = () => {
 		const content = form.values.content;
-		chatSocket?.emit(
+		chatSocket.emit(
 			"send-message",
 			{
 				content,
-				channelId: selectedChannel.id,
+				channelId: channel.id,
 			},
 			(response: SocketResponse) => {
 				form.reset();
 				if (!response.success) {
 					errorNotif(response.error);
 				} else {
-					mutate([...messages, response.payload]);
+					// mutate([...messages, response.payload]);
 				}
 			},
 		);
@@ -56,17 +58,23 @@ const ChatArea = ({ selectedChannel, chatSocket }: Props) => {
 			)}
 			{!error && !isLoading && (
 				<div className={classes.chatArea}>
-					<Tooltip label={selectedChannel.name}>
-						<Title className={classes.title} lineClamp={1}>
-							{selectedChannel.name}
-						</Title>
-					</Tooltip>
-					<MessagesArea messages={messages} />
+					<Group className={classes.titleGroup}>
+						{channel.visibility === Visibility.PROTECTED ? (
+							<IconHashLock size={28} />
+						) : (
+							<IconHash size={28} />
+						)}
+						<Text className={classes.title} lineClamp={1}>
+							{channel.name}
+						</Text>
+						{/*TODO admin settings <IconSettings /> */}
+					</Group>
+					<MessagesArea messages={channel.messages} />
 					<form onSubmit={form.onSubmit(sendMessage)}>
 						<TextInput
 							mt="sm"
 							radius="lg"
-							placeholder={`Message #${selectedChannel.name}`}
+							placeholder={`Message #${channel.name}`}
 							rightSection={
 								<IconSend2
 									className={classes.sendButton}
