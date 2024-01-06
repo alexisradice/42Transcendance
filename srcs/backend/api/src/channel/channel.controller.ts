@@ -13,6 +13,7 @@ import { ChannelVisibility } from "@prisma/client";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { ChannelService } from "./channel.service";
+import { channel } from "diagnostics_channel";
 
 @Controller("channel")
 export class ChannelController {
@@ -62,46 +63,9 @@ export class ChannelController {
 		if (!isUserInChannel) {
 			throw new ForbiddenException();
 		}
-		const channel = await this.channelService.findChannelById(channelId, {
-			id: true,
-			name: true,
-			visibility: true,
-			messages: {
-				select: {
-					id: true,
-					content: true,
-					createdAt: true,
-					author: {
-						select: {
-							login: true,
-							displayName: true,
-							image: true,
-						},
-					},
-				},
-			},
-		});
+		const channel =
+			await this.channelService.findChannelByIdStripped(channelId);
 		return channel;
-	}
-
-	@Get(":channelId/messages")
-	@UseGuards(JwtGuard)
-	async getChannelMessages(
-		@Req() req: Request,
-		@Param("channelId") channelId: string,
-	) {
-		const isUserInChannel = await this.channelService.isChannelMember(
-			req.user["id"],
-			channelId,
-		);
-		if (!isUserInChannel) {
-			throw new ForbiddenException();
-		}
-		const messages = await this.channelService.getChannelMessages(
-			req.user["id"],
-			channelId,
-		);
-		return messages || [];
 	}
 
 	@Post("admin/promote")

@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { Channel, ChannelVisibility, Prisma, User } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
+import { Channel, ChannelVisibility, User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { PrismaService } from "src/prisma/prisma.service";
 
@@ -45,10 +44,53 @@ export class ChannelService {
 		});
 	}
 
-	async findChannelById(id: string, select?: Prisma.ChannelSelect) {
+	async findChannelById(id: string) {
 		const channel = await this.prisma.channel.findFirst({
 			where: { id },
-			select,
+		});
+		return channel;
+	}
+
+	async findChannelByIdStripped(id: string) {
+		const channel = await this.prisma.channel.findFirst({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				visibility: true,
+				members: {
+					select: {
+						login: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				owner: {
+					select: {
+						login: true,
+					},
+				},
+				admins: {
+					select: {
+						login: true,
+					},
+				},
+				messages: {
+					select: {
+						id: true,
+						content: true,
+						createdAt: true,
+						author: {
+							select: {
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+					},
+				},
+			},
 		});
 		return channel;
 	}
