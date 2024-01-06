@@ -58,24 +58,6 @@ export class ChannelService {
 				id: true,
 				name: true,
 				visibility: true,
-				members: {
-					select: {
-						login: true,
-						displayName: true,
-						image: true,
-						status: true,
-					},
-				},
-				owner: {
-					select: {
-						login: true,
-					},
-				},
-				admins: {
-					select: {
-						login: true,
-					},
-				},
 				messages: {
 					select: {
 						id: true,
@@ -89,10 +71,60 @@ export class ChannelService {
 							},
 						},
 					},
+					orderBy: { createdAt: "asc" },
 				},
 			},
 		});
 		return channel;
+	}
+
+	async getChannelOwner(channelId: string) {
+		return await this.prisma.user.findFirst({
+			where: {
+				ownerOf: { some: { id: channelId } },
+			},
+			select: {
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+		});
+	}
+
+	async getChannelAdmins(channelId: string) {
+		return await this.prisma.user.findMany({
+			where: {
+				adminOf: { some: { id: channelId } },
+				NOT: { ownerOf: { some: { id: channelId } } },
+			},
+			select: {
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+			orderBy: { displayName: "asc" },
+		});
+	}
+
+	async getChannelMembers(channelId: string) {
+		return await this.prisma.user.findMany({
+			where: {
+				memberOf: { some: { id: channelId } },
+				NOT: [
+					{ adminOf: { some: { id: channelId } } },
+					{ ownerOf: { some: { id: channelId } } },
+				],
+			},
+			select: {
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+			orderBy: { displayName: "asc" },
+		});
 	}
 
 	async getChannelMessages(userId: string, channelId: string) {

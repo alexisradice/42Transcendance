@@ -1,12 +1,7 @@
-import { Avatar, Box, Group, Indicator, Menu, Text, rem } from "@mantine/core";
-import {
-	IconChevronRight,
-	IconDeviceGamepad2,
-	IconMessageCircle,
-} from "@tabler/icons-react";
+import { Menu, rem } from "@mantine/core";
+import { IconDeviceGamepad2, IconMessageCircle } from "@tabler/icons-react";
 import { Friend } from "../../types";
-import { getStatusColor } from "../../utils/status";
-import classes from "./FriendCard.module.css";
+import UserCard from "../UserCard/UserCard";
 
 type Props = {
 	friend: Friend;
@@ -35,32 +30,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 	return (
 		<Menu>
 			<Menu.Target>
-				<Box p="xs" className={classes.card}>
-					<Group align="center">
-						<Indicator
-							inline
-							size={14}
-							offset={5}
-							position="bottom-end"
-							color={getStatusColor(friend.status)}
-							withBorder
-						>
-							<Avatar src={friend.image} />
-						</Indicator>
-						<Box className="flex-1">
-							<Text size="md" fw={500}>
-								{friend.displayName}
-							</Text>
-
-							<Text c="dimmed" size="sm">
-								@{friend.login}
-							</Text>
-						</Box>
-						<Box>
-							<IconChevronRight size="1rem" />
-						</Box>
-					</Group>
-				</Box>
+				<UserCard user={friend} chevron={true} />
 			</Menu.Target>
 			<Menu.Dropdown>
 				<Menu.Item

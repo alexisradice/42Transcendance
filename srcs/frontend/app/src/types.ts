@@ -9,6 +9,12 @@ export type Channel = {
 	admins: Partial<User>[];
 };
 
+export type UserCard = Friend;
+
+export type ChannelMember = Friend & {
+	role: number;
+};
+
 export type Message = {
 	id: string;
 	createdAt: string;
@@ -64,3 +70,9 @@ export type SettingsType = {
 	pause: boolean;
 	mode: string;
 };
+
+export enum MemberRole {
+	OWNER,
+	ADMIN,
+	MEMBER,
+}

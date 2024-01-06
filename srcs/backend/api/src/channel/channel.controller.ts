@@ -65,7 +65,10 @@ export class ChannelController {
 		}
 		const channel =
 			await this.channelService.findChannelByIdStripped(channelId);
-		return channel;
+		const owner = await this.channelService.getChannelOwner(channelId);
+		const admins = await this.channelService.getChannelAdmins(channelId);
+		const members = await this.channelService.getChannelMembers(channelId);
+		return { channel, owner, admins, members };
 	}
 
 	@Post("admin/promote")
