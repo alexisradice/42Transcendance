@@ -59,8 +59,14 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 					errorNotif(response.error);
 				} else {
 					mutate({
-						...data.channel,
-						messages: [...data.channel.messages, response.payload],
+						...data,
+						channel: {
+							...data.channel,
+							messages: [
+								...data.channel.messages,
+								response.payload,
+							],
+						},
 					});
 				}
 			},
