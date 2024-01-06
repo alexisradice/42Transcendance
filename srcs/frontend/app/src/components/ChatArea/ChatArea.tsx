@@ -21,7 +21,7 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 		data: channel,
 		error,
 		isLoading,
-		// mutate,
+		mutate,
 	} = useSWR(`/channel/${channelId}`, fetcherPrivate);
 
 	const form = useForm({
@@ -43,7 +43,10 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 				if (!response.success) {
 					errorNotif(response.error);
 				} else {
-					// mutate([...messages, response.payload]);
+					mutate({
+						...channel,
+						messages: [...channel.messages, response.payload],
+					});
 				}
 			},
 		);
