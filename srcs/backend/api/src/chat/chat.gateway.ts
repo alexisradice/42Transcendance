@@ -159,13 +159,13 @@ export class ChatGateway implements OnGatewayConnection {
 	): Promise<SocketResponse> {
 		const response = { success: false, error: "" };
 		const { channelId } = payload;
-		const user = client.data.user;
+		const user: User = client.data.user;
 		let wasAlone = false;
 		try {
 			const channel =
 				await this.channelService.findChannelById(channelId);
 			const isOwner = await this.channelService.isChannelOwner(
-				user,
+				user.id,
 				channel,
 			);
 			if (isOwner) {
@@ -199,16 +199,16 @@ export class ChatGateway implements OnGatewayConnection {
 			error: "",
 		};
 		const { channelId, content } = payload;
-		const author = client.data.user;
+		const author: User = client.data.user;
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
 			const isUserInChannel = await this.channelService.isChannelMember(
-				author,
+				author.id,
 				channelId,
 			);
 			const isUserMuted = await this.channelService.IsMuted(
-				author,
+				author.id,
 				channelId,
 			);
 			if (isUserInChannel && !isUserMuted) {
