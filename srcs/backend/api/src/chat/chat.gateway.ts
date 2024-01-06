@@ -9,13 +9,13 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 } from "@nestjs/websockets";
+import { User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
-import { Channel } from "@prisma/client";
 
 @WebSocketGateway({
 	cors: {
@@ -110,12 +110,12 @@ export class ChatGateway implements OnGatewayConnection {
 	): Promise<SocketResponse> {
 		const response = { success: false, error: null };
 		const { channelId, password } = payload;
-		const user = client.data.user;
+		const user: User = client.data.user;
 		try {
 			const channel =
 				await this.channelService.findChannelById(channelId);
 			const isUserInChannel = await this.channelService.isChannelMember(
-				user,
+				user.id,
 				channelId,
 			);
 			// user was already in channel = no further checks
@@ -146,6 +146,7 @@ export class ChatGateway implements OnGatewayConnection {
 			}
 			return response;
 		} catch (err) {
+			console.error(err);
 			response.error = err;
 			return response;
 		}
