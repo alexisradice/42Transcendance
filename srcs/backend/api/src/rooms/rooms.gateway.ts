@@ -12,7 +12,13 @@ import { UserService } from '../user/user.service';
 import { Player, Lobby, Settings } from './game.classes';
 
 
-@WebSocketGateway({ cors: true})
+@WebSocketGateway({
+    cors: {
+        origin: "http://localhost:5173",
+        credentials: true,
+    },
+    namespace: "game",
+})
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private roomsService: RoomsService,

@@ -25,16 +25,16 @@ export const GamePage = () => {
 
     useEffect(() => {
         const settings = sendSettings();
-        Socket.emit("queue", settings, user.login);
+        gameSocket.emit("queue", settings, user.login);
 		console.log("queue sent");
-		Socket.on('launch', (playerName, lobbyId, settings) => {
+		gameSocket.on('launch', (playerName, lobbyId, settings) => {
 			console.log('Launch event received:', playerName, lobbyId, settings);
 			setIsPending(false);
 		});
 	
 		return () => {
-			Socket.off('launch');
-			Socket.disconnect();
+			gameSocket.off('launch');
+			gameSocket.disconnect();
 		};
 	}, [Socket]);
 
