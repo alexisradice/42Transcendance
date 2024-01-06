@@ -2,86 +2,34 @@ import {
 	AppShell,
 	Button,
 	Center,
-	Group,
 	Loader,
-	Modal,
-	PasswordInput,
 	ScrollArea,
-	Select,
 	Text,
-	TextInput,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { IconLock, IconPlus } from "@tabler/icons-react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { IconPlus } from "@tabler/icons-react";
 import useSWR from "swr";
 import { Channel } from "../../types";
-import { errorNotif } from "../../utils/errorNotif";
-import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import { fetcherPrivate } from "../../utils/fetcher";
+import ChannelElement from "./ChannelElement";
 import classes from "./ChannelsList.module.css";
+import CreateChannelModal from "./CreateChannelModal";
 
 type Props = {
-	joinChannel: (channel: Channel) => void;
-	setChatOpened: Dispatch<SetStateAction<boolean>>;
+	joinChannel: (channel: Channel, password?: string) => void;
 };
 
-const ChannelsList = ({ joinChannel, setChatOpened }: Props) => {
+const ChannelsList = ({ joinChannel }: Props) => {
 	const [createModalOpened, { open, close }] = useDisclosure(false);
-	const [createChannelLoading, setCreateChannelLoading] =
-		useState<boolean>(false);
-	const { data, error, isLoading, mutate } = useSWR(
-		"/channel/list",
-		fetcherPrivate,
-	);
+	const {
+		data: channels,
+		error,
+		isLoading,
+		mutate,
+	} = useSWR("/channel/list", fetcherPrivate);
 
-	const form = useForm({
-		initialValues: {
-			channelName: "",
-			visibility: "PUBLIC",
-			password: "",
-		},
-		validate: {
-			channelName: (value: string) => {
-				if (/^(?=.{3,100}$)[a-z]+([a-z0-9]|-)*[a-z]+$/.test(value)) {
-					return null;
-				}
-				return "Invalid channel name";
-			},
-			visibility: (value: string) => {
-				if (["PUBLIC", "PROTECTED", "PRIVATE"].includes(value)) {
-					return null;
-				}
-				return "Invalid visibility";
-			},
-			password: (value: string) => {
-				if (
-					form.values.visibility !== "PROTECTED" ||
-					value.length >= 8
-				) {
-					return null;
-				}
-				return "Password must be at least 8 characters long";
-			},
-		},
-	});
-
-	const closeModal = () => {
-		close();
-		setCreateChannelLoading(false);
-		form.reset();
-	};
-
-	const createChannel = async () => {
-		console.log("form.values", form.values);
-		setCreateChannelLoading(true);
-		try {
-			await axiosPrivate.post("/channel/create", form.values);
-			mutate([...data]);
-			closeModal();
-		} catch (err) {
-			errorNotif(err);
-		}
+	const handleChannelCreated = (channel: Channel) => {
+		mutate([...channels, channel]);
 	};
 
 	return (
@@ -93,75 +41,11 @@ const ChannelsList = ({ joinChannel, setChatOpened }: Props) => {
 			)}
 			{!error && !isLoading && (
 				<>
-					<Modal
+					<CreateChannelModal
 						opened={createModalOpened}
-						onClose={closeModal}
-						title="Create new channel"
-						centered
-					>
-						<form onSubmit={form.onSubmit(createChannel)}>
-							<TextInput
-								label="Name"
-								placeholder="my-awesome-channel"
-								{...form.getInputProps("channelName")}
-								// onKeyUp={() => {
-								// 	form.setValues((prev) => ({
-								// 		...prev,
-								// 		channelName: prev.channelName
-								// 			?.replace(" ", "-")
-								// 			.replace("_", "-")
-								// 			.replace("--", "-")
-								// 			.toLowerCase(),
-								// 	}));
-								// }}
-								disabled={createChannelLoading}
-							/>
-							<Select
-								allowDeselect={false}
-								label="Visibility"
-								mt="md"
-								data={[
-									{ value: "PUBLIC", label: "Public" },
-									{
-										value: "PRIVATE",
-										label: "Private",
-									},
-									{ value: "PROTECTED", label: "Protected" },
-								]}
-								onChange={(value) => {
-									form.setFieldValue(
-										"visibility",
-										value || "PUBLIC",
-									);
-								}}
-								defaultValue="PUBLIC"
-							/>
-							{form.values.visibility === "PROTECTED" && (
-								<PasswordInput
-									mt="md"
-									label="Password"
-									placeholder="Channel password"
-									{...form.getInputProps("password")}
-									disabled={createChannelLoading}
-								/>
-							)}
-							<Group justify="flex-end">
-								<Button
-									type="submit"
-									color="blue"
-									mt="lg"
-									disabled={createChannelLoading}
-									rightSection={
-										createChannelLoading ? (
-											<Loader type="dots" />
-										) : null
-									}
-								>
-									Create channel
-								</Button>
-							</Group>
-						</form>
-					</Modal>
+						close={close}
+						handleChannelCreated={handleChannelCreated}
+					/>
 					<Center>
 						<Button onClick={open} variant="subtle" fullWidth>
 							<IconPlus size={16} />
@@ -171,27 +55,15 @@ const ChannelsList = ({ joinChannel, setChatOpened }: Props) => {
 					<AppShell.Section
 						component={ScrollArea}
 						type="scroll"
-						className="h-100"
-						style={{ flex: 1 }}
+						className="h-100 flex-1"
 					>
 						<ul className={classes.list}>
-							{data.map((channel: Channel) => (
-								<li
-									key={channel.id}
-									className={classes.item}
-									onClick={() => {
-										joinChannel(channel);
-										setChatOpened(true);
-									}}
-								>
-									<Group align="center" gap={5}>
-										<Text size="xl">#</Text>
-										<Text>{channel.name}</Text>
-										{channel.visibility === "PROTECTED" && (
-											<IconLock size={18} />
-										)}
-									</Group>
-								</li>
+							{channels.map((channel: Channel, index: number) => (
+								<ChannelElement
+									key={index}
+									channel={channel}
+									joinChannel={joinChannel}
+								/>
 							))}
 						</ul>
 					</AppShell.Section>

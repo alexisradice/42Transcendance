@@ -19,20 +19,19 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const chatSocket = useSocket("chat");
 	const [leftSectionOpened, { toggle: toggleLeftSection }] = useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
-	const [selectedChannel, setSelectedChannel] = useState<Channel>({
-		id: -1,
-		name: "",
-		visibility: "",
-	});
-	const joinChannel = (channel: Channel) => {
+	const [selectedChannel, setSelectedChannel] = useState<string>("");
+	const joinChannel = (channel: Channel, password?: string) => {
 		chatSocket.emit(
 			"join-chatroom",
-			{ channelId: channel.id },
+			{ channelId: channel.id, password },
 			(response: SocketResponse) => {
 				if (!response.success || response.error) {
-					errorNotif(response.error);
+					const err = new Error();
+					Object.assign(err, response.error);
+					errorNotif(err);
 				} else {
-					setSelectedChannel(channel);
+					setSelectedChannel(channel.id);
+					setChatOpened(true);
 				}
 			},
 		);
@@ -52,8 +51,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				width: 340,
 				breakpoint: "md",
 				collapsed: {
-					mobile: !chatOpened || selectedChannel.id === -1,
-					desktop: !chatOpened || selectedChannel.id === -1,
+					mobile: !chatOpened || selectedChannel === "",
+					desktop: !chatOpened || selectedChannel === "",
 				},
 			}}
 		>
@@ -64,14 +63,11 @@ const LoggedView = ({ setIsLogged }: Props) => {
 					chatOpened={chatOpened}
 					setChatOpened={setChatOpened}
 					setIsLogged={setIsLogged}
-					selectedChannel={selectedChannel.id !== -1}
+					selectedChannel={selectedChannel !== ""}
 				/>
 			</AppShell.Header>
 			<AppShell.Navbar>
-				<ChannelsList
-					joinChannel={joinChannel}
-					setChatOpened={setChatOpened}
-				/>
+				<ChannelsList joinChannel={joinChannel} />
 				<Divider />
 				<FriendsList chatSocket={chatSocket} />
 			</AppShell.Navbar>
@@ -79,9 +75,9 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				<MainFrame />
 			</AppShell.Main>
 			<AppShell.Aside>
-				{selectedChannel.id !== -1 && (
+				{selectedChannel && (
 					<ChatArea
-						selectedChannel={selectedChannel}
+						channelId={selectedChannel}
 						chatSocket={chatSocket}
 					/>
 				)}

@@ -1,6 +1,7 @@
 import {
 	Body,
 	Controller,
+	ForbiddenException,
 	Get,
 	HttpException,
 	Param,
@@ -39,13 +40,48 @@ export class ChannelController {
 				400,
 			);
 		}
-		await this.channelService.createChannel(
+		const createdChannel = await this.channelService.createChannel(
 			req.user["id"],
 			channelName,
 			visibility,
 			password,
 		);
-		return { success: true };
+		return createdChannel;
+	}
+
+	@Get(":channelId")
+	@UseGuards(JwtGuard)
+	async getChannel(
+		@Req() req: Request,
+		@Param("channelId") channelId: string,
+	) {
+		const isUserInChannel = await this.channelService.isChannelMember(
+			req.user["id"],
+			channelId,
+		);
+		if (!isUserInChannel) {
+			throw new ForbiddenException();
+		}
+		const channel = await this.channelService.findChannelById(channelId, {
+			id: true,
+			name: true,
+			visibility: true,
+			messages: {
+				select: {
+					id: true,
+					content: true,
+					createdAt: true,
+					author: {
+						select: {
+							login: true,
+							displayName: true,
+							image: true,
+						},
+					},
+				},
+			},
+		});
+		return channel;
 	}
 
 	@Get(":channelId/messages")
@@ -59,7 +95,7 @@ export class ChannelController {
 			channelId,
 		);
 		if (!isUserInChannel) {
-			throw new HttpException("User is not in channel", 403);
+			throw new ForbiddenException();
 		}
 		const messages = await this.channelService.getChannelMessages(
 			req.user["id"],

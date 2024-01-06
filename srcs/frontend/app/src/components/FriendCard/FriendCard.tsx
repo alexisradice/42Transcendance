@@ -47,7 +47,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 						>
 							<Avatar src={friend.image} />
 						</Indicator>
-						<Box style={{ flex: 1 }}>
+						<Box className="flex-1">
 							<Text size="md" fw={500}>
 								{friend.displayName}
 							</Text>
