@@ -1,4 +1,4 @@
-import { Avatar, Burger, Group, Image, Loader } from "@mantine/core";
+import { Avatar, Box, Burger, Group, Image, Loader } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
@@ -28,7 +28,6 @@ export default function Header({
 		<Group justify="space-between">
 			<Group>
 				<Burger
-					hiddenFrom="sm"
 					opened={leftSectionOpened}
 					onClick={toggleLeftSection}
 					aria-label="Toggle navigation"
@@ -50,7 +49,7 @@ export default function Header({
 				{!error && isLoading && <Loader type="dots" />}
 				{!error && !isLoading && (
 					<>
-						<div>Howdy, {user.displayName}</div>
+						<Box visibleFrom="sm">Howdy, {user.displayName}</Box>
 						<UserMenu setIsLogged={setIsLogged}>
 							<Avatar
 								src={user.image}
