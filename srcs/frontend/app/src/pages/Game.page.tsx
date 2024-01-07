@@ -29,6 +29,7 @@ export const GamePage = () => {
 		console.log("queue sent");
 		gameSocket.on('launch', (playerName, lobbyId, settings) => {
 			console.log('Launch event received:', playerName, lobbyId, settings);
+			gameSocket.emit('launchGame', true);
 			setIsPending(false);
 		});
 	
