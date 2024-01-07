@@ -56,7 +56,7 @@ const BlockedUsers = () => {
 			)}
 			{!error && !isLoading && (
 				<Box mt="md">
-					<ScrollArea h={200}>
+					<ScrollArea.Autosize mah={200} type="scroll">
 						<Stack>
 							{blockedUsers.map(
 								(blockedUser: User, index: number) => (
@@ -76,7 +76,7 @@ const BlockedUsers = () => {
 								),
 							)}
 						</Stack>
-					</ScrollArea>
+					</ScrollArea.Autosize>
 				</Box>
 			)}
 		</>
