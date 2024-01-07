@@ -155,12 +155,12 @@ const FriendsList = ({ chatSocket }: Props) => {
 					<Text>&nbsp;Add a new friend</Text>
 				</Button>
 			</Center>
-			<AppShell.Section
-				component={ScrollArea}
-				type="scroll"
-				className="h-100 flex-1"
-			>
-				{friends.length > 0 && (
+			{friends.length > 0 && (
+				<AppShell.Section
+					component={ScrollArea}
+					type="scroll"
+					className="h-100 flex-1"
+				>
 					<ul className={classes.list}>
 						{friends.map((friend: Friend, index: number) => {
 							return (
@@ -175,13 +175,15 @@ const FriendsList = ({ chatSocket }: Props) => {
 							);
 						})}
 					</ul>
-				)}
-				{friends.length === 0 && (
-					<Center component={Text} className="h-100" fs="italic">
-						It's a bit empty around here.
+				</AppShell.Section>
+			)}
+			{friends.length === 0 && (
+				<AppShell.Section className="flex-1">
+					<Center className="h-100">
+						<Text fs="italic">*cricket noise*</Text>
 					</Center>
-				)}
-			</AppShell.Section>
+				</AppShell.Section>
+			)}
 		</>
 	);
 };
