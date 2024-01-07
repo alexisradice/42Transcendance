@@ -28,7 +28,7 @@ import {
 	User,
 } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
-import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import { fetcherPrivate } from "../../utils/fetcher";
 import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import ChannelMemberMenu from "./ChannelMemberMenu";
@@ -102,65 +102,6 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 		return false;
 	};
 
-	const promoteToAdmin = async (member: ChannelMember) => {
-		if (
-			confirm(
-				`Grant ${member.login} administrator privileges in this channel?`,
-			)
-		) {
-			try {
-				await axiosPrivate.post("/channel/admin/promote", {
-					channelId: data.channel.id,
-					promoteeId: member.id,
-				});
-				mutate(`/channel/${channelId}`, {
-					...data,
-					admins: [...data.admins, member],
-					members: data.members.filter(
-						(member: ChannelMember) =>
-							member.login !== member.login,
-					),
-				});
-			} catch (err) {
-				errorNotif(err);
-			}
-		}
-	};
-
-	const blockMember = async (member: ChannelMember) => {
-		if (
-			confirm(
-				`Are you sure you want to block ${member.login}? This will also remove them from your friends list.`,
-			)
-		) {
-			try {
-				await axiosPrivate.post("user/block", {
-					userLogin: member.login,
-				});
-				mutate(`/channel/${channelId}`);
-				mutate("/user/friends/all");
-				mutate("/user/blocked/all");
-			} catch (err: unknown) {
-				errorNotif(err);
-			}
-		}
-	};
-
-	const unblockMember = async (member: ChannelMember) => {
-		if (confirm(`Are you sure you want to unblock ${member.login}?`)) {
-			try {
-				await axiosPrivate.post("user/unblock", {
-					userLogin: member.login,
-				});
-				mutate(`/channel/${channelId}`);
-				mutate("/user/friends/all");
-				mutate("/user/blocked/all");
-			} catch (err: unknown) {
-				errorNotif(err);
-			}
-		}
-	};
-
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
@@ -181,7 +122,10 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 			</Group>
 			{chatMode ? (
 				<>
-					<MessagesArea messages={data.messages} />
+					<MessagesArea
+						messages={data.messages}
+						userLogin={user.login}
+					/>
 					<form onSubmit={form.onSubmit(sendMessage)}>
 						<TextInput
 							mt="sm"
@@ -209,8 +153,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 						isOwner={user.login === data.owner.login}
 						isAdmin={isAdmin()}
 						isMe={user.login === data.owner.login}
-						blockMember={blockMember}
-						unblockMember={unblockMember}
+						channelId={channelId}
 					/>
 					{data.admins.length > 0 && (
 						<>
@@ -229,8 +172,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 											}
 											isAdmin={isAdmin()}
 											isMe={user.login === admin.login}
-											blockMember={blockMember}
-											unblockMember={unblockMember}
+											channelId={channelId}
 										/>
 									);
 								},
@@ -254,9 +196,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 											}
 											isAdmin={isAdmin()}
 											isMe={user.login === member.login}
-											promoteToAdmin={promoteToAdmin}
-											blockMember={blockMember}
-											unblockMember={unblockMember}
+											channelId={channelId}
 										/>
 									);
 								},

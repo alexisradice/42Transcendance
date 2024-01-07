@@ -10,8 +10,9 @@ import {
 } from "@tabler/icons-react";
 import { ChannelMember } from "../../types";
 import UserCard from "../UserCard/UserCard";
-import useSWR from "swr";
-import { fetcherPrivate } from "../../utils/fetcher";
+import useSWR, { useSWRConfig } from "swr";
+import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	member: ChannelMember;
@@ -19,9 +20,7 @@ type Props = {
 	isOwner: boolean;
 	isAdmin: boolean;
 	isMe: boolean;
-	promoteToAdmin?: (member: ChannelMember) => void;
-	blockMember: (member: ChannelMember) => void;
-	unblockMember: (member: ChannelMember) => void;
+	channelId: string;
 };
 
 const ChannelMemberMenu = ({
@@ -30,16 +29,66 @@ const ChannelMemberMenu = ({
 	isOwner,
 	isAdmin,
 	isMe,
-	promoteToAdmin,
-	blockMember,
-	unblockMember,
+	channelId,
 }: Props) => {
+	const { mutate } = useSWRConfig();
 	const {
 		data: blockedUsers,
 		error,
 		isLoading,
-		mutate,
 	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
+
+	const promoteToAdmin = async (member: ChannelMember) => {
+		if (
+			confirm(
+				`Grant ${member.login} administrator privileges in this channel?`,
+			)
+		) {
+			try {
+				await axiosPrivate.post("/channel/admin/promote", {
+					channelId,
+					promoteeId: member.id,
+				});
+				mutate(`/channel/${channelId}`);
+			} catch (err) {
+				errorNotif(err);
+			}
+		}
+	};
+
+	const blockMember = async (member: ChannelMember) => {
+		if (
+			confirm(
+				`Are you sure you want to block ${member.login}? This will also remove them from your friends list.`,
+			)
+		) {
+			try {
+				await axiosPrivate.post("user/block", {
+					userLogin: member.login,
+				});
+				mutate(`/channel/${channelId}`);
+				mutate("/user/friends/all");
+				mutate("/user/blocked/all");
+			} catch (err: unknown) {
+				errorNotif(err);
+			}
+		}
+	};
+
+	const unblockMember = async (member: ChannelMember) => {
+		if (confirm(`Are you sure you want to unblock ${member.login}?`)) {
+			try {
+				await axiosPrivate.post("user/unblock", {
+					userLogin: member.login,
+				});
+				mutate(`/channel/${channelId}`);
+				mutate("/user/friends/all");
+				mutate("/user/blocked/all");
+			} catch (err: unknown) {
+				errorNotif(err);
+			}
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -52,6 +101,7 @@ const ChannelMemberMenu = ({
 	if (error || !blockedUsers) {
 		return <></>;
 	}
+
 	return (
 		<>
 			{isMe ? (
@@ -83,7 +133,6 @@ const ChannelMemberMenu = ({
 								leftSection={<IconBan size={18} />}
 								onClick={() => {
 									unblockMember(member);
-									mutate();
 								}}
 							>
 								Unblock
@@ -94,7 +143,6 @@ const ChannelMemberMenu = ({
 								leftSection={<IconBan size={18} />}
 								onClick={() => {
 									blockMember(member);
-									mutate();
 								}}
 							>
 								Block
