@@ -58,21 +58,6 @@ export class ChannelService {
 				id: true,
 				name: true,
 				visibility: true,
-				messages: {
-					select: {
-						id: true,
-						content: true,
-						createdAt: true,
-						author: {
-							select: {
-								login: true,
-								displayName: true,
-								image: true,
-							},
-						},
-					},
-					orderBy: { createdAt: "asc" },
-				},
 			},
 		});
 		return channel;

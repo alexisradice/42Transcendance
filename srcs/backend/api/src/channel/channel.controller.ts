@@ -56,8 +56,9 @@ export class ChannelController {
 		@Req() req: Request,
 		@Param("channelId") channelId: string,
 	) {
+		const userId = req.user["id"];
 		const isUserInChannel = await this.channelService.isChannelMember(
-			req.user["id"],
+			userId,
 			channelId,
 		);
 		if (!isUserInChannel) {
@@ -68,7 +69,11 @@ export class ChannelController {
 		const owner = await this.channelService.getChannelOwner(channelId);
 		const admins = await this.channelService.getChannelAdmins(channelId);
 		const members = await this.channelService.getChannelMembers(channelId);
-		return { channel, owner, admins, members };
+		const messages = await this.channelService.getChannelMessages(
+			userId,
+			channelId,
+		);
+		return { channel, messages, owner, admins, members };
 	}
 
 	@Post("admin/promote")

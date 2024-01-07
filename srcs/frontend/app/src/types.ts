@@ -1,5 +1,19 @@
 import { Socket } from "socket.io-client";
 
+export type ChannelInfos = {
+	channel: ChannelStripped;
+	owner: ChannelMember;
+	admins: ChannelMember[];
+	members: ChannelMember[];
+	messages: Message[];
+};
+
+export type ChannelStripped = {
+	id: string;
+	name: string;
+	visibility: string;
+};
+
 export type Channel = {
 	id: string;
 	name: string;
