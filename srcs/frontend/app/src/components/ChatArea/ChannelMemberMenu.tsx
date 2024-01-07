@@ -17,6 +17,7 @@ type Props = {
 	isOwner: boolean;
 	isAdmin: boolean;
 	isMe: boolean;
+	promoteToAdmin?: (member: ChannelMember) => void;
 };
 
 const ChannelMemberMenu = ({
@@ -25,6 +26,7 @@ const ChannelMemberMenu = ({
 	isOwner,
 	isAdmin,
 	isMe,
+	promoteToAdmin,
 }: Props) => {
 	return (
 		<>
@@ -61,12 +63,17 @@ const ChannelMemberMenu = ({
 								<Menu.Item
 									leftSection={<IconSword size={18} />}
 									color="green"
+									onClick={() => {
+										if (promoteToAdmin) {
+											promoteToAdmin(member);
+										}
+									}}
 								>
 									Promote to admin
 								</Menu.Item>
 							</>
 						)}
-						{(isOwner || isAdmin) && memberRole === "member" && (
+						{(isOwner || (isAdmin && memberRole === "member")) && (
 							<>
 								<Menu.Divider />
 								<Menu.Item

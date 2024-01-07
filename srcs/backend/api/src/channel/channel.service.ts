@@ -84,6 +84,7 @@ export class ChannelService {
 				ownerOf: { some: { id: channelId } },
 			},
 			select: {
+				id: true,
 				login: true,
 				displayName: true,
 				image: true,
@@ -99,6 +100,7 @@ export class ChannelService {
 				NOT: { ownerOf: { some: { id: channelId } } },
 			},
 			select: {
+				id: true,
 				login: true,
 				displayName: true,
 				image: true,
@@ -118,6 +120,7 @@ export class ChannelService {
 				],
 			},
 			select: {
+				id: true,
 				login: true,
 				displayName: true,
 				image: true,

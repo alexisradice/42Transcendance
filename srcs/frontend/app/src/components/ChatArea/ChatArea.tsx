@@ -21,7 +21,7 @@ import useSWR from "swr";
 import { Visibility } from "../../constants";
 import { ChannelMember, SocketResponse, User } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
-import { fetcherPrivate } from "../../utils/fetcher";
+import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
@@ -86,6 +86,27 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 			}
 		}
 		return false;
+	};
+
+	const promoteToAdmin = async (member: ChannelMember) => {
+		try {
+			const response = await axiosPrivate.post("/channel/admin/promote", {
+				channelId: data.channel.id,
+				promoteeId: member.id,
+			});
+			if (response.data.success) {
+				mutate({
+					...data,
+					admins: [...data.admins, member],
+					members: data.members.filter(
+						(member: ChannelMember) =>
+							member.login !== member.login,
+					),
+				});
+			}
+		} catch (err) {
+			errorNotif(err);
+		}
 	};
 
 	return (
@@ -197,6 +218,9 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 													isMe={
 														user.login ===
 														member.login
+													}
+													promoteToAdmin={
+														promoteToAdmin
 													}
 												/>
 											);

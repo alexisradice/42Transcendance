@@ -9,7 +9,9 @@ export type Channel = {
 	admins: Partial<User>[];
 };
 
-export type ChannelMember = Friend;
+export type ChannelMember = Friend & {
+	id: string;
+};
 
 export type Message = {
 	id: string;
