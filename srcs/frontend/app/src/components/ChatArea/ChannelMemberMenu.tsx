@@ -49,8 +49,11 @@ const ChannelMemberMenu = ({
 						>
 							Invite to play
 						</Menu.Item>
-						<Menu.Item c="red" leftSection={<IconBan size={18} />}>
-							Block
+						<Menu.Item
+							color="red"
+							leftSection={<IconBan size={18} />}
+						>
+							Block user
 						</Menu.Item>
 						{isOwner && memberRole === "member" && (
 							<>
