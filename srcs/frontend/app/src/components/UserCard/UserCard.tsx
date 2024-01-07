@@ -1,49 +1,58 @@
-import { Avatar, Box, Group, Indicator, Text } from "@mantine/core";
+import {
+	Avatar,
+	Box,
+	Group,
+	Indicator,
+	Text,
+	UnstyledButton,
+} from "@mantine/core";
 import { IconChevronRight, TablerIconsProps } from "@tabler/icons-react";
 import { getStatusColor } from "../../utils/status";
-import { UserCard } from "../../types";
+import { ChannelMember, Friend } from "../../types";
 import classes from "./UserCard.module.css";
-import { ReactElement } from "react";
+import { ReactElement, forwardRef } from "react";
 
 type Props = {
-	user: UserCard;
+	user: ChannelMember | Friend;
 	chevron?: boolean;
 	icon?: ReactElement<TablerIconsProps>;
 };
 
-const UserCard = ({ user, chevron, icon }: Props) => {
-	return (
-		<Box p="xs" className={classes.card}>
-			<Group align="center">
-				<Indicator
-					inline
-					size={14}
-					offset={5}
-					position="bottom-end"
-					color={getStatusColor(user.status)}
-					withBorder
-				>
-					<Avatar src={user.image} />
-				</Indicator>
-				<Box className="flex-1">
-					<Group justify="flex-start" gap={5}>
-						<Text size="md" fw={500}>
-							{user.displayName}
+const UserCard = forwardRef<HTMLButtonElement, Props>(
+	({ user, chevron, icon, ...others }: Props, ref) => {
+		return (
+			<UnstyledButton ref={ref} {...others} className={classes.card}>
+				<Group align="center">
+					<Indicator
+						inline
+						size={14}
+						offset={5}
+						position="bottom-end"
+						color={getStatusColor(user.status)}
+						withBorder
+					>
+						<Avatar src={user.image} />
+					</Indicator>
+					<Box className="flex-1">
+						<Group justify="flex-start" gap={5}>
+							<Text size="md" fw={500}>
+								{user.displayName}
+							</Text>
+							{icon}
+						</Group>
+						<Text c="dimmed" size="sm">
+							@{user.login}
 						</Text>
-						{icon}
-					</Group>
-					<Text c="dimmed" size="sm">
-						@{user.login}
-					</Text>
-				</Box>
-				{chevron && (
-					<Box>
-						<IconChevronRight size="1rem" />
 					</Box>
-				)}
-			</Group>
-		</Box>
-	);
-};
+					{chevron && (
+						<Box>
+							<IconChevronRight size="1rem" />
+						</Box>
+					)}
+				</Group>
+			</UnstyledButton>
+		);
+	},
+);
 
 export default UserCard;

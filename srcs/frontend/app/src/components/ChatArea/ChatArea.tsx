@@ -11,30 +11,29 @@ import {
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import {
-	IconCrown,
 	IconMessages,
 	IconSend2,
 	IconSettings,
-	IconSword,
 	IconUser,
 } from "@tabler/icons-react";
 import { Socket } from "socket.io-client";
 import useSWR from "swr";
 import { Visibility } from "../../constants";
-import { ChannelMember, SocketResponse } from "../../types";
+import { ChannelMember, SocketResponse, User } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
 import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
-import UserCard from "../UserCard/UserCard";
 import classes from "./ChatArea.module.css";
+import ChannelMemberMenu from "./ChannelMemberMenu";
 
 type Props = {
 	channelId: string;
 	chatSocket: Socket;
+	user: User;
 };
 
-const ChatArea = ({ channelId, chatSocket }: Props) => {
+const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 	const [chatMode, { toggle }] = useDisclosure(true);
 	const { data, error, isLoading, mutate } = useSWR(
 		`/channel/${channelId}`,
@@ -73,6 +72,15 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 				}
 			},
 		);
+	};
+
+	const isAdmin = () => {
+		for (const admin of data.admins) {
+			if (admin.login === user.login) {
+				return true;
+			}
+		}
+		return false;
 	};
 
 	return (
@@ -124,23 +132,41 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 							<Text size="xs" c="dimmed">
 								OWNER
 							</Text>
-							<UserCard
-								user={data.owner}
-								icon={<IconCrown size={18} />}
+							<ChannelMemberMenu
+								member={data.owner as ChannelMember}
+								memberRole="owner"
+								isOwner={user.login === data.owner.login}
+								isAdmin={isAdmin()}
+								isMe={user.login === data.owner.login}
 							/>
 							{data.admins.length > 0 && (
 								<>
 									<Text size="xs" c="dimmed">
 										ADMINS ― {data.admins.length}
 									</Text>
-									{data.admins.map((admin: ChannelMember) => {
-										return (
-											<UserCard
-												user={admin}
-												icon={<IconSword size={18} />}
-											/>
-										);
-									})}
+									{data.admins.map(
+										(
+											admin: ChannelMember,
+											index: number,
+										) => {
+											return (
+												<ChannelMemberMenu
+													key={index}
+													member={admin}
+													memberRole="admin"
+													isOwner={
+														user.login ===
+														data.owner.login
+													}
+													isAdmin={isAdmin()}
+													isMe={
+														user.login ===
+														admin.login
+													}
+												/>
+											);
+										},
+									)}
 								</>
 							)}
 							{data.members.length > 0 && (
@@ -149,8 +175,26 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 										MEMBERS ― {data.members.length}
 									</Text>
 									{data.members.map(
-										(member: ChannelMember) => {
-											return <UserCard user={member} />;
+										(
+											member: ChannelMember,
+											index: number,
+										) => {
+											return (
+												<ChannelMemberMenu
+													key={index}
+													member={member}
+													memberRole="member"
+													isOwner={
+														user.login ===
+														data.owner.login
+													}
+													isAdmin={isAdmin()}
+													isMe={
+														user.login ===
+														member.login
+													}
+												/>
+											);
 										},
 									)}
 								</>

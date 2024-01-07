@@ -9,11 +9,7 @@ export type Channel = {
 	admins: Partial<User>[];
 };
 
-export type UserCard = Friend;
-
-export type ChannelMember = Friend & {
-	role: number;
-};
+export type ChannelMember = Friend;
 
 export type Message = {
 	id: string;
