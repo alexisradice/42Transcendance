@@ -89,23 +89,32 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 	};
 
 	const promoteToAdmin = async (member: ChannelMember) => {
-		try {
-			const response = await axiosPrivate.post("/channel/admin/promote", {
-				channelId: data.channel.id,
-				promoteeId: member.id,
-			});
-			if (response.data.success) {
-				mutate({
-					...data,
-					admins: [...data.admins, member],
-					members: data.members.filter(
-						(member: ChannelMember) =>
-							member.login !== member.login,
-					),
-				});
+		if (
+			confirm(
+				`Grant ${member.login} administrator privileges in this channel?`,
+			)
+		) {
+			try {
+				const response = await axiosPrivate.post(
+					"/channel/admin/promote",
+					{
+						channelId: data.channel.id,
+						promoteeId: member.id,
+					},
+				);
+				if (response.data.success) {
+					mutate({
+						...data,
+						admins: [...data.admins, member],
+						members: data.members.filter(
+							(member: ChannelMember) =>
+								member.login !== member.login,
+						),
+					});
+				}
+			} catch (err) {
+				errorNotif(err);
 			}
-		} catch (err) {
-			errorNotif(err);
 		}
 	};
 
