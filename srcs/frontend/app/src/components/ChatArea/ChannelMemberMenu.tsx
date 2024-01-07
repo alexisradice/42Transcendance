@@ -1,4 +1,4 @@
-import { Menu } from "@mantine/core";
+import { Center, Loader, Menu } from "@mantine/core";
 import {
 	IconBan,
 	IconDeviceGamepad2,
@@ -10,6 +10,8 @@ import {
 } from "@tabler/icons-react";
 import { ChannelMember } from "../../types";
 import UserCard from "../UserCard/UserCard";
+import useSWR from "swr";
+import { fetcherPrivate } from "../../utils/fetcher";
 
 type Props = {
 	member: ChannelMember;
@@ -18,6 +20,8 @@ type Props = {
 	isAdmin: boolean;
 	isMe: boolean;
 	promoteToAdmin?: (member: ChannelMember) => void;
+	blockMember: (member: ChannelMember) => void;
+	unblockMember: (member: ChannelMember) => void;
 };
 
 const ChannelMemberMenu = ({
@@ -27,7 +31,27 @@ const ChannelMemberMenu = ({
 	isAdmin,
 	isMe,
 	promoteToAdmin,
+	blockMember,
+	unblockMember,
 }: Props) => {
+	const {
+		data: blockedUsers,
+		error,
+		isLoading,
+		mutate,
+	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
+
+	if (isLoading) {
+		return (
+			<Center>
+				<Loader type="dots" />
+			</Center>
+		);
+	}
+
+	if (error || !blockedUsers) {
+		return <></>;
+	}
 	return (
 		<>
 			{isMe ? (
@@ -51,12 +75,32 @@ const ChannelMemberMenu = ({
 						>
 							Invite to play
 						</Menu.Item>
-						<Menu.Item
-							color="red"
-							leftSection={<IconBan size={18} />}
-						>
-							Block user
-						</Menu.Item>
+						{blockedUsers.find((user) => {
+							return user.login === member.login;
+						}) ? (
+							<Menu.Item
+								color="green"
+								leftSection={<IconBan size={18} />}
+								onClick={() => {
+									unblockMember(member);
+									mutate();
+								}}
+							>
+								Unblock
+							</Menu.Item>
+						) : (
+							<Menu.Item
+								color="red"
+								leftSection={<IconBan size={18} />}
+								onClick={() => {
+									blockMember(member);
+									mutate();
+								}}
+							>
+								Block
+							</Menu.Item>
+						)}
+
 						{isOwner && memberRole === "member" && (
 							<>
 								<Menu.Divider />

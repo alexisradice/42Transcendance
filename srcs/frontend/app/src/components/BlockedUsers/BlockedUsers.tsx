@@ -1,6 +1,3 @@
-import useSWR from "swr";
-import { User } from "../../types";
-import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import {
 	Box,
 	Center,
@@ -13,16 +10,19 @@ import {
 	UnstyledButton,
 } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
-import { errorNotif } from "../../utils/errorNotif";
 import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { User } from "../../types";
+import { errorNotif } from "../../utils/errorNotif";
+import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 
 const BlockedUsers = () => {
+	const { mutate } = useSWRConfig();
 	const [loading, setLoading] = useState(false);
 	const {
 		data: blockedUsers,
 		error,
 		isLoading,
-		mutate,
 	} = useSWR("/user/blocked/all", fetcherPrivate);
 
 	const unblockUser = async (userLogin: string) => {
@@ -33,9 +33,15 @@ const BlockedUsers = () => {
 					userLogin: userLogin,
 				});
 				await mutate(
+					"/user/blocked/all",
 					...blockedUsers.filter(
 						(user: User) => user.login !== userLogin,
 					),
+				);
+				mutate(
+					(key: string) => key.startsWith("/channel/"),
+					undefined,
+					{ revalidate: true },
 				);
 			} catch (e: unknown) {
 				errorNotif(e);

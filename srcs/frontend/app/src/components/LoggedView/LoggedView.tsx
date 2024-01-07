@@ -45,7 +45,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 					header={{ height: 80 }}
 					footer={{ height: 40 }}
 					navbar={{
-						width: 300,
+						width: 250,
 						breakpoint: "md",
 						collapsed: {
 							mobile: !leftSectionOpened,
