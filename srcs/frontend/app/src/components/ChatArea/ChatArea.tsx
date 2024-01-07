@@ -26,6 +26,7 @@ import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./ChatArea.module.css";
 import ChannelMemberMenu from "./ChannelMemberMenu";
+import { useEffect } from "react";
 
 type Props = {
 	channelId: string;
@@ -34,11 +35,15 @@ type Props = {
 };
 
 const ChatArea = ({ user, channelId, chatSocket }: Props) => {
-	const [chatMode, { toggle }] = useDisclosure(true);
+	const [chatMode, { toggle, open }] = useDisclosure(true);
 	const { data, error, isLoading, mutate } = useSWR(
 		`/channel/${channelId}`,
 		fetcherPrivate,
 	);
+
+	useEffect(() => {
+		open();
+	}, [open, channelId]);
 
 	const form = useForm({
 		initialValues: {
