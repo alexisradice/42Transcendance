@@ -1,5 +1,10 @@
-import { Menu, rem } from "@mantine/core";
-import { IconDeviceGamepad2, IconMessageCircle } from "@tabler/icons-react";
+import { Menu } from "@mantine/core";
+import {
+	IconBan,
+	IconDeviceGamepad2,
+	IconMessageCircle,
+	IconTrash,
+} from "@tabler/icons-react";
 import { Friend } from "../../types";
 import UserCard from "../UserCard/UserCard";
 
@@ -34,30 +39,28 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 			</Menu.Target>
 			<Menu.Dropdown>
 				<Menu.Item
-					leftSection={
-						<IconMessageCircle
-							style={{ width: rem(14), height: rem(14) }}
-						/>
-					}
+					leftSection={<IconMessageCircle size={18} />}
 					onClick={() => {
 						openChat(friend.login);
 					}}
 				>
 					Messages
 				</Menu.Item>
-				<Menu.Item
-					leftSection={
-						<IconDeviceGamepad2
-							style={{ width: rem(14), height: rem(14) }}
-						/>
-					}
-				>
+				<Menu.Item leftSection={<IconDeviceGamepad2 size={18} />}>
 					Invite to play
 				</Menu.Item>
-				<Menu.Item color="red" onClick={handleRemove}>
+				<Menu.Item
+					color="red"
+					onClick={handleRemove}
+					leftSection={<IconTrash size={18} />}
+				>
 					Remove friend
 				</Menu.Item>
-				<Menu.Item color="red" onClick={handleBlock}>
+				<Menu.Item
+					color="red"
+					onClick={handleBlock}
+					leftSection={<IconBan size={18} />}
+				>
 					Block friend
 				</Menu.Item>
 			</Menu.Dropdown>
