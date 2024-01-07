@@ -1,7 +1,9 @@
 import {
+	AppShell,
 	Center,
 	Group,
 	Loader,
+	ScrollArea,
 	Text,
 	TextInput,
 	UnstyledButton,
@@ -118,7 +120,7 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 							</form>
 						</>
 					) : (
-						<div className={classes.usersList}>
+						<AppShell.Section grow mt="md" component={ScrollArea}>
 							<Text size="xs" c="dimmed">
 								OWNER
 							</Text>
@@ -153,7 +155,7 @@ const ChatArea = ({ channelId, chatSocket }: Props) => {
 									)}
 								</>
 							)}
-						</div>
+						</AppShell.Section>
 					)}
 				</div>
 			)}

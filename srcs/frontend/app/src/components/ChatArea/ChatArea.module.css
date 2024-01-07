@@ -20,8 +20,3 @@
 .sendButton:hover {
 	cursor: pointer;
 }
-
-.usersList {
-	flex: 1;
-	margin-top: var(--mantine-spacing-md);
-}
