@@ -1,12 +1,23 @@
 import useSWR from "swr";
 import { User } from "../../types";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
-import { Box, Center, Divider, Group, Loader, Text } from "@mantine/core";
+import {
+	Box,
+	Center,
+	Divider,
+	Group,
+	Loader,
+	ScrollArea,
+	Stack,
+	Text,
+	UnstyledButton,
+} from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
-import classes from "./BlockedUsers.module.css";
 import { errorNotif } from "../../utils/errorNotif";
+import { useState } from "react";
 
 const BlockedUsers = () => {
+	const [loading, setLoading] = useState(false);
 	const {
 		data: blockedUsers,
 		error,
@@ -16,13 +27,20 @@ const BlockedUsers = () => {
 
 	const unblockUser = async (userLogin: string) => {
 		if (window.confirm("Are you sure you want to unblock this user?")) {
+			setLoading(true);
 			try {
 				await axiosPrivate.post("/user/unblock", {
 					userLogin: userLogin,
 				});
-				mutate([...blockedUsers]);
+				await mutate(
+					...blockedUsers.filter(
+						(user: User) => user.login !== userLogin,
+					),
+				);
 			} catch (e: unknown) {
 				errorNotif(e);
+			} finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -38,16 +56,27 @@ const BlockedUsers = () => {
 			)}
 			{!error && !isLoading && (
 				<Box mt="md">
-					{blockedUsers.map((blockedUser: User, index: number) => (
-						<Group key={index}>
-							<IconX
-								className={classes.unblockIcon}
-								onClick={() => unblockUser(blockedUser.login)}
-								size={16}
-							/>
-							<Text>{blockedUser.login}</Text>
-						</Group>
-					))}
+					<ScrollArea h={200}>
+						<Stack>
+							{blockedUsers.map(
+								(blockedUser: User, index: number) => (
+									<UnstyledButton
+										key={index}
+										onClick={() => {
+											unblockUser(blockedUser.login);
+										}}
+										disabled={loading}
+										c={loading ? "dimmed" : undefined}
+									>
+										<Group>
+											<IconX size={16} />
+											<Text>{blockedUser.login}</Text>
+										</Group>
+									</UnstyledButton>
+								),
+							)}
+						</Stack>
+					</ScrollArea>
 				</Box>
 			)}
 		</>
