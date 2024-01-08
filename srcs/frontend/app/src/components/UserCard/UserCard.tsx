@@ -21,7 +21,12 @@ type Props = {
 const UserCard = forwardRef<HTMLButtonElement, Props>(
 	({ user, chevron, icon, ...others }: Props, ref) => {
 		return (
-			<UnstyledButton ref={ref} {...others} className={classes.card}>
+			<UnstyledButton
+				ref={ref}
+				{...others}
+				className={classes.card}
+				mt="xs"
+			>
 				<Group align="center">
 					<Indicator
 						inline

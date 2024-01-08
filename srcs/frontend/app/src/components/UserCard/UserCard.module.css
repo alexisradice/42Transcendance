@@ -1,8 +1,8 @@
 .card {
 	border-radius: var(--mantine-spacing-sm);
-	padding: var(--mantine-spacing-xs);
+	padding: 5px;
+	margin-left: var(--mantine-spacing-xs);
 	width: calc(100% - var(--mantine-spacing-xs) * 2);
-	margin: var(--mantine-spacing-xs);
 }
 
 .card:hover {

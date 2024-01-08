@@ -116,9 +116,11 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 				<UnstyledButton variant="unstyled" onClick={toggle}>
 					{chatMode ? <IconUser /> : <IconMessages />}
 				</UnstyledButton>
-				<UnstyledButton variant="unstyled">
-					<IconSettings />
-				</UnstyledButton>
+				{data.owner.login === user.login && (
+					<UnstyledButton variant="unstyled">
+						<IconSettings />
+					</UnstyledButton>
+				)}
 			</Group>
 			{chatMode ? (
 				<>
@@ -157,7 +159,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 					/>
 					{data.admins.length > 0 && (
 						<>
-							<Text size="xs" c="dimmed">
+							<Text size="xs" c="dimmed" mt="md">
 								ADMINS ― {data.admins.length}
 							</Text>
 							{data.admins.map(
@@ -181,7 +183,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 					)}
 					{data.members.length > 0 && (
 						<>
-							<Text size="xs" c="dimmed">
+							<Text size="xs" c="dimmed" mt="md">
 								MEMBERS ― {data.members.length}
 							</Text>
 							{data.members.map(
