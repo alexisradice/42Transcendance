@@ -82,6 +82,7 @@ export class LobbiesGateway
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
+				this.server.emit("connected");
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -95,6 +96,7 @@ export class LobbiesGateway
 					login: user.sub,
 				});
 				client.data.user = dbUser;
+				this.server.emit("connected");
 			} catch (err) {
 				console.error(err);
 				client.disconnect();

@@ -21,17 +21,20 @@ export const GamePage = () => {
 	const [lobbyId, setLobbyId] = useState(null); // State to store lobbyId
 
     useEffect(() => {
-        const settings = sendSettings();
-        gameSocket.emit("queue", settings, user.login);
-		console.log("queue sent");
-		gameSocket.on('launch', (playerName, receivedLobbyId, settings) => {
-			setLobbyId(receivedLobbyId);
-			console.log('Launch event received:', playerName, receivedLobbyId, settings);
-			gameSocket.emit('launchGame', true);
-			setIsPending(false);
+		gameSocket.on('connected', () => {
+			const settings = sendSettings();
+			gameSocket.emit("queue", settings);
+			console.log("queue sent");
+			gameSocket.on('launch', (playerName, receivedLobbyId, settings) => {
+				setLobbyId(receivedLobbyId);
+				console.log('Launch event received:', playerName, receivedLobbyId, settings);
+				gameSocket.emit('launchGame', true);
+				setIsPending(false);
+			});
 		});
 	
 		return () => {
+			gameSocket.off('connected');
 			gameSocket.off('launch');
 			gameSocket.disconnect();
 		};
