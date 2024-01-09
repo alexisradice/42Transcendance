@@ -12,6 +12,7 @@ export type UserSettings = {
 export type FindOneCriteria = {
 	email?: string;
 	login?: string;
+	id?: string;
 };
 
 export type Tokens = {

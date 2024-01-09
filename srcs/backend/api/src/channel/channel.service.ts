@@ -53,6 +53,37 @@ export class ChannelService {
 		return channel;
 	}
 
+	async findOrCreateDm(userId: string, destId: string) {
+		const foundDm = await this.prisma.channel.findFirst({
+			where: {
+				AND: [
+					{ members: { some: { id: userId } } },
+					{ members: { some: { id: destId } } },
+					{ isDM: true },
+				],
+			},
+		});
+		if (foundDm) {
+			return foundDm;
+		}
+		const createdDm = await this.prisma.channel.create({
+			data: {
+				name: userId + destId,
+				owner: {
+					connect: {
+						id: userId,
+					},
+				},
+				members: {
+					connect: [{ id: userId }, { id: destId }],
+				},
+				isDM: true,
+				visibility: "DM",
+			},
+		});
+		return createdDm;
+	}
+
 	async getChannelMessages(userId: string, channelId: string) {
 		return await this.prisma.message.findMany({
 			where: {

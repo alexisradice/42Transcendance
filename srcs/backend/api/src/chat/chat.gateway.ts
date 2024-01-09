@@ -1,4 +1,8 @@
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import {
+	ForbiddenException,
+	HttpException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import {
@@ -83,6 +87,7 @@ export class ChatGateway implements OnGatewayConnection {
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
+				client.join(user.id); //join self private room
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -96,10 +101,102 @@ export class ChatGateway implements OnGatewayConnection {
 					login: user.sub,
 				});
 				client.data.user = dbUser;
+				client.join(user.id); //join self private room
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
 			}
+		}
+	}
+
+	@SubscribeMessage("join-dm")
+	async handleJoinDM(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { destId: string },
+	): Promise<SocketResponse> {
+		const response = { success: false, error: null };
+		const { destId } = payload;
+		const user = client.data.user;
+		try {
+			const dest = await this.userService.findOne({ id: destId });
+			const blockedByDest = await this.userService.isBlockedBy(
+				user.login,
+				dest.login,
+			);
+			if (blockedByDest) {
+				throw new HttpException("This user blocked you.", 400);
+			}
+			const dmChannel = await this.channelService.findOrCreateDm(
+				user.login,
+				dest.login,
+			);
+			client.join(dmChannel.id);
+			client.join(destId); // pas sure du tout de celui la
+			client.to(user.id).emit("notif", false);
+			response.success = true;
+			return response;
+		} catch (err) {
+			response.error = err;
+			return response;
+		}
+	}
+
+	@SubscribeMessage("send-dm")
+	async handleDm(
+		@ConnectedSocket() client: Socket,
+		@MessageBody()
+		payload: { destId: string; channelId: string; content: string },
+	): Promise<SocketResponse> {
+		const response: SocketResponse = {
+			success: false,
+			error: "",
+		};
+		const { destId, channelId, content } = payload;
+		const author = client.data.user;
+		console.log('received dm "' + content + '"');
+		console.log('sending to room "' + channelId + '"');
+		try {
+			const dest = await this.userService.findOne({ id: destId });
+			const dmChannel =
+				await this.channelService.findChannelById(channelId);
+			const isUserInChannel = await this.channelService.isChannelMember(
+				author,
+				dmChannel.id,
+			);
+			const blockedByDest = await this.userService.isBlockedBy(
+				author.login,
+				dest.login,
+			);
+			if (blockedByDest) {
+				throw new HttpException("This user blocked you.", 400);
+			}
+			if (isUserInChannel) {
+				const message = await this.chatService.createMessage(
+					dmChannel.id,
+					author.id,
+					content,
+				);
+				client.to(destId).emit("notif", true);
+				client.to(dmChannel.id).emit("receive-dm", message);
+				return {
+					success: true,
+					error: "",
+					payload: {
+						id: message.id,
+						createdAt: message.createdAt,
+						content: message.content,
+						author: {
+							login: author.login,
+							displayName: author.displayName,
+							image: author.image,
+						},
+					},
+				};
+			}
+		} catch (err) {
+			console.error(err);
+			response.error = err;
+			return response;
 		}
 	}
 
