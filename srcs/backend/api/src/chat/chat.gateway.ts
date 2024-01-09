@@ -5,6 +5,7 @@ import {
 	ConnectedSocket,
 	MessageBody,
 	OnGatewayConnection,
+	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -24,7 +25,8 @@ import { ChatService } from "./chat.service";
 	},
 	namespace: "chat",
 })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+	private clients: Map<string, Socket> = new Map();
 	constructor(
 		private jwtService: JwtService,
 		private configService: ConfigService,
@@ -83,6 +85,7 @@ export class ChatGateway implements OnGatewayConnection {
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
+				this.clients.set(user.id, client);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -96,11 +99,18 @@ export class ChatGateway implements OnGatewayConnection {
 					login: user.sub,
 				});
 				client.data.user = dbUser;
+				this.clients.set(dbUser.id, client);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
 			}
 		}
+	}
+
+	async handleDisconnect(client: any) {
+		console.log("client disconnected");
+		const user: User = client.data.user;
+		this.clients.delete(user.id);
 	}
 
 	@SubscribeMessage("join-chatroom")
@@ -235,6 +245,42 @@ export class ChatGateway implements OnGatewayConnection {
 		} catch (err) {
 			console.error(err);
 			response.error = err;
+			return response;
+		}
+	}
+
+	@SubscribeMessage("kick")
+	async handleKickUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() payload: { channelId: string; kickedId: string },
+	): Promise<SocketResponse> {
+		const response: SocketResponse = {
+			success: false,
+			error: null,
+		};
+		const { channelId, kickedId } = payload;
+		const user: User = client.data.user;
+		try {
+			const channel =
+				await this.channelService.findChannelById(channelId);
+			const canKick = await this.channelService.canKick(
+				user.id,
+				kickedId,
+				channel,
+			);
+			if (canKick) {
+				await this.channelService.kickUser(kickedId, channelId);
+				const kickedClient = this.clients.get(kickedId);
+				this.server
+					.to(kickedClient.id)
+					.emit("user-kicked", { kickedId, channelId });
+				kickedClient.leave(channelId);
+				response.success = true;
+			}
+		} catch (err) {
+			console.error(err);
+			response.error = err;
+		} finally {
 			return response;
 		}
 	}

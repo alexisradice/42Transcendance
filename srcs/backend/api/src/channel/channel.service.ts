@@ -317,21 +317,41 @@ export class ChannelService {
 	// ADMIN FUNCTIONS
 
 	// kicked user isn't a member anymore
-	async kickUser(kicker: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(kicker.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to kick ${user.displayName}`,
-			);
-		}
+	async kickUser(kickedId: string, channelId: string) {
 		return await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
-					disconnect: { id: user.id },
+					disconnect: { id: kickedId },
+				},
+				admins: {
+					disconnect: { id: kickedId },
 				},
 			},
 		});
+	}
+
+	async canKick(userId: string, kickedId: string, channel: Channel) {
+		const isAdmin = await this.isChannelAdmin(userId, channel.id);
+		if (!isAdmin) {
+			throw new UnauthorizedException(
+				"You don't have permission to kick this user",
+			);
+		}
+		const isKickedOwner = await this.isChannelOwner(kickedId, channel);
+		if (isKickedOwner) {
+			throw new UnauthorizedException(
+				"You don't have permission to kick this user",
+			);
+		}
+		const isOwner = await this.isChannelOwner(userId, channel);
+		const isKickedAdmin = await this.isChannelAdmin(kickedId, channel.id);
+		if (isKickedAdmin && !isOwner) {
+			throw new UnauthorizedException(
+				"You don't have permission to kick this user",
+			);
+		}
+		return true;
 	}
 
 	// banned user isn't a member anymore and cannot join

@@ -8,11 +8,12 @@ import {
 	IconMessageOff,
 	IconSword,
 } from "@tabler/icons-react";
-import { ChannelMember } from "../../types";
+import { ChannelMember, SocketResponse } from "../../types";
 import UserCard from "../UserCard/UserCard";
 import useSWR, { useSWRConfig } from "swr";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import { errorNotif } from "../../utils/errorNotif";
+import { useSocket } from "../../hooks/useSocket";
 
 type Props = {
 	member: ChannelMember;
@@ -37,6 +38,7 @@ const ChannelMemberMenu = ({
 		error,
 		isLoading,
 	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
+	const chatSocket = useSocket("chat");
 
 	const promoteToAdmin = async (member: ChannelMember) => {
 		if (
@@ -87,6 +89,23 @@ const ChannelMemberMenu = ({
 			} catch (err: unknown) {
 				errorNotif(err);
 			}
+		}
+	};
+
+	const kick = async (memberId: string, channelId: string) => {
+		if (confirm(`Are you sure you want to kick ${member.login}?`)) {
+			chatSocket.emit(
+				"kick",
+				{ kickedId: memberId, channelId },
+				(response: SocketResponse) => {
+					console.log("response", response);
+					if (response.success) {
+						mutate(`/channel/${channelId}`);
+					} else {
+						errorNotif(response.error);
+					}
+				},
+			);
 		}
 	};
 
@@ -177,6 +196,7 @@ const ChannelMemberMenu = ({
 								<Menu.Item
 									color="red"
 									leftSection={<IconKarate size={18} />}
+									onClick={() => kick(member.id, channelId)}
 								>
 									Kick
 								</Menu.Item>
