@@ -1,6 +1,9 @@
 import { AppShell, Divider } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Dispatch, SetStateAction, useState } from "react";
+import { notifications } from "@mantine/notifications";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { mutate } from "swr";
+import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
 import { Channel, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
@@ -10,7 +13,6 @@ import Footer from "../Footer/Footer";
 import FriendsList from "../FriendsList/FriendsList";
 import Header from "../Header/Header";
 import MainFrame from "../MainFrame/MainFrame";
-import { useMyData } from "../../hooks/useMyData";
 
 type Props = {
 	setIsLogged: Dispatch<SetStateAction<boolean>>;
@@ -22,6 +24,28 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const [leftSectionOpened, { toggle: toggleLeftSection }] = useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<string>("");
+
+	useEffect(() => {
+		chatSocket.on("user-kicked", (channelName: string) => {
+			setChatOpened(false);
+			notifications.show({
+				message: `You have been kicked from the channel ${channelName}`,
+				color: "red",
+			});
+			setSelectedChannel("");
+		});
+		chatSocket.on("user-joined", (channelId: string) => {
+			mutate(`/channel/${channelId}`);
+		});
+		chatSocket.on("display-message", (channelId: string) => {
+			mutate(`/channel/${channelId}`);
+		});
+		return () => {
+			chatSocket.off("user-kicked");
+			chatSocket.off("user-joined");
+		};
+	}, [chatSocket]);
+
 	const joinChannel = (channel: Channel, password?: string) => {
 		chatSocket.emit(
 			"join-chatroom",
@@ -38,6 +62,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			},
 		);
 	};
+
 	return (
 		<>
 			{!error && !isLoading && (

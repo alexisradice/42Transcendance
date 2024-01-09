@@ -116,11 +116,9 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 				<UnstyledButton variant="unstyled" onClick={toggle}>
 					{chatMode ? <IconUser /> : <IconMessages />}
 				</UnstyledButton>
-				{data.owner.login === user.login && (
-					<UnstyledButton variant="unstyled">
-						<IconSettings />
-					</UnstyledButton>
-				)}
+				<UnstyledButton variant="unstyled">
+					<IconSettings />
+				</UnstyledButton>
 			</Group>
 			{chatMode ? (
 				<>

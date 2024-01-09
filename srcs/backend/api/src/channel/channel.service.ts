@@ -355,21 +355,18 @@ export class ChannelService {
 	}
 
 	// banned user isn't a member anymore and cannot join
-	async banUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to ban ${user.displayName}`,
-			);
-		}
+	async banUser(userId: string, channelId: string) {
 		return await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				banned: {
-					connect: { id: user.id },
+					connect: { id: userId },
 				},
 				members: {
-					disconnect: { id: user.id },
+					disconnect: { id: userId },
+				},
+				admins: {
+					disconnect: { id: userId },
 				},
 			},
 		});

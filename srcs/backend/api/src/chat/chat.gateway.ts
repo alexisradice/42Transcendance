@@ -86,6 +86,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
 				this.clients.set(user.id, client);
+				client.join(user.id);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -100,6 +101,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				});
 				client.data.user = dbUser;
 				this.clients.set(dbUser.id, client);
+				client.join(dbUser.id);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -150,6 +152,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User added in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
+				this.server.to(channelId).emit("user-joined", channelId);
 				response.success = true;
 			} else {
 				response.error = new ForbiddenException("Access Denied");
@@ -227,19 +230,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					author.id,
 					content,
 				);
+				const newMessage = {
+					id: message.id,
+					createdAt: message.createdAt,
+					content: message.content,
+					author: {
+						login: author.login,
+						displayName: author.displayName,
+						image: author.image,
+					},
+				};
+				this.server.to(channelId).emit("display-message", channelId);
 				return {
 					success: true,
 					error: "",
-					payload: {
-						id: message.id,
-						createdAt: message.createdAt,
-						content: message.content,
-						author: {
-							login: author.login,
-							displayName: author.displayName,
-							image: author.image,
-						},
-					},
+					payload: newMessage,
 				};
 			}
 		} catch (err) {
@@ -249,16 +254,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	@SubscribeMessage("kick")
-	async handleKickUser(
+	@SubscribeMessage("eject-member")
+	async ejectMember(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() payload: { channelId: string; kickedId: string },
+		@MessageBody()
+		payload: {
+			channelId: string;
+			kickedId: string;
+			action: "kick" | "ban";
+		},
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {
 			success: false,
 			error: null,
 		};
-		const { channelId, kickedId } = payload;
+		const { channelId, kickedId, action } = payload;
 		const user: User = client.data.user;
 		try {
 			const channel =
@@ -269,11 +279,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				channel,
 			);
 			if (canKick) {
-				await this.channelService.kickUser(kickedId, channelId);
+				if (action === "kick") {
+					await this.channelService.kickUser(kickedId, channelId);
+				} else if (action === "ban") {
+					await this.channelService.banUser(kickedId, channelId);
+				}
 				const kickedClient = this.clients.get(kickedId);
-				this.server
-					.to(kickedClient.id)
-					.emit("user-kicked", { kickedId, channelId });
+				this.server.to(kickedId).emit("user-kicked", channel.name);
 				kickedClient.leave(channelId);
 				response.success = true;
 			}

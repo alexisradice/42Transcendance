@@ -92,11 +92,15 @@ const ChannelMemberMenu = ({
 		}
 	};
 
-	const kick = async (memberId: string, channelId: string) => {
-		if (confirm(`Are you sure you want to kick ${member.login}?`)) {
+	const ejectMember = async (
+		memberId: string,
+		channelId: string,
+		action: "kick" | "ban",
+	) => {
+		if (confirm(`Are you sure you want to ${action} ${member.login}?`)) {
 			chatSocket.emit(
-				"kick",
-				{ kickedId: memberId, channelId },
+				"eject-member",
+				{ kickedId: memberId, channelId, action },
 				(response: SocketResponse) => {
 					console.log("response", response);
 					if (response.success) {
@@ -196,13 +200,22 @@ const ChannelMemberMenu = ({
 								<Menu.Item
 									color="red"
 									leftSection={<IconKarate size={18} />}
-									onClick={() => kick(member.id, channelId)}
+									onClick={() =>
+										ejectMember(
+											member.id,
+											channelId,
+											"kick",
+										)
+									}
 								>
 									Kick
 								</Menu.Item>
 								<Menu.Item
 									color="red"
 									leftSection={<IconHammer size={18} />}
+									onClick={() =>
+										ejectMember(member.id, channelId, "ban")
+									}
 								>
 									Ban
 								</Menu.Item>
