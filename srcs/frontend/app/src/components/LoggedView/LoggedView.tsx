@@ -1,5 +1,5 @@
 import { AppShell, Divider } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { mutate } from "swr";
@@ -21,9 +21,19 @@ type Props = {
 const LoggedView = ({ setIsLogged }: Props) => {
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
-	const [leftSectionOpened, { toggle: toggleLeftSection }] = useDisclosure();
+	const matches = useMediaQuery("(min-width: 62em)");
+	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
+		useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<string>("");
+
+	useEffect(() => {
+		if (matches) {
+			open();
+		} else {
+			close();
+		}
+	}, [matches, open, close]);
 
 	useEffect(() => {
 		chatSocket.on(
