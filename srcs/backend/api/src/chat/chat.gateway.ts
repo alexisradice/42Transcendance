@@ -292,7 +292,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					await this.channelService.banUser(kickedId, channelId);
 				}
 				const kickedClient = this.clients.get(kickedId);
-				this.server.to(kickedId).emit("user-kicked", channel.name);
+				this.server.to(kickedId).emit("user-kicked", {
+					action,
+					channelName: channel.name,
+				});
 				kickedClient.leave(channelId);
 				response.success = true;
 			}

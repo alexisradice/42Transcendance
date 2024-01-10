@@ -111,9 +111,24 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 	};
 
 	const removePassword = async () => {
+		if (confirm("This channel will be publicly open. Are you sure?")) {
+			try {
+				await axiosPrivate.post("/channel/password/remove", {
+					channelId,
+				});
+				mutate(`/channel/${channelId}`);
+				mutate("/channel/list");
+			} catch (err) {
+				errorNotif(err);
+			}
+		}
+	};
+
+	const addPassword = async (password: string) => {
 		try {
-			await axiosPrivate.post("/channel/password/remove", {
+			await axiosPrivate.post("/channel/password/add", {
 				channelId,
+				password,
 			});
 			mutate(`/channel/${channelId}`);
 			mutate("/channel/list");
@@ -142,6 +157,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 						hasPassword={
 							data.channel.visibility === Visibility.PROTECTED
 						}
+						addPassword={addPassword}
 						removePassword={removePassword}
 					/>
 				</UnstyledButton>

@@ -26,14 +26,20 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const [selectedChannel, setSelectedChannel] = useState<string>("");
 
 	useEffect(() => {
-		chatSocket.on("user-kicked", (channelName: string) => {
-			setChatOpened(false);
-			notifications.show({
-				message: `You have been kicked from the channel ${channelName}`,
-				color: "red",
-			});
-			setSelectedChannel("");
-		});
+		chatSocket.on(
+			"user-kicked",
+			(channel: { action: string; channelName: string }) => {
+				const { action, channelName } = channel;
+				const verb = action === "ban" ? "banned" : "kicked";
+				setChatOpened(false);
+				notifications.show({
+					message: `You have been ${verb} from the channel ${channelName}`,
+					color: "red",
+				});
+				setSelectedChannel("");
+				mutate(`/channel/list`);
+			},
+		);
 		chatSocket.on("user-joined", (channelId: string) => {
 			mutate(`/channel/${channelId}`);
 		});
