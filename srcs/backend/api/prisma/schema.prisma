@@ -43,7 +43,7 @@ model Message {
     content   String
     author    User     @relation(fields: [authorId], references: [id])
     authorId  String
-    channel   Channel  @relation(fields: [channelId], references: [id])
+    channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
     channelId String
 }
 
@@ -71,7 +71,7 @@ model Mute {
     expiresAt DateTime
     user      User     @relation("mutes", fields: [userId], references: [id])
     userId    String
-    channel   Channel  @relation("mutes", fields: [channelId], references: [id])
+    channel   Channel  @relation("mutes", fields: [channelId], references: [id], onDelete: Cascade)
     channelId String
 }
 

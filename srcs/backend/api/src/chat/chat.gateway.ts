@@ -170,7 +170,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: "" };
+		const response = { success: false, error: null };
 		const { channelId } = payload;
 		const user: User = client.data.user;
 		let wasAlone = false;
@@ -191,13 +191,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 			if (wasAlone) {
 				await this.channelService.destroyChannel(channelId);
+				this.server.emit("channel-destroyed");
 			}
 			//leave channel socket room
 			client.leave(channelId);
 			response.success = true;
-			return response;
+			this.server.to(channelId).emit("user-left", channelId);
 		} catch (err) {
+			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}

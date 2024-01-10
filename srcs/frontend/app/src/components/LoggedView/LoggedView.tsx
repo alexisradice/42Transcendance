@@ -36,18 +36,22 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	}, [matches, open, close]);
 
 	useEffect(() => {
+		chatSocket.on("channel-destroyed", () => {
+			mutate("/channel/list");
+		});
+		chatSocket.on("user-left", (channelId: string) => {
+			mutate(`/channel/${channelId}`);
+		});
 		chatSocket.on(
 			"user-kicked",
 			(channel: { action: string; channelName: string }) => {
 				const { action, channelName } = channel;
 				const verb = action === "ban" ? "banned" : "kicked";
-				setChatOpened(false);
+				leaveChannel();
 				notifications.show({
 					message: `You have been ${verb} from the channel ${channelName}`,
 					color: "red",
 				});
-				setSelectedChannel("");
-				mutate(`/channel/list`);
 			},
 		);
 		chatSocket.on("user-joined", (channelId: string) => {
@@ -61,6 +65,15 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("user-joined");
 		};
 	}, [chatSocket]);
+
+	const leaveChannel = (channelId?: string) => {
+		setChatOpened(false);
+		setSelectedChannel("");
+		mutate("/channel/list");
+		if (channelId) {
+			mutate(`/channel/${channelId}`);
+		}
+	};
 
 	const joinChannel = (channel: Channel, password?: string) => {
 		chatSocket.emit(
@@ -128,6 +141,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 								user={user}
 								channelId={selectedChannel}
 								chatSocket={chatSocket}
+								leaveChannel={leaveChannel}
 							/>
 						)}
 					</AppShell.Aside>

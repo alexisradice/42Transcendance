@@ -34,9 +34,10 @@ type Props = {
 	channelId: string;
 	chatSocket: Socket;
 	user: User;
+	leaveChannel: (channelId: string) => void;
 };
 
-const ChatArea = ({ user, channelId, chatSocket }: Props) => {
+const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 	const { mutate } = useSWRConfig();
 	const [chatMode, { toggle, open }] = useDisclosure(true);
 	const { data, error, isLoading } = useSWR<ChannelInfos>(
@@ -150,6 +151,24 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 		}
 	};
 
+	const leaveChatRoom = () => {
+		chatSocket.emit(
+			"leave-chatroom",
+			{ channelId },
+			(response: SocketResponse) => {
+				if (response.success) {
+					leaveChannel(channelId);
+				} else if (response.error) {
+					const err = new Error();
+					Object.assign(err, response.error);
+					errorNotif(err);
+				} else {
+					errorNotif();
+				}
+			},
+		);
+	};
+
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
@@ -173,6 +192,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 						addPassword={addPassword}
 						changePassword={changePassword}
 						removePassword={removePassword}
+						leaveChatRoom={leaveChatRoom}
 					/>
 				</UnstyledButton>
 			</Group>

@@ -41,6 +41,7 @@ export class ChannelService {
 					},
 				},
 			},
+			orderBy: { createdAt: "asc" },
 		});
 	}
 
@@ -291,6 +292,7 @@ export class ChannelService {
 		let heir = await this.prisma.user.findFirst({
 			where: {
 				adminOf: { some: { id: channel.id } },
+				NOT: { id: channel.ownerId },
 			},
 			orderBy: {
 				createdAt: "asc",
@@ -300,6 +302,7 @@ export class ChannelService {
 			heir = await this.prisma.user.findFirst({
 				where: {
 					memberOf: { some: { id: channel.id } },
+					NOT: { id: channel.ownerId },
 				},
 				orderBy: {
 					createdAt: "asc",
@@ -312,7 +315,8 @@ export class ChannelService {
 					id: channel.id,
 				},
 				data: {
-					ownerId: heir.id,
+					owner: { connect: { id: heir.id } },
+					admins: { connect: { id: heir.id } },
 				},
 			});
 			return false;

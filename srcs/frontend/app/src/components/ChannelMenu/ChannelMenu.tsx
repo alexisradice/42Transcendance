@@ -23,6 +23,7 @@ type Props = {
 	addPassword: (password: string) => Promise<void>;
 	changePassword: (password: string) => Promise<void>;
 	removePassword: () => Promise<void>;
+	leaveChatRoom: () => void;
 };
 
 const ChannelMenu = ({
@@ -31,6 +32,7 @@ const ChannelMenu = ({
 	addPassword,
 	changePassword,
 	removePassword,
+	leaveChatRoom,
 }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
 	const [changePassOpened, { open: changePassOpen, close: changePassClose }] =
@@ -199,6 +201,7 @@ const ChannelMenu = ({
 					<Menu.Item
 						color="red"
 						leftSection={<IconDoorExit size={18} />}
+						onClick={leaveChatRoom}
 					>
 						Leave channel
 					</Menu.Item>
