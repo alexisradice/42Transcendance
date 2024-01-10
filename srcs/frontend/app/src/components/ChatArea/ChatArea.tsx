@@ -137,6 +137,19 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 		}
 	};
 
+	const changePassword = async (password: string) => {
+		try {
+			await axiosPrivate.post("/channel/password/change", {
+				channelId,
+				newPassword: password,
+			});
+			mutate(`/channel/${channelId}`);
+			mutate("/channel/list");
+		} catch (err) {
+			errorNotif(err);
+		}
+	};
+
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
@@ -158,6 +171,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 							data.channel.visibility === Visibility.PROTECTED
 						}
 						addPassword={addPassword}
+						changePassword={changePassword}
 						removePassword={removePassword}
 					/>
 				</UnstyledButton>

@@ -192,7 +192,6 @@ export class ChannelController {
 	async changePassword(
 		@Req() req: Request,
 		@Body("channelId") channelId: string,
-		@Body("password") password: string,
 		@Body("newPassword") newPassword: string,
 	) {
 		const channel = await this.channelService.findChannelById(channelId);
@@ -200,8 +199,7 @@ export class ChannelController {
 			req.user["id"],
 			channel,
 		);
-		const passwordValid = await argon2.verify(channel.password, password);
-		if (isOwner && passwordValid) {
+		if (isOwner) {
 			await this.channelService.changePassword(channelId, newPassword);
 		}
 		return { success: true };

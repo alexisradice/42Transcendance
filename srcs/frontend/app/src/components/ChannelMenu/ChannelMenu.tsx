@@ -21,7 +21,7 @@ type Props = {
 	isOwner: boolean;
 	hasPassword: boolean;
 	addPassword: (password: string) => Promise<void>;
-	// changePassword: () => void;
+	changePassword: (password: string) => Promise<void>;
 	removePassword: () => Promise<void>;
 };
 
@@ -29,12 +29,15 @@ const ChannelMenu = ({
 	isOwner,
 	hasPassword,
 	addPassword,
+	changePassword,
 	removePassword,
 }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
+	const [changePassOpened, { open: changePassOpen, close: changePassClose }] =
+		useDisclosure(false);
 	const [loading, setLoading] = useState<boolean>(false);
 
-	const form = useForm({
+	const addPasswordForm = useForm({
 		initialValues: {
 			password: "",
 		},
@@ -48,15 +51,40 @@ const ChannelMenu = ({
 		},
 	});
 
-	const closeModal = () => {
+	const changePasswordForm = useForm({
+		initialValues: {
+			password: "",
+		},
+		validate: {
+			password: (value: string) => {
+				if (value.length >= 8) {
+					return null;
+				}
+				return "Password must be at least 8 characters long";
+			},
+		},
+	});
+
+	const closeAddPassword = () => {
 		close();
 		setLoading(false);
-		form.reset();
+		addPasswordForm.reset();
 	};
 
-	const handleSubmit = async () => {
-		addPassword(form.values.password);
-		closeModal();
+	const closeChangePassword = () => {
+		changePassClose();
+		setLoading(false);
+		changePasswordForm.reset();
+	};
+
+	const addPasswordSubmit = async () => {
+		addPassword(addPasswordForm.values.password);
+		closeAddPassword();
+	};
+
+	const changePasswordSubmit = async () => {
+		changePassword(changePasswordForm.values.password);
+		closeChangePassword();
 	};
 
 	return (
@@ -65,19 +93,19 @@ const ChannelMenu = ({
 				radius="md"
 				centered={true}
 				opened={opened}
-				onClose={closeModal}
+				onClose={closeAddPassword}
 				title="Add password"
 				overlayProps={{
 					backgroundOpacity: 0.55,
 					blur: 3,
 				}}
 			>
-				<form onSubmit={form.onSubmit(handleSubmit)}>
+				<form onSubmit={addPasswordForm.onSubmit(addPasswordSubmit)}>
 					<PasswordInput
 						mt="md"
 						label="Password"
 						placeholder="Channel password"
-						{...form.getInputProps("password")}
+						{...addPasswordForm.getInputProps("password")}
 						disabled={loading}
 						data-autofocus
 					/>
@@ -92,6 +120,43 @@ const ChannelMenu = ({
 							}
 						>
 							Add password to channel
+						</Button>
+					</Group>
+				</form>
+			</Modal>
+			<Modal
+				radius="md"
+				centered={true}
+				opened={changePassOpened}
+				onClose={closeChangePassword}
+				title="Change password"
+				overlayProps={{
+					backgroundOpacity: 0.55,
+					blur: 3,
+				}}
+			>
+				<form
+					onSubmit={changePasswordForm.onSubmit(changePasswordSubmit)}
+				>
+					<PasswordInput
+						mt="md"
+						label="Password"
+						placeholder="Channel password"
+						{...changePasswordForm.getInputProps("password")}
+						disabled={loading}
+						data-autofocus
+					/>
+					<Group justify="flex-end">
+						<Button
+							type="submit"
+							color="blue"
+							mt="lg"
+							disabled={loading}
+							rightSection={
+								loading ? <Loader type="dots" /> : null
+							}
+						>
+							Change channel's password
 						</Button>
 					</Group>
 				</form>
@@ -114,6 +179,7 @@ const ChannelMenu = ({
 								<>
 									<Menu.Item
 										leftSection={<IconPassword size={18} />}
+										onClick={changePassOpen}
 									>
 										Change password
 									</Menu.Item>
