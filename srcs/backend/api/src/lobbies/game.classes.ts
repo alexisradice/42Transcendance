@@ -29,8 +29,8 @@ export class Settings {
 export class Game {
 	map: { width: number; height: number };
 	ball: { x: number; y: number; directionX: number; directionY: number, speed: number };
-	paddlePlayer1: { y: number; height: number };
-	paddlePlayer2: { y: number; height: number };
+	paddlePlayer1: { x: number; y: number; height: number };
+	paddlePlayer2: { x: number; y: number; height: number };
 
 	updatePaddlePlayer1(newY: number) {
 		this.paddlePlayer1.y = newY;

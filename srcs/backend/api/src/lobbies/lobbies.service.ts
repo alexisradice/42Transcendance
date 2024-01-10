@@ -185,18 +185,25 @@ export class LobbiesService {
 
 			const game = new Game();
 			game.map = { width: 300, height: 100 };
-			game.ball = { x: game.map.width / 2, y: game.map.height / 2, directionX: 3, directionY: 7, speed: 1};
-			game.paddlePlayer1 = { y: 10, height: 100 };
-			game.paddlePlayer2 = { y: 50, height: 100 };
+			game.ball = { x: game.map.width / 2, y: game.map.height / 2, directionX: 1, directionY: 1, speed: 2};
+			game.paddlePlayer1 = { x: 1, y: 50, height: 20 };
+			game.paddlePlayer2 = { x: 299, y: 50, height: 20 };
 
 			lobby.game = game;
 
-			this.movementsBall(lobby.player1.socket, lobby);
+			this.movementsBall(lobby.player1.socket, lobby.player2.socket, lobby);
 
 		}
 	}
 
-	movementsBall(socket: Socket, lobby: Lobby): void {
+	movementsBall(socketPlayer1: Socket, socketPlayer2: Socket, lobby: Lobby): void {
+		const ballRadius = 2;
+		const paddleWidth = 5;
+		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
+
+		// Set the initial direction of the ball based on the angle
+		lobby.game.ball.directionX = Math.cos(angle);
+		lobby.game.ball.directionY = Math.sin(angle);
 
 		const intervalId = setInterval(() => {
 			// déplacement de la balle en fonction de sa direction et de sa vitesse
@@ -214,35 +221,57 @@ export class LobbiesService {
 
 			// gestion des collisions avec les raquettes
 			if (
-			(lobby.game.ball.y <= lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height && lobby.game.ball.y >= lobby.game.paddlePlayer1.y) ||
-			(lobby.game.ball.y <= lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height && lobby.game.ball.y >= lobby.game.paddlePlayer2.y)
-			) {
-			if (
-				(lobby.game.ball.x <= 0 && lobby.game.ball.directionX === -1) ||
-				(lobby.game.ball.x >= lobby.game.map.width && lobby.game.ball.directionX === 1)
-			) {
-				// calculer l'angle d'incidence en fonction de la position de la balle sur la raquette
-				const angle = (lobby.game.ball.y - (lobby.game.ball.directionY === -1 ? lobby.game.paddlePlayer1.y : lobby.game.paddlePlayer2.y)) / lobby.game.paddlePlayer1.height * Math.PI / 4;
-			
-				// calculer la nouvelle direction de la balle en fonction de l'angle d'incidence
-				lobby.game.ball.directionX *= -1; // inverser la direction horizontale
-				lobby.game.ball.directionY = Math.sin(angle); // mettre à jour la direction verticale avec le sinus de l'angle
-			}
-			}
+				(lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer1.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height) &&
+				(
+					(lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x) ||
+					(lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth)
+				)
+			  ) {
+				  // calculer l'angle d'incidence sur la raquette du joueur 1
+				  const relativeIntersectY = (lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height / 2) - lobby.game.ball.y;
+				  const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer1.height / 2);
+				  const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
+		
+				  // modifier la direction de la balle en fonction de l'angle d'incidence
+				  lobby.game.ball.directionX *= -1; // inverser la direction horizontale
+				  lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
+			  }
+		
+			  if (
+				(lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer2.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height) &&
+				(
+					(lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x) ||
+					(lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth)
+				)
+			  ) {
+				  // calculer l'angle d'incidence sur la raquette du joueur 2
+				  const relativeIntersectY = (lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height / 2) - lobby.game.ball.y;
+				  const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer2.height / 2);
+				  const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
+		
+				  // modifier la direction de la balle en fonction de l'angle d'incidence
+				  lobby.game.ball.directionX *= -1; // inverser la direction horizontale
+				  lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
+			  }
 		
 
 			console.log("ball position", lobby.game.ball.x, lobby.game.ball.y);
-			socket.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
-			if (this.detectScoredPoint(socket, lobby)) {
+			socketPlayer1.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
+			socketPlayer2.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
+			if (this.detectScoredPoint(socketPlayer1, lobby)) {
+				console.log("stop interval");
+				clearInterval(intervalId);
+			}
+			if (this.detectScoredPoint(socketPlayer2, lobby)) {
 				console.log("stop interval");
 				clearInterval(intervalId);
 			}
 		}, 16.66666);
 
 
-		socket.on('disconnect', () => {
-			clearInterval(intervalId);
-		});
+		// socketPlayer1.on('disconnect', () => {
+		// 	clearInterval(intervalId);
+		// });
 	}
 
 
@@ -250,16 +279,27 @@ export class LobbiesService {
 		//console.log("detectScoredPoint" + lobby.player1.score, lobby.player2.score);
 		const player1Scored = lobby.game.ball.x <= 0;
 		const player2Scored = lobby.game.ball.x >= lobby.game.map.width;
+		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
 	
 		if (player1Scored) {
 			lobby.player1.score++;
 			lobby.game.ball.x = lobby.game.map.width / 2;
+			lobby.game.ball.y = lobby.game.map.height / 2;
+
+			lobby.game.ball.directionX = Math.cos(angle);
+			lobby.game.ball.directionY = Math.sin(angle);
+
 			socket.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
 			console.log("player1Scored", lobby.player1.score, lobby.player2.score);
 
 		} else if (player2Scored) {
 			lobby.player2.score++;
 			lobby.game.ball.x = lobby.game.map.width / 2;
+			lobby.game.ball.y = lobby.game.map.height / 2;
+
+			lobby.game.ball.directionX = Math.cos(angle);
+			lobby.game.ball.directionY = Math.sin(angle);
+
 			socket.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
 			console.log("player2Scored", lobby.player1.score, lobby.player2.score);
 		}
