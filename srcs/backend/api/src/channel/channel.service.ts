@@ -78,7 +78,7 @@ export class ChannelService {
 					connect: [{ id: userId }, { id: destId }],
 				},
 				isDM: true,
-				visibility: "DM",
+				visibility: ChannelVisibility.DM,
 			},
 		});
 		return createdDm;
