@@ -209,7 +209,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {
 			success: false,
-			error: "",
+			error: null,
 		};
 		const { channelId, content } = payload;
 		const author: User = client.data.user;
@@ -220,36 +220,42 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				author.id,
 				channelId,
 			);
-			const isUserMuted = await this.channelService.IsMuted(
+			if (!isUserInChannel) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
+				);
+			}
+			const isUserMuted = await this.channelService.isMuted(
 				author.id,
 				channelId,
 			);
-			if (isUserInChannel && !isUserMuted) {
-				const message = await this.chatService.createMessage(
-					channelId,
-					author.id,
-					content,
+			if (isUserMuted) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
 				);
-				const newMessage = {
-					id: message.id,
-					createdAt: message.createdAt,
-					content: message.content,
-					author: {
-						login: author.login,
-						displayName: author.displayName,
-						image: author.image,
-					},
-				};
-				this.server.to(channelId).emit("display-message", channelId);
-				return {
-					success: true,
-					error: "",
-					payload: newMessage,
-				};
 			}
+			const message = await this.chatService.createMessage(
+				channelId,
+				author.id,
+				content,
+			);
+			const newMessage = {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					login: author.login,
+					displayName: author.displayName,
+					image: author.image,
+				},
+			};
+			this.server.to(channelId).emit("display-message", channelId);
+			response.success = true;
+			response.payload = newMessage;
 		} catch (err) {
 			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}

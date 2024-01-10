@@ -82,7 +82,10 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 				const newMessage = response.payload as Message;
 				form.reset();
 				if (!response.success || response.error) {
-					errorNotif(response.error);
+					const err = new Error();
+					Object.assign(err, response.error);
+					errorNotif(err);
+					mutate(`/channel/${channelId}`);
 				} else {
 					mutate(`/channel/${channelId}`, {
 						...data,
@@ -103,8 +106,6 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 	};
 
 	const isMuted = (memberLogin: string) => {
-		console.log("memberLogin", memberLogin);
-		console.log("data.muted", data.muted);
 		for (const mutedLogin of data.muted) {
 			if (mutedLogin === memberLogin) {
 				return true;
@@ -139,14 +140,23 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 					/>
 					<form onSubmit={form.onSubmit(sendMessage)}>
 						<TextInput
+							disabled={isMuted(user.login)}
 							mt="sm"
 							radius="lg"
-							placeholder={`Message #${data.channel.name}`}
+							placeholder={
+								isMuted(user.login)
+									? "You are muted in this channel."
+									: `Message #${data.channel.name}`
+							}
 							rightSection={
-								<IconSend2
-									className={classes.sendButton}
-									onClick={sendMessage}
-								/>
+								isMuted(user.login) ? (
+									<></>
+								) : (
+									<IconSend2
+										className={classes.sendButton}
+										onClick={sendMessage}
+									/>
+								)
 							}
 							rightSectionPointerEvents="all"
 							{...form.getInputProps("content")}

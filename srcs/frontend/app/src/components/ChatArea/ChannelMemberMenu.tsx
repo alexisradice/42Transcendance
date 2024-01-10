@@ -107,7 +107,6 @@ const ChannelMemberMenu = ({
 				"eject-member",
 				{ kickedId: memberId, channelId, action },
 				(response: SocketResponse) => {
-					console.log("response", response);
 					if (response.success) {
 						mutate(`/channel/${channelId}`);
 					} else {
@@ -171,7 +170,10 @@ const ChannelMemberMenu = ({
 	return (
 		<>
 			{isMe ? (
-				<UserCard user={member} />
+				<UserCard
+					user={member}
+					icon={isMuted ? <IconVolumeOff size={18} /> : undefined}
+				/>
 			) : (
 				<Menu>
 					<Menu.Target>

@@ -483,7 +483,7 @@ export class ChannelService {
 		});
 	}
 
-	async IsMuted(userId: string, channelId: string) {
+	async isMuted(userId: string, channelId: string) {
 		const muted = await this.prisma.mute.findFirst({
 			where: {
 				AND: [{ channelId }, { userId }],

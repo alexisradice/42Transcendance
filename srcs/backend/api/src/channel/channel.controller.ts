@@ -74,24 +74,15 @@ export class ChannelController {
 			channelId,
 		);
 		const mutedRaw = await this.channelService.getChannelMuted(channelId);
-		// const mutedPromises = [];
-		// for (const mutedEntry of mutedRaw) {
-		// 	mutedPromises.push(
-		// 		this.channelService.IsMuted(mutedEntry.id, channelId),
-		// 	);
-		// }
-		// await Promise.all(mutedPromises);
 		const muted = await Promise.all(
 			mutedRaw.map(async (mutedEntry) => {
-				const isStillMuted = await this.channelService.IsMuted(
+				const isStillMuted = await this.channelService.isMuted(
 					mutedEntry.user.id,
 					channelId,
 				);
-				console.log("isStillMuted:", isStillMuted);
 				return isStillMuted ? mutedEntry.user.login : null;
 			}),
 		).then((results) => results.filter((mutedEntry) => mutedEntry));
-		console.log("muted", muted);
 		return { channel, messages, owner, admins, members, muted };
 	}
 
