@@ -97,4 +97,48 @@ export class ChannelController {
 		}
 		return { success: true };
 	}
+
+	// trying to mute a user already muted won't do anything,
+	// his mute time will not be increased
+	@Post("admin/mute")
+	@UseGuards(JwtGuard)
+	async muteUser(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("mutedId") mutedId: string,
+	) {
+		const adminId = req.user["id"];
+		const channel = await this.channelService.findChannelById(channelId);
+		const isAllowed = await this.channelService.hasRights(
+			adminId,
+			mutedId,
+			channel,
+			"mute",
+		);
+		if (isAllowed) {
+			await this.channelService.muteUser(mutedId, channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("admin/unmute")
+	@UseGuards(JwtGuard)
+	async unmuteUser(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("mutedId") mutedId: string,
+	) {
+		const adminId = req.user["id"];
+		const channel = await this.channelService.findChannelById(channelId);
+		const isAllowed = await this.channelService.hasRights(
+			adminId,
+			mutedId,
+			channel,
+			"unmute",
+		);
+		if (isAllowed) {
+			await this.channelService.unmuteUser(mutedId, channelId);
+		}
+		return { success: true };
+	}
 }

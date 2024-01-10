@@ -398,27 +398,13 @@ export class ChannelService {
 
 	// muted user is still a member : can join but read-only
 	// mute is 5 minutes for now
-	async muteUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to mute ${user.displayName}`,
-			);
-		}
-		// await this.prisma.channel.update({
-		// 	where: { id: channelId },
-		// 	data: {
-		// 		muted: {
-		// 			connect: { id: user.id },
-		// 		},
-		// 	},
-		// });
+	async muteUser(targetId: string, channelId: string) {
 		return await this.prisma.mute.create({
 			data: {
 				expiresAt: new Date(Date.now() + 5 * 60000),
 				user: {
 					connect: {
-						id: user.id,
+						id: targetId,
 					},
 				},
 				channel: {
@@ -430,24 +416,10 @@ export class ChannelService {
 		});
 	}
 
-	async unmuteUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to unmute ${user.displayName}`,
-			);
-		}
-		// return await this.prisma.channel.update({
-		// 	where: { id: channelId },
-		// 	data: {
-		// 		muted: {
-		// 			disconnect: { id: user.id },
-		// 		},
-		// 	},
-		// });
+	async unmuteUser(targetId: string, channelId: string) {
 		return await this.prisma.mute.deleteMany({
 			where: {
-				AND: [{ channelId: channelId }, { userId: user.id }],
+				AND: [{ channelId: channelId }, { userId: targetId }],
 			},
 		});
 	}
