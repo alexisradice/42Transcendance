@@ -13,7 +13,7 @@ import { ChannelVisibility } from "@prisma/client";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { ChannelService } from "./channel.service";
-import { channel } from "diagnostics_channel";
+import * as argon2 from "argon2";
 
 @Controller("channel")
 export class ChannelController {
@@ -138,6 +138,63 @@ export class ChannelController {
 		);
 		if (isAllowed) {
 			await this.channelService.unmuteUser(mutedId, channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("password/add")
+	@UseGuards(JwtGuard)
+	async addPassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("password") password: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		if (isOwner) {
+			await this.channelService.addPassword(channelId, password);
+		}
+		return { success: true };
+	}
+
+	@Post("password/remove")
+	@UseGuards(JwtGuard)
+	async removePassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("password") password: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		const passwordValid = await argon2.verify(channel.password, password);
+		if (isOwner && passwordValid) {
+			await this.channelService.removePassword(channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("password/change")
+	@UseGuards(JwtGuard)
+	async changePassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("password") password: string,
+		@Body("newPassword") newPassword: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		const passwordValid = await argon2.verify(channel.password, password);
+		if (isOwner && passwordValid) {
+			await this.channelService.changePassword(channelId, newPassword);
 		}
 		return { success: true };
 	}

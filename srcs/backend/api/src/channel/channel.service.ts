@@ -299,6 +299,8 @@ export class ChannelService {
 		return true;
 	}
 
+	// OWNER FUNCTIONS
+
 	async promoteAdmin(userId: string, channelId: string) {
 		return await this.prisma.channel.update({
 			where: {
@@ -310,6 +312,42 @@ export class ChannelService {
 						id: userId,
 					},
 				},
+			},
+		});
+	}
+
+	async removePassword(channelId: string) {
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PUBLIC,
+			},
+		});
+	}
+
+	async changePassword(channelId: string, password: string) {
+		const hashedPassword = await argon2.hash(password);
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				password: hashedPassword,
+			},
+		});
+	}
+
+	async addPassword(channelId: string, password: string) {
+		const hashedPassword = await argon2.hash(password);
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PROTECTED,
+				password: hashedPassword,
 			},
 		});
 	}
