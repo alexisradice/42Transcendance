@@ -1,19 +1,22 @@
 import { Center, Loader, Menu } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
 	IconBan,
 	IconDeviceGamepad2,
 	IconHammer,
 	IconKarate,
+	IconMessage,
 	IconMessageCircle,
 	IconMessageOff,
 	IconSword,
+	IconVolumeOff,
 } from "@tabler/icons-react";
-import { ChannelMember, SocketResponse } from "../../types";
-import UserCard from "../UserCard/UserCard";
 import useSWR, { useSWRConfig } from "swr";
-import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
-import { errorNotif } from "../../utils/errorNotif";
 import { useSocket } from "../../hooks/useSocket";
+import { ChannelMember, SocketResponse } from "../../types";
+import { errorNotif } from "../../utils/errorNotif";
+import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import UserCard from "../UserCard/UserCard";
 
 type Props = {
 	member: ChannelMember;
@@ -22,6 +25,7 @@ type Props = {
 	isAdmin: boolean;
 	isMe: boolean;
 	channelId: string;
+	isMuted?: boolean;
 };
 
 const ChannelMemberMenu = ({
@@ -31,6 +35,7 @@ const ChannelMemberMenu = ({
 	isAdmin,
 	isMe,
 	channelId,
+	isMuted,
 }: Props) => {
 	const { mutate } = useSWRConfig();
 	const {
@@ -113,6 +118,44 @@ const ChannelMemberMenu = ({
 		}
 	};
 
+	const muteMember = async (mutedId: string) => {
+		try {
+			const response = await axiosPrivate.post("/channel/admin/mute", {
+				channelId,
+				mutedId,
+			});
+			if (response.data.success) {
+				notifications.show({
+					color: "yellow",
+					title: "User muted",
+					message: `${member.login} has been muted for 5 minutes.`,
+				});
+				mutate(`/channel/${channelId}`);
+			}
+		} catch (e) {
+			errorNotif(e);
+		}
+	};
+
+	const unmuteMember = async (mutedId: string) => {
+		try {
+			const response = await axiosPrivate.post("/channel/admin/unmute", {
+				channelId,
+				mutedId,
+			});
+			if (response.data.success) {
+				notifications.show({
+					color: "green",
+					title: "User unmuted",
+					message: `${member.login} has been unmuted.`,
+				});
+				mutate(`/channel/${channelId}`);
+			}
+		} catch (e) {
+			errorNotif(e);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<Center>
@@ -132,7 +175,14 @@ const ChannelMemberMenu = ({
 			) : (
 				<Menu>
 					<Menu.Target>
-						<UserCard user={member} />
+						<UserCard
+							user={member}
+							icon={
+								isMuted ? (
+									<IconVolumeOff size={18} />
+								) : undefined
+							}
+						/>
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Item
@@ -191,12 +241,25 @@ const ChannelMemberMenu = ({
 						{(isOwner || (isAdmin && memberRole === "member")) && (
 							<>
 								<Menu.Divider />
-								<Menu.Item
-									color="yellow"
-									leftSection={<IconMessageOff size={18} />}
-								>
-									Mute (5mn)
-								</Menu.Item>
+								{isMuted ? (
+									<Menu.Item
+										color="yellow"
+										leftSection={<IconMessage size={18} />}
+										onClick={() => unmuteMember(member.id)}
+									>
+										Unmute
+									</Menu.Item>
+								) : (
+									<Menu.Item
+										color="yellow"
+										leftSection={
+											<IconMessageOff size={18} />
+										}
+										onClick={() => muteMember(member.id)}
+									>
+										Mute (5mn)
+									</Menu.Item>
+								)}
 								<Menu.Item
 									color="red"
 									leftSection={<IconKarate size={18} />}

@@ -140,6 +140,27 @@ export class ChannelService {
 		});
 	}
 
+	async getChannelMuted(channelId: string) {
+		return await this.prisma.mute.findMany({
+			where: {
+				channelId,
+			},
+			select: {
+				id: true,
+				expiresAt: true,
+				user: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+			},
+			orderBy: { expiresAt: "asc" },
+		});
+	}
+
 	async createChannel(
 		id: string,
 		name: string,

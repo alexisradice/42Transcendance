@@ -7,10 +7,10 @@ import {
 	UnstyledButton,
 } from "@mantine/core";
 import { IconChevronRight, TablerIconsProps } from "@tabler/icons-react";
-import { getStatusColor } from "../../utils/status";
-import { ChannelMember, Friend } from "../../types";
-import classes from "./UserCard.module.css";
 import { ReactElement, forwardRef } from "react";
+import { ChannelMember, Friend } from "../../types";
+import { getStatusColor } from "../../utils/status";
+import classes from "./UserCard.module.css";
 
 type Props = {
 	user: ChannelMember | Friend;
@@ -38,6 +38,7 @@ const UserCard = forwardRef<HTMLButtonElement, Props>(
 					>
 						<Avatar src={user.image} />
 					</Indicator>
+
 					<Box className="flex-1">
 						<Group justify="flex-start" gap={5}>
 							<Text size="md" fw={500}>

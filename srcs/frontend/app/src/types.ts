@@ -6,6 +6,7 @@ export type ChannelInfos = {
 	admins: ChannelMember[];
 	members: ChannelMember[];
 	messages: Message[];
+	muted: string[];
 };
 
 export type ChannelStripped = {

@@ -102,6 +102,17 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 		return false;
 	};
 
+	const isMuted = (memberLogin: string) => {
+		console.log("memberLogin", memberLogin);
+		console.log("data.muted", data.muted);
+		for (const mutedLogin of data.muted) {
+			if (mutedLogin === memberLogin) {
+				return true;
+			}
+		}
+		return false;
+	};
+
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
@@ -173,6 +184,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 											isAdmin={isAdmin()}
 											isMe={user.login === admin.login}
 											channelId={channelId}
+											isMuted={isMuted(admin.login)}
 										/>
 									);
 								},
@@ -197,6 +209,7 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 											isAdmin={isAdmin()}
 											isMe={user.login === member.login}
 											channelId={channelId}
+											isMuted={isMuted(member.login)}
 										/>
 									);
 								},
