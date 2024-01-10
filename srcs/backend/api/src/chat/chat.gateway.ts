@@ -273,12 +273,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		try {
 			const channel =
 				await this.channelService.findChannelById(channelId);
-			const canKick = await this.channelService.canKick(
+			const canEject = await this.channelService.hasRights(
 				user.id,
 				kickedId,
 				channel,
+				action,
 			);
-			if (canKick) {
+			if (canEject) {
 				if (action === "kick") {
 					await this.channelService.kickUser(kickedId, channelId);
 				} else if (action === "ban") {

@@ -331,24 +331,29 @@ export class ChannelService {
 		});
 	}
 
-	async canKick(userId: string, kickedId: string, channel: Channel) {
+	async hasRights(
+		userId: string,
+		targetId: string,
+		channel: Channel,
+		action: string,
+	) {
 		const isAdmin = await this.isChannelAdmin(userId, channel.id);
 		if (!isAdmin) {
 			throw new UnauthorizedException(
-				"You don't have permission to kick this user",
+				`You don't have permission to ${action} this user`,
 			);
 		}
-		const isKickedOwner = await this.isChannelOwner(kickedId, channel);
-		if (isKickedOwner) {
+		const isTargetOwner = await this.isChannelOwner(targetId, channel);
+		if (isTargetOwner) {
 			throw new UnauthorizedException(
-				"You don't have permission to kick this user",
+				`You don't have permission to ${action} this user`,
 			);
 		}
 		const isOwner = await this.isChannelOwner(userId, channel);
-		const isKickedAdmin = await this.isChannelAdmin(kickedId, channel.id);
-		if (isKickedAdmin && !isOwner) {
+		const isTargetAdmin = await this.isChannelAdmin(targetId, channel.id);
+		if (isTargetAdmin && !isOwner) {
 			throw new UnauthorizedException(
-				"You don't have permission to kick this user",
+				`You don't have permission to ${action} this user`,
 			);
 		}
 		return true;
