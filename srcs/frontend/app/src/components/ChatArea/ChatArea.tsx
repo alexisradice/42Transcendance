@@ -10,12 +10,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import {
-	IconMessages,
-	IconSend2,
-	IconSettings,
-	IconUser,
-} from "@tabler/icons-react";
+import { IconMessages, IconSend2, IconUser } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import useSWR, { useSWRConfig } from "swr";
@@ -30,6 +25,7 @@ import {
 import { errorNotif } from "../../utils/errorNotif";
 import { fetcherPrivate } from "../../utils/fetcher";
 import { IconHash, IconHashLock } from "../Icons";
+import MenuChannel from "../MenuChannel/MenuChannel";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import ChannelMemberMenu from "./ChannelMemberMenu";
 import classes from "./ChatArea.module.css";
@@ -129,7 +125,12 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 					{chatMode ? <IconUser /> : <IconMessages />}
 				</UnstyledButton>
 				<UnstyledButton variant="unstyled">
-					<IconSettings />
+					<MenuChannel
+						isOwner={data.owner.login === user.login}
+						hasPassword={
+							data.channel.visibility === Visibility.PROTECTED
+						}
+					/>
 				</UnstyledButton>
 			</Group>
 			{chatMode ? (
