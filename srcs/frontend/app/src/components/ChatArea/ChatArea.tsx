@@ -23,9 +23,9 @@ import {
 	User,
 } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
-import { fetcherPrivate } from "../../utils/fetcher";
+import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
+import ChannelMenu from "../ChannelMenu/ChannelMenu";
 import { IconHash, IconHashLock } from "../Icons";
-import MenuChannel from "../MenuChannel/MenuChannel";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import ChannelMemberMenu from "./ChannelMemberMenu";
 import classes from "./ChatArea.module.css";
@@ -110,6 +110,18 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 		return false;
 	};
 
+	const removePassword = async () => {
+		try {
+			await axiosPrivate.post("/channel/password/remove", {
+				channelId,
+			});
+			mutate(`/channel/${channelId}`);
+			mutate("/channel/list");
+		} catch (err) {
+			errorNotif(err);
+		}
+	};
+
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
@@ -125,11 +137,12 @@ const ChatArea = ({ user, channelId, chatSocket }: Props) => {
 					{chatMode ? <IconUser /> : <IconMessages />}
 				</UnstyledButton>
 				<UnstyledButton variant="unstyled">
-					<MenuChannel
+					<ChannelMenu
 						isOwner={data.owner.login === user.login}
 						hasPassword={
 							data.channel.visibility === Visibility.PROTECTED
 						}
+						removePassword={removePassword}
 					/>
 				</UnstyledButton>
 			</Group>

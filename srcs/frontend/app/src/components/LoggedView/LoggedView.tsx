@@ -58,6 +58,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				} else {
 					setSelectedChannel(channel.id);
 					setChatOpened(true);
+					mutate(`/channel/${channel.id}`);
+					mutate(`/channel/list`);
 				}
 			},
 		);

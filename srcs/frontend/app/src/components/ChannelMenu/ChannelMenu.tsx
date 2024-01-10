@@ -12,10 +12,10 @@ type Props = {
 	hasPassword: boolean;
 	// addPassword: () => void;
 	// changePassword: () => void;
-	// removePassword: () => void;
+	removePassword: () => Promise<void>;
 };
 
-const MenuChannel = ({ isOwner, hasPassword }: Props) => {
+const ChannelMenu = ({ isOwner, hasPassword, removePassword }: Props) => {
 	return (
 		<Menu>
 			<Menu.Target>
@@ -39,6 +39,7 @@ const MenuChannel = ({ isOwner, hasPassword }: Props) => {
 								</Menu.Item>
 								<Menu.Item
 									leftSection={<IconShieldOff size={18} />}
+									onClick={removePassword}
 								>
 									Remove password
 								</Menu.Item>
@@ -55,4 +56,4 @@ const MenuChannel = ({ isOwner, hasPassword }: Props) => {
 	);
 };
 
-export default MenuChannel;
+export default ChannelMenu;

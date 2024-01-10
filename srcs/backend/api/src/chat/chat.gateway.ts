@@ -112,7 +112,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleDisconnect(client: any) {
 		console.log("client disconnected");
 		const user: User = client.data.user;
-		this.clients.delete(user.id);
+		this.clients?.delete(user.id);
 	}
 
 	@SubscribeMessage("join-chatroom")
