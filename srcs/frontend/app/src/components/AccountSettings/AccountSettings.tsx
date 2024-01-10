@@ -44,7 +44,7 @@ const AccountSettings = ({ opened, close }: Props) => {
 			icon: <IconCheck />,
 		});
 		setTimeout(() => {
-			mutate({ ...user });
+			mutate();
 		}, 500);
 	};
 

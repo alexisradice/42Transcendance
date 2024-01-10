@@ -15,7 +15,7 @@ import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
 import { Socket } from "socket.io-client";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
@@ -23,10 +23,11 @@ import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
 
 type Props = {
-	chatSocket: Socket | null;
+	chatSocket: Socket;
 };
 
 const FriendsList = ({ chatSocket }: Props) => {
+	const { mutate } = useSWRConfig();
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [addFriendError, setAddFriendError] = useState<string | undefined>(
@@ -36,7 +37,6 @@ const FriendsList = ({ chatSocket }: Props) => {
 		data: friends,
 		error,
 		isLoading,
-		mutate,
 	} = useSWR("/user/friends/all", fetcherPrivate);
 
 	const form = useForm({
@@ -53,6 +53,18 @@ const FriendsList = ({ chatSocket }: Props) => {
 		},
 	});
 
+	if (isLoading) {
+		return (
+			<Center>
+				<Loader type="dots" />
+			</Center>
+		);
+	}
+
+	if (error || !friends) {
+		return <></>;
+	}
+
 	const addFriend = async (values: { friendLogin: string }) => {
 		setLoading(true);
 		try {
@@ -62,7 +74,7 @@ const FriendsList = ({ chatSocket }: Props) => {
 			setLoading(false);
 			setAddFriendError(undefined);
 			close();
-			mutate({ ...friends });
+			mutate("/user/friends/all");
 			form.reset();
 		} catch (err: unknown) {
 			setLoading(false);
@@ -79,7 +91,7 @@ const FriendsList = ({ chatSocket }: Props) => {
 			await axiosPrivate.post("user/friends/remove", {
 				friendLogin,
 			});
-			mutate({ ...friends });
+			mutate("/user/friends/all");
 		} catch (err: unknown) {
 			errorNotif(err);
 		}
@@ -90,7 +102,10 @@ const FriendsList = ({ chatSocket }: Props) => {
 			await axiosPrivate.post("user/block", {
 				userLogin: friendLogin,
 			});
-			mutate({ ...friends });
+			mutate("/user/friends/all");
+			mutate((key: string) => key.startsWith("/channel/"), undefined, {
+				revalidate: true,
+			});
 		} catch (err: unknown) {
 			errorNotif(err);
 		}
@@ -103,84 +118,71 @@ const FriendsList = ({ chatSocket }: Props) => {
 	};
 
 	const openChat = (friendLogin: string) => {
-		chatSocket?.emit("join", friendLogin);
+		chatSocket.emit("join", friendLogin);
 	};
 
 	return (
 		<>
-			{!error && isLoading && (
-				<Center>
-					<Loader type="dots" />
-				</Center>
-			)}
-			{!error && !isLoading && (
-				<>
-					<Modal
-						opened={addFriendOpened}
-						onClose={closeModal}
-						title="Add a new friend"
-						centered
-					>
-						<form onSubmit={form.onSubmit(addFriend)}>
-							<TextInput
-								placeholder="Friend login"
-								{...form.getInputProps("friendLogin")}
-								error={addFriendError}
-								disabled={loading}
-								data-autofocus
-							/>
-							<Group justify="flex-end" align="center">
-								<Button
-									type="submit"
-									color="blue"
-									disabled={loading}
-									mt="md"
-								>
-									{loading ? <Loader type="dots" /> : "Add"}
-								</Button>
-							</Group>
-						</form>
-					</Modal>
-					<Center>
-						<Button onClick={open} variant="subtle" fullWidth>
-							<IconPlus size={16} />
-							<Text>&nbsp;Add a new friend</Text>
+			<Modal
+				opened={addFriendOpened}
+				onClose={closeModal}
+				title="Add a new friend"
+				centered
+			>
+				<form onSubmit={form.onSubmit(addFriend)}>
+					<TextInput
+						placeholder="Friend login"
+						{...form.getInputProps("friendLogin")}
+						error={addFriendError}
+						disabled={loading}
+						data-autofocus
+					/>
+					<Group justify="flex-end" align="center">
+						<Button
+							type="submit"
+							color="blue"
+							disabled={loading}
+							mt="md"
+						>
+							{loading ? <Loader type="dots" /> : "Add"}
 						</Button>
+					</Group>
+				</form>
+			</Modal>
+			<Center>
+				<Button onClick={open} variant="subtle" fullWidth>
+					<IconPlus size={16} />
+					<Text>&nbsp;Add a new friend</Text>
+				</Button>
+			</Center>
+			{friends.length > 0 && (
+				<AppShell.Section
+					component={ScrollArea}
+					type="scroll"
+					className="h-100 flex-1"
+				>
+					<ul className={classes.list}>
+						{friends.map((friend: Friend, index: number) => {
+							return (
+								<li key={index}>
+									<FriendCard
+										openChat={openChat}
+										friend={friend}
+										removeFriend={removeFriend}
+										blockFriend={blockFriend}
+									/>
+								</li>
+							);
+						})}
+					</ul>
+				</AppShell.Section>
+			)}
+			{friends.length === 0 && (
+				<AppShell.Section className="flex-1">
+					<Center className="h-100">
+						<Text fs="italic">*cricket noise*</Text>
 					</Center>
-					<AppShell.Section
-						component={ScrollArea}
-						type="scroll"
-						className="h-100 flex-1"
-					>
-						{friends.length > 0 && (
-							<ul className={classes.list}>
-								{friends.map(
-									(friend: Friend, index: number) => {
-										return (
-											<li key={index}>
-												<FriendCard
-													openChat={openChat}
-													friend={friend}
-													removeFriend={removeFriend}
-													blockFriend={blockFriend}
-												/>
-											</li>
-										);
-									},
-								)}
-							</ul>
-						)}
-						{friends.length === 0 && (
-							<Center
-								component={Text}
-								className="h-100"
-								fs="italic"
-							>
-								It's a bit empty around here.
-							</Center>
-						)}
-					</AppShell.Section>
-				</>
+				</AppShell.Section>
 			)}
 		</>
 	);

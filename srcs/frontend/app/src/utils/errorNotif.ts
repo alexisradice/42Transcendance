@@ -2,7 +2,7 @@ import { notifications } from "@mantine/notifications";
 import { AxiosError } from "axios";
 import { prettyErrors } from "./prettyErrors";
 
-export const errorNotif = (error: unknown) => {
+export const errorNotif = (error?: unknown) => {
 	let message = "Please try again later.";
 	if (error instanceof AxiosError) {
 		message =
