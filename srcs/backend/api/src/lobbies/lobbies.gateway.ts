@@ -119,6 +119,7 @@ export class LobbiesGateway
 
 		const player = new Player();
 		player.name = client.data.user.login;
+		console.log("client : ", client);
 		player.socket = client;
 		player.score = 0;
 		player.settings = settings;

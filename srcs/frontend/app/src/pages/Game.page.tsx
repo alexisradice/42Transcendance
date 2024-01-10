@@ -27,7 +27,7 @@ export const GamePage = () => {
 			console.log("queue sent");
 			gameSocket.on('launch', (playerName, receivedLobbyId, settings) => {
 				setLobbyId(receivedLobbyId);
-				console.log('Launch event received:', playerName, receivedLobbyId, settings);
+				//console.log('Launch event received:', playerName, receivedLobbyId, settings);
 				gameSocket.emit('launchGame', true);
 				setIsPending(false);
 			});
@@ -43,7 +43,7 @@ export const GamePage = () => {
 	return (
         <div>
             {isPending && <PendingPopup />}
-			{!isPending && <PongGame lobbyId={lobbyId} user={user} />}
+			{!isPending && <PongGame socket={gameSocket} lobbyId={lobbyId} user={user} />}
 
         </div>
     );
