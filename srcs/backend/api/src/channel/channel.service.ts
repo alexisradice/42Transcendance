@@ -446,11 +446,3 @@ export class ChannelService {
 		return false;
 	}
 }
-
-// const exists = !!await prisma.place.findFirst(
-// 	{
-// 	  where: {
-// 		name: "abc"
-// 	  }
-// 	}
-//   );
