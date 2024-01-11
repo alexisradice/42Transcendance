@@ -330,10 +330,10 @@ export class LobbiesService {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
 				lobby.game.updatePaddlePlayer1(coordinates.y);
-				socket.emit('paddleDownFront', coordinates.y);
+				socket.emit('paddleDownFront', coordinates.y, "player1");
 			} else if (lobby.player2.socket === socket) {
 				lobby.game.updatePaddlePlayer2(coordinates.y);
-				socket.emit('paddleDownFront', coordinates.y);
+				socket.emit('paddleDownFront', coordinates.y, "player2");
 			}
 		}
 	}
@@ -343,10 +343,10 @@ export class LobbiesService {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
 				lobby.game.updatePaddlePlayer1(coordinates.y);
-				socket.emit('paddleUpFront', coordinates.y);
+				socket.emit('paddleUpFront', coordinates.y, "player1");
 			} else if (lobby.player2.socket === socket) {
 				lobby.game.updatePaddlePlayer2(coordinates.y);
-				socket.emit('paddleUpFront', coordinates.y);
+				socket.emit('paddleUpFront', coordinates.y, "player");
 			}
 		}
 	}
