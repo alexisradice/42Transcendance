@@ -34,6 +34,8 @@ const PongGame = ({ socket, lobbyId, user }) => {
     }, []);
 
     useEffect(() => {
+
+
         const handleKeyDown = (event) => {
             if (event.key === 'ArrowUp') {
                 setIsMovingUp(true);
@@ -81,6 +83,15 @@ const PongGame = ({ socket, lobbyId, user }) => {
     }, [isMovingUp, isMovingDown, paddles.paddle1Y, socket, lobbyId, user.login]);
 
     useEffect(() => {
+
+		socket.on('paddleUpFront', (newY) => {
+            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+        });
+
+        socket.on('paddleDownFront', (newY) => {
+            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+        });
+		
         socket.on('ballPosition', (data) => {
             const scaledPos = scalePosition(data.x, data.y);
             setBallPosition(scaledPos);
@@ -96,6 +107,8 @@ const PongGame = ({ socket, lobbyId, user }) => {
         return () => {
             socket.off('ballPosition');
             socket.off('gameUpdate');
+			socket.off('paddleUpFront');
+            socket.off('paddleDownFront');
         };
     }, [socket, lobbyId]);
 
