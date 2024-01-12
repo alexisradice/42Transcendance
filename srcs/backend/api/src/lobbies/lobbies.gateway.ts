@@ -132,15 +132,15 @@ export class LobbiesGateway
 	}
 
 	@SubscribeMessage("paddleUp")
-	paddleUp(client: Socket, coordinates: any): void {
-		console.log("paddleUp", coordinates);
-		this.lobbiesService.updatePaddleUp(client, coordinates);
+	paddleUp(client: Socket): void {
+		console.log("paddleUp");
+		this.lobbiesService.updatePaddleUp(client);
 	}
 
 	@SubscribeMessage("paddleDown")
-	paddleDown(client: Socket, coordinates: any): void {
-		console.log("paddleDown", coordinates);
-		this.lobbiesService.updatePaddleDown(client, coordinates);
+	paddleDown(client: Socket): void {
+		console.log("paddleDown");
+		this.lobbiesService.updatePaddleDown(client);
 	}
 
 	// @SubscribeMessage("launchGame")

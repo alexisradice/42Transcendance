@@ -325,28 +325,30 @@ export class LobbiesService {
 		return false;
 	}
 
-	updatePaddleDown(socket: Socket, coordinates: any) {
-		coordinates.y = coordinates.y - 10;
+	updatePaddleDown(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.updatePaddlePlayer1(coordinates.y);
-				socket.emit('paddleDownFront', coordinates.y, "player1");
+				lobby.game.paddlePlayer1.y -= 10;
+				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
+				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, "player1");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.updatePaddlePlayer2(coordinates.y);
-				socket.emit('paddleDownFront', coordinates.y, "player2");
+				lobby.game.paddlePlayer2.y -= 10;
+				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
+				socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			}
 		}
 	}
 
-	updatePaddleUp(socket: Socket, coordinates: any) {
-		coordinates.y = coordinates.y + 10;
+	updatePaddleUp(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.updatePaddlePlayer1(coordinates.y);
-				socket.emit('paddleUpFront', coordinates.y, "player1");
+				lobby.game.paddlePlayer1.y += 10;
+				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
+				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, "player1");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.updatePaddlePlayer2(coordinates.y);
-				socket.emit('paddleUpFront', coordinates.y, "player2");
+				lobby.game.paddlePlayer2.y += 10;
+				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
+				socket.emit('paddleUpFront', lobby.game.paddlePlayer2.y, "player2");
 			}
 		}
 	}
