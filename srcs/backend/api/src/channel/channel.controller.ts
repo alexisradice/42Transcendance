@@ -14,6 +14,7 @@ import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { ChannelService } from "./channel.service";
 import * as argon2 from "argon2";
+import { PasswordDto } from "src/dto";
 
 @Controller("channel")
 export class ChannelController {
@@ -33,8 +34,9 @@ export class ChannelController {
 		@Req() req: Request,
 		@Body("channelName") channelName: string,
 		@Body("visibility") visibility: ChannelVisibility,
-		@Body("password") password?: string,
+		@Body("password") passwordDto: PasswordDto,
 	) {
+		const password = passwordDto.password;
 		if (visibility === ChannelVisibility.PROTECTED && !password) {
 			throw new HttpException(
 				"Password is required for protected channels",
@@ -157,8 +159,9 @@ export class ChannelController {
 	async addPassword(
 		@Req() req: Request,
 		@Body("channelId") channelId: string,
-		@Body("password") password: string,
+		@Body("password") passwordDto: PasswordDto,
 	) {
+		const password = passwordDto.password;
 		const channel = await this.channelService.findChannelById(channelId);
 		const isOwner = await this.channelService.isChannelOwner(
 			req.user["id"],
@@ -192,8 +195,9 @@ export class ChannelController {
 	async changePassword(
 		@Req() req: Request,
 		@Body("channelId") channelId: string,
-		@Body("newPassword") newPassword: string,
+		@Body("newPassword") passwordDto: PasswordDto,
 	) {
+		const newPassword = passwordDto.password;
 		const channel = await this.channelService.findChannelById(channelId);
 		const isOwner = await this.channelService.isChannelOwner(
 			req.user["id"],
