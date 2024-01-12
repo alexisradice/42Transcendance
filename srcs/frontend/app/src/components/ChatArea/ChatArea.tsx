@@ -53,6 +53,14 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 		initialValues: {
 			content: "",
 		},
+		validate: {
+			content: (value: string) => {
+				if (value.length > 500) {
+					return "Message must be at most 500 characters.";
+				}
+				return null;
+			},
+		},
 	});
 
 	if (isLoading) {

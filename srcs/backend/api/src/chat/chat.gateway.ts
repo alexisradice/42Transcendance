@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ForbiddenException,
 	HttpException,
 	UnauthorizedException,
@@ -166,6 +167,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log('received dm "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
+			if (content.length > 500) {
+				throw new BadRequestException(
+					"Message must be at most 500 characters.",
+				);
+			}
 			const dest = await this.userService.findOne({ id: destId });
 			const dmChannel =
 				await this.channelService.findChannelById(channelId);
@@ -314,6 +320,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
+			if (content.length > 500) {
+				throw new BadRequestException(
+					"Message must be at most 500 characters.",
+				);
+			}
 			const isUserInChannel = await this.channelService.isChannelMember(
 				author.id,
 				channelId,

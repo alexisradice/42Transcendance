@@ -34,7 +34,7 @@ export class ChannelController {
 		@Req() req: Request,
 		@Body("channelName") channelName: string,
 		@Body("visibility") visibility: ChannelVisibility,
-		@Body("password") passwordDto: PasswordDto,
+		@Body() passwordDto: PasswordDto,
 	) {
 		const password = passwordDto.password;
 		if (visibility === ChannelVisibility.PROTECTED && !password) {
