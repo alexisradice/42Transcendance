@@ -346,7 +346,7 @@ export class LobbiesService {
 				socket.emit('paddleUpFront', coordinates.y, "player1");
 			} else if (lobby.player2.socket === socket) {
 				lobby.game.updatePaddlePlayer2(coordinates.y);
-				socket.emit('paddleUpFront', coordinates.y, "player");
+				socket.emit('paddleUpFront', coordinates.y, "player2");
 			}
 		}
 	}

@@ -70,7 +70,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
                 if (isMovingUp) newY = Math.max(0, newY - moveAmount);
                 if (isMovingDown) newY = Math.min(100, newY + moveAmount);
         
-                setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
+                //setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
                 socket.emit(isMovingUp ? 'paddleUp' : 'paddleDown', { lobbyId, y: newY, user: user.login });
             }
         };
@@ -84,12 +84,21 @@ const PongGame = ({ socket, lobbyId, user }) => {
 
     useEffect(() => {
 
-		socket.on('paddleUpFront', (newY) => {
-            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+		socket.on('paddleUpFront', (newY, player) => {
+            console.log('paddleUpFront', newY, player);
+			if (player === 'player2')
+				setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+			else if (player === 'player1')
+				setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
         });
 
-        socket.on('paddleDownFront', (newY) => {
-            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+        socket.on('paddleDownFront', (newY, player) => {
+			console.log('paddleDownFront', newY, player);
+			
+			if (player === 'player2')
+            	setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
+			else if (player === 'player1')
+				setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
         });
 		
         socket.on('ballPosition', (data) => {
