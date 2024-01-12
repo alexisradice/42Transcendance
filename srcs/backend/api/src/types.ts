@@ -27,7 +27,7 @@ export type Payload = {
 
 export type SocketResponse = {
 	success: boolean;
-	error: string;
+	error: any;
 	payload?: any;
 };
 

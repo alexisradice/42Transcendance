@@ -9,17 +9,18 @@ import {
 	ConnectedSocket,
 	MessageBody,
 	OnGatewayConnection,
+	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
 } from "@nestjs/websockets";
+import { User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
-import { Channel } from "@prisma/client";
 
 @WebSocketGateway({
 	cors: {
@@ -28,7 +29,8 @@ import { Channel } from "@prisma/client";
 	},
 	namespace: "chat",
 })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+	private clients: Map<string, Socket> = new Map();
 	constructor(
 		private jwtService: JwtService,
 		private configService: ConfigService,
@@ -87,7 +89,8 @@ export class ChatGateway implements OnGatewayConnection {
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
-				client.join(user.id); //join self private room
+				this.clients.set(user.id, client);
+				client.join(user.id);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -101,12 +104,19 @@ export class ChatGateway implements OnGatewayConnection {
 					login: user.sub,
 				});
 				client.data.user = dbUser;
-				client.join(user.id); //join self private room
+				this.clients.set(dbUser.id, client);
+				client.join(dbUser.id);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
 			}
 		}
+	}
+
+	async handleDisconnect(client: any) {
+		console.log("client disconnected");
+		const user: User = client.data.user;
+		this.clients?.delete(user.id);
 	}
 
 	@SubscribeMessage("join-dm")
@@ -207,12 +217,12 @@ export class ChatGateway implements OnGatewayConnection {
 	): Promise<SocketResponse> {
 		const response = { success: false, error: null };
 		const { channelId, password } = payload;
-		const user = client.data.user;
+		const user: User = client.data.user;
 		try {
 			const channel =
 				await this.channelService.findChannelById(channelId);
 			const isUserInChannel = await this.channelService.isChannelMember(
-				user,
+				user.id,
 				channelId,
 			);
 			// user was already in channel = no further checks
@@ -237,12 +247,14 @@ export class ChatGateway implements OnGatewayConnection {
 					"User added in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
+				this.server.to(channelId).emit("user-joined", channelId);
 				response.success = true;
 			} else {
 				response.error = new ForbiddenException("Access Denied");
 			}
 			return response;
 		} catch (err) {
+			console.error(err);
 			response.error = err;
 			return response;
 		}
@@ -253,15 +265,15 @@ export class ChatGateway implements OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: "" };
+		const response = { success: false, error: null };
 		const { channelId } = payload;
-		const user = client.data.user;
+		const user: User = client.data.user;
 		let wasAlone = false;
 		try {
 			const channel =
 				await this.channelService.findChannelById(channelId);
 			const isOwner = await this.channelService.isChannelOwner(
-				user,
+				user.id,
 				channel,
 			);
 			if (isOwner) {
@@ -274,13 +286,16 @@ export class ChatGateway implements OnGatewayConnection {
 			);
 			if (wasAlone) {
 				await this.channelService.destroyChannel(channelId);
+				this.server.emit("channel-destroyed");
 			}
 			//leave channel socket room
 			client.leave(channelId);
 			response.success = true;
-			return response;
+			this.server.to(channelId).emit("user-left", channelId);
 		} catch (err) {
+			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}
@@ -292,45 +307,100 @@ export class ChatGateway implements OnGatewayConnection {
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {
 			success: false,
-			error: "",
+			error: null,
 		};
 		const { channelId, content } = payload;
-		const author = client.data.user;
+		const author: User = client.data.user;
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
 			const isUserInChannel = await this.channelService.isChannelMember(
-				author,
+				author.id,
 				channelId,
 			);
-			const isUserMuted = await this.channelService.IsMuted(
-				author,
-				channelId,
-			);
-			if (isUserInChannel && !isUserMuted) {
-				const message = await this.chatService.createMessage(
-					channelId,
-					author.id,
-					content,
+			if (!isUserInChannel) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
 				);
-				return {
-					success: true,
-					error: "",
-					payload: {
-						id: message.id,
-						createdAt: message.createdAt,
-						content: message.content,
-						author: {
-							login: author.login,
-							displayName: author.displayName,
-							image: author.image,
-						},
-					},
-				};
+			}
+			const isUserMuted = await this.channelService.isMuted(
+				author.id,
+				channelId,
+			);
+			if (isUserMuted) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
+				);
+			}
+			const message = await this.chatService.createMessage(
+				channelId,
+				author.id,
+				content,
+			);
+			const newMessage = {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					login: author.login,
+					displayName: author.displayName,
+					image: author.image,
+				},
+			};
+			this.server.to(channelId).emit("display-message", channelId);
+			response.success = true;
+			response.payload = newMessage;
+		} catch (err) {
+			console.error(err);
+			response.error = err;
+		} finally {
+			return response;
+		}
+	}
+
+	@SubscribeMessage("eject-member")
+	async ejectMember(
+		@ConnectedSocket() client: Socket,
+		@MessageBody()
+		payload: {
+			channelId: string;
+			kickedId: string;
+			action: "kick" | "ban";
+		},
+	): Promise<SocketResponse> {
+		const response: SocketResponse = {
+			success: false,
+			error: null,
+		};
+		const { channelId, kickedId, action } = payload;
+		const user: User = client.data.user;
+		try {
+			const channel =
+				await this.channelService.findChannelById(channelId);
+			const canEject = await this.channelService.hasRights(
+				user.id,
+				kickedId,
+				channel,
+				action,
+			);
+			if (canEject) {
+				if (action === "kick") {
+					await this.channelService.kickUser(kickedId, channelId);
+				} else if (action === "ban") {
+					await this.channelService.banUser(kickedId, channelId);
+				}
+				const kickedClient = this.clients.get(kickedId);
+				this.server.to(kickedId).emit("user-kicked", {
+					action,
+					channelName: channel.name,
+				});
+				kickedClient.leave(channelId);
+				response.success = true;
 			}
 		} catch (err) {
 			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}

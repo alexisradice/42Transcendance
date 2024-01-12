@@ -9,10 +9,11 @@ import {
 	Req,
 	UseGuards,
 } from "@nestjs/common";
-import { ChannelVisibility } from "@prisma/client";
+import { ChannelVisibility, Mute } from "@prisma/client";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
 import { ChannelService } from "./channel.service";
+import * as argon2 from "argon2";
 
 @Controller("channel")
 export class ChannelController {
@@ -55,53 +56,34 @@ export class ChannelController {
 		@Req() req: Request,
 		@Param("channelId") channelId: string,
 	) {
+		const userId = req.user["id"];
 		const isUserInChannel = await this.channelService.isChannelMember(
-			req.user["id"],
+			userId,
 			channelId,
 		);
 		if (!isUserInChannel) {
 			throw new ForbiddenException();
 		}
-		const channel = await this.channelService.findChannelById(channelId, {
-			id: true,
-			name: true,
-			visibility: true,
-			messages: {
-				select: {
-					id: true,
-					content: true,
-					createdAt: true,
-					author: {
-						select: {
-							login: true,
-							displayName: true,
-							image: true,
-						},
-					},
-				},
-			},
-		});
-		return channel;
-	}
-
-	@Get(":channelId/messages")
-	@UseGuards(JwtGuard)
-	async getChannelMessages(
-		@Req() req: Request,
-		@Param("channelId") channelId: string,
-	) {
-		const isUserInChannel = await this.channelService.isChannelMember(
-			req.user["id"],
-			channelId,
-		);
-		if (!isUserInChannel) {
-			throw new ForbiddenException();
-		}
+		const channel =
+			await this.channelService.findChannelByIdStripped(channelId);
+		const owner = await this.channelService.getChannelOwner(channelId);
+		const admins = await this.channelService.getChannelAdmins(channelId);
+		const members = await this.channelService.getChannelMembers(channelId);
 		const messages = await this.channelService.getChannelMessages(
-			req.user["id"],
+			userId,
 			channelId,
 		);
-		return messages || [];
+		const mutedRaw = await this.channelService.getChannelMuted(channelId);
+		const muted = await Promise.all(
+			mutedRaw.map(async (mutedEntry) => {
+				const isStillMuted = await this.channelService.isMuted(
+					mutedEntry.user.id,
+					channelId,
+				);
+				return isStillMuted ? mutedEntry.user.login : null;
+			}),
+		).then((results) => results.filter((mutedEntry) => mutedEntry));
+		return { channel, messages, owner, admins, members, muted };
 	}
 
 	@Post("admin/promote")
@@ -109,25 +91,117 @@ export class ChannelController {
 	async promoteAdmin(
 		@Req() req: Request,
 		@Body("channelId") channelId: string,
-		@Body("adminableId") adminableId: string,
+		@Body("promoteeId") promoteeId: string,
 	) {
-		try {
-			const channel =
-				await this.channelService.findChannelById(channelId);
-			const isAllowed = await this.channelService.isChannelOwner(
-				req.user["id"],
-				channel,
-			);
-			const isAdminable = await this.channelService.isChannelMember(
-				adminableId,
-				channelId,
-			);
-			if (isAllowed && isAdminable) {
-				await this.channelService.promoteAdmin(adminableId, channelId);
-			}
-			return { success: true };
-		} catch (e) {
-			return { success: false };
+		const channel = await this.channelService.findChannelById(channelId);
+		const isAllowed = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		const isAdminable = await this.channelService.isChannelMember(
+			promoteeId,
+			channelId,
+		);
+		if (isAllowed && isAdminable) {
+			await this.channelService.promoteAdmin(promoteeId, channelId);
 		}
+		return { success: true };
+	}
+
+	// trying to mute a user already muted won't do anything,
+	// his mute time will not be increased
+	@Post("admin/mute")
+	@UseGuards(JwtGuard)
+	async muteUser(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("mutedId") mutedId: string,
+	) {
+		const adminId = req.user["id"];
+		const channel = await this.channelService.findChannelById(channelId);
+		const isAllowed = await this.channelService.hasRights(
+			adminId,
+			mutedId,
+			channel,
+			"mute",
+		);
+		if (isAllowed) {
+			await this.channelService.muteUser(mutedId, channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("admin/unmute")
+	@UseGuards(JwtGuard)
+	async unmuteUser(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("mutedId") mutedId: string,
+	) {
+		const adminId = req.user["id"];
+		const channel = await this.channelService.findChannelById(channelId);
+		const isAllowed = await this.channelService.hasRights(
+			adminId,
+			mutedId,
+			channel,
+			"unmute",
+		);
+		if (isAllowed) {
+			await this.channelService.unmuteUser(mutedId, channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("password/add")
+	@UseGuards(JwtGuard)
+	async addPassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("password") password: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		if (isOwner) {
+			await this.channelService.addPassword(channelId, password);
+		}
+		return { success: true };
+	}
+
+	@Post("password/remove")
+	@UseGuards(JwtGuard)
+	async removePassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		if (isOwner) {
+			await this.channelService.removePassword(channelId);
+		}
+		return { success: true };
+	}
+
+	@Post("password/change")
+	@UseGuards(JwtGuard)
+	async changePassword(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("newPassword") newPassword: string,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		if (isOwner) {
+			await this.channelService.changePassword(channelId, newPassword);
+		}
+		return { success: true };
 	}
 }

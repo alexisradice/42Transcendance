@@ -1,12 +1,12 @@
-import { Avatar, Box, Group, Indicator, Menu, Text, rem } from "@mantine/core";
+import { Menu } from "@mantine/core";
 import {
-	IconChevronRight,
+	IconBan,
 	IconDeviceGamepad2,
 	IconMessageCircle,
+	IconTrash,
 } from "@tabler/icons-react";
 import { Friend } from "../../types";
-import { getStatusColor } from "../../utils/status";
-import classes from "./FriendCard.module.css";
+import UserCard from "../UserCard/UserCard";
 
 type Props = {
 	friend: Friend;
@@ -35,59 +35,32 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 	return (
 		<Menu>
 			<Menu.Target>
-				<Box p="xs" className={classes.card}>
-					<Group align="center">
-						<Indicator
-							inline
-							size={14}
-							offset={5}
-							position="bottom-end"
-							color={getStatusColor(friend.status)}
-							withBorder
-						>
-							<Avatar src={friend.image} />
-						</Indicator>
-						<Box className="flex-1">
-							<Text size="md" fw={500}>
-								{friend.displayName}
-							</Text>
-
-							<Text c="dimmed" size="sm">
-								@{friend.login}
-							</Text>
-						</Box>
-						<Box>
-							<IconChevronRight size="1rem" />
-						</Box>
-					</Group>
-				</Box>
+				<UserCard user={friend} chevron={true} />
 			</Menu.Target>
 			<Menu.Dropdown>
 				<Menu.Item
-					leftSection={
-						<IconMessageCircle
-							style={{ width: rem(14), height: rem(14) }}
-						/>
-					}
+					leftSection={<IconMessageCircle size={18} />}
 					onClick={() => {
 						openChat(friend.login);
 					}}
 				>
 					Messages
 				</Menu.Item>
-				<Menu.Item
-					leftSection={
-						<IconDeviceGamepad2
-							style={{ width: rem(14), height: rem(14) }}
-						/>
-					}
-				>
+				<Menu.Item leftSection={<IconDeviceGamepad2 size={18} />}>
 					Invite to play
 				</Menu.Item>
-				<Menu.Item color="red" onClick={handleRemove}>
+				<Menu.Item
+					color="red"
+					onClick={handleRemove}
+					leftSection={<IconTrash size={18} />}
+				>
 					Remove friend
 				</Menu.Item>
-				<Menu.Item color="red" onClick={handleBlock}>
+				<Menu.Item
+					color="red"
+					onClick={handleBlock}
+					leftSection={<IconBan size={18} />}
+				>
 					Block friend
 				</Menu.Item>
 			</Menu.Dropdown>

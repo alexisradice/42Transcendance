@@ -52,21 +52,32 @@ const ChannelsList = ({ joinChannel }: Props) => {
 							<Text>&nbsp;Create channel</Text>
 						</Button>
 					</Center>
-					<AppShell.Section
-						component={ScrollArea}
-						type="scroll"
-						className="h-100 flex-1"
-					>
-						<ul className={classes.list}>
-							{channels.map((channel: Channel, index: number) => (
-								<ChannelElement
-									key={index}
-									channel={channel}
-									joinChannel={joinChannel}
-								/>
-							))}
-						</ul>
-					</AppShell.Section>
+					{channels.length > 0 && (
+						<AppShell.Section
+							component={ScrollArea}
+							type="scroll"
+							className="h-100 flex-1"
+						>
+							<ul className={classes.list}>
+								{channels.map(
+									(channel: Channel, index: number) => (
+										<ChannelElement
+											key={index}
+											channel={channel}
+											joinChannel={joinChannel}
+										/>
+									),
+								)}
+							</ul>
+						</AppShell.Section>
+					)}
+					{channels.length === 0 && (
+						<AppShell.Section className="flex-1">
+							<Center className="h-100">
+								<Text fs="italic">Nothing to see here</Text>
+							</Center>
+						</AppShell.Section>
+					)}
 				</>
 			)}
 		</>

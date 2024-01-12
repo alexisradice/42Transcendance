@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { Channel, ChannelVisibility, Prisma, User } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
+import { Channel, ChannelVisibility, User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { PrismaService } from "src/prisma/prisma.service";
 
@@ -42,13 +41,13 @@ export class ChannelService {
 					},
 				},
 			},
+			orderBy: { createdAt: "asc" },
 		});
 	}
 
-	async findChannelById(id: string, select?: Prisma.ChannelSelect) {
+	async findChannelById(id: string) {
 		const channel = await this.prisma.channel.findFirst({
 			where: { id },
-			select,
 		});
 		return channel;
 	}
@@ -84,6 +83,70 @@ export class ChannelService {
 		return createdDm;
 	}
 
+	async findChannelByIdStripped(id: string) {
+		const channel = await this.prisma.channel.findFirst({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				visibility: true,
+			},
+		});
+		return channel;
+	}
+
+	async getChannelOwner(channelId: string) {
+		return await this.prisma.user.findFirst({
+			where: {
+				ownerOf: { some: { id: channelId } },
+			},
+			select: {
+				id: true,
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+		});
+	}
+
+	async getChannelAdmins(channelId: string) {
+		return await this.prisma.user.findMany({
+			where: {
+				adminOf: { some: { id: channelId } },
+				NOT: { ownerOf: { some: { id: channelId } } },
+			},
+			select: {
+				id: true,
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+			orderBy: { displayName: "asc" },
+		});
+	}
+
+	async getChannelMembers(channelId: string) {
+		return await this.prisma.user.findMany({
+			where: {
+				memberOf: { some: { id: channelId } },
+				NOT: [
+					{ adminOf: { some: { id: channelId } } },
+					{ ownerOf: { some: { id: channelId } } },
+				],
+			},
+			select: {
+				id: true,
+				login: true,
+				displayName: true,
+				image: true,
+				status: true,
+			},
+			orderBy: { displayName: "asc" },
+		});
+	}
+
 	async getChannelMessages(userId: string, channelId: string) {
 		return await this.prisma.message.findMany({
 			where: {
@@ -106,6 +169,27 @@ export class ChannelService {
 				},
 			},
 			orderBy: { createdAt: "asc" },
+		});
+	}
+
+	async getChannelMuted(channelId: string) {
+		return await this.prisma.mute.findMany({
+			where: {
+				channelId,
+			},
+			select: {
+				id: true,
+				expiresAt: true,
+				user: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+			},
+			orderBy: { expiresAt: "asc" },
 		});
 	}
 
@@ -239,6 +323,7 @@ export class ChannelService {
 		let heir = await this.prisma.user.findFirst({
 			where: {
 				adminOf: { some: { id: channel.id } },
+				NOT: { id: channel.ownerId },
 			},
 			orderBy: {
 				createdAt: "asc",
@@ -248,6 +333,7 @@ export class ChannelService {
 			heir = await this.prisma.user.findFirst({
 				where: {
 					memberOf: { some: { id: channel.id } },
+					NOT: { id: channel.ownerId },
 				},
 				orderBy: {
 					createdAt: "asc",
@@ -260,13 +346,16 @@ export class ChannelService {
 					id: channel.id,
 				},
 				data: {
-					ownerId: heir.id,
+					owner: { connect: { id: heir.id } },
+					admins: { connect: { id: heir.id } },
 				},
 			});
 			return false;
 		}
 		return true;
 	}
+
+	// OWNER FUNCTIONS
 
 	async promoteAdmin(userId: string, channelId: string) {
 		return await this.prisma.channel.update({
@@ -283,42 +372,100 @@ export class ChannelService {
 		});
 	}
 
+	async removePassword(channelId: string) {
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PUBLIC,
+			},
+		});
+	}
+
+	async changePassword(channelId: string, password: string) {
+		const hashedPassword = await argon2.hash(password);
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				password: hashedPassword,
+			},
+		});
+	}
+
+	async addPassword(channelId: string, password: string) {
+		const hashedPassword = await argon2.hash(password);
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PROTECTED,
+				password: hashedPassword,
+			},
+		});
+	}
+
 	// ADMIN FUNCTIONS
 
 	// kicked user isn't a member anymore
-	async kickUser(kicker: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(kicker.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to kick ${user.displayName}`,
-			);
-		}
+	async kickUser(kickedId: string, channelId: string) {
 		return await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
-					disconnect: { id: user.id },
+					disconnect: { id: kickedId },
+				},
+				admins: {
+					disconnect: { id: kickedId },
 				},
 			},
 		});
 	}
 
-	// banned user isn't a member anymore and cannot join
-	async banUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
+	async hasRights(
+		userId: string,
+		targetId: string,
+		channel: Channel,
+		action: string,
+	) {
+		const isAdmin = await this.isChannelAdmin(userId, channel.id);
 		if (!isAdmin) {
 			throw new UnauthorizedException(
-				`You don't have permission to ban ${user.displayName}`,
+				`You don't have permission to ${action} this user`,
 			);
 		}
+		const isTargetOwner = await this.isChannelOwner(targetId, channel);
+		if (isTargetOwner) {
+			throw new UnauthorizedException(
+				`You don't have permission to ${action} this user`,
+			);
+		}
+		const isOwner = await this.isChannelOwner(userId, channel);
+		const isTargetAdmin = await this.isChannelAdmin(targetId, channel.id);
+		if (isTargetAdmin && !isOwner) {
+			throw new UnauthorizedException(
+				`You don't have permission to ${action} this user`,
+			);
+		}
+		return true;
+	}
+
+	// banned user isn't a member anymore and cannot join
+	async banUser(userId: string, channelId: string) {
 		return await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				banned: {
-					connect: { id: user.id },
+					connect: { id: userId },
 				},
 				members: {
-					disconnect: { id: user.id },
+					disconnect: { id: userId },
+				},
+				admins: {
+					disconnect: { id: userId },
 				},
 			},
 		});
@@ -345,27 +492,13 @@ export class ChannelService {
 
 	// muted user is still a member : can join but read-only
 	// mute is 5 minutes for now
-	async muteUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to mute ${user.displayName}`,
-			);
-		}
-		// await this.prisma.channel.update({
-		// 	where: { id: channelId },
-		// 	data: {
-		// 		muted: {
-		// 			connect: { id: user.id },
-		// 		},
-		// 	},
-		// });
+	async muteUser(targetId: string, channelId: string) {
 		return await this.prisma.mute.create({
 			data: {
 				expiresAt: new Date(Date.now() + 5 * 60000),
 				user: {
 					connect: {
-						id: user.id,
+						id: targetId,
 					},
 				},
 				channel: {
@@ -377,29 +510,15 @@ export class ChannelService {
 		});
 	}
 
-	async unmuteUser(admin: User, user: User, channelId: string) {
-		const isAdmin = this.isChannelAdmin(admin.id, channelId);
-		if (!isAdmin) {
-			throw new UnauthorizedException(
-				`You don't have permission to unmute ${user.displayName}`,
-			);
-		}
-		// return await this.prisma.channel.update({
-		// 	where: { id: channelId },
-		// 	data: {
-		// 		muted: {
-		// 			disconnect: { id: user.id },
-		// 		},
-		// 	},
-		// });
+	async unmuteUser(targetId: string, channelId: string) {
 		return await this.prisma.mute.deleteMany({
 			where: {
-				AND: [{ channelId: channelId }, { userId: user.id }],
+				AND: [{ channelId: channelId }, { userId: targetId }],
 			},
 		});
 	}
 
-	async IsMuted(userId: string, channelId: string) {
+	async isMuted(userId: string, channelId: string) {
 		const muted = await this.prisma.mute.findFirst({
 			where: {
 				AND: [{ channelId }, { userId }],
@@ -421,11 +540,3 @@ export class ChannelService {
 		return false;
 	}
 }
-
-// const exists = !!await prisma.place.findFirst(
-// 	{
-// 	  where: {
-// 		name: "abc"
-// 	  }
-// 	}
-//   );

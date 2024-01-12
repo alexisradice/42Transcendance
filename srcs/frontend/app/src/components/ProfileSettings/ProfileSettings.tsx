@@ -65,9 +65,7 @@ const ProfileSettings = ({ opened, close }: Props) => {
 				},
 			});
 
-			mutate({
-				...user,
-			});
+			mutate();
 
 			close();
 			form.reset();

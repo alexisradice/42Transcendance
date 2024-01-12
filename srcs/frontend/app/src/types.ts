@@ -1,5 +1,20 @@
 import { Socket } from "socket.io-client";
 
+export type ChannelInfos = {
+	channel: ChannelStripped;
+	owner: ChannelMember;
+	admins: ChannelMember[];
+	members: ChannelMember[];
+	messages: Message[];
+	muted: string[];
+};
+
+export type ChannelStripped = {
+	id: string;
+	name: string;
+	visibility: string;
+};
+
 export type Channel = {
 	id: string;
 	name: string;
@@ -7,6 +22,10 @@ export type Channel = {
 	members: Partial<User>[];
 	owner: Partial<User>;
 	admins: Partial<User>[];
+};
+
+export type ChannelMember = Friend & {
+	id: string;
 };
 
 export type Message = {
@@ -64,3 +83,9 @@ export type SettingsType = {
 	pause: boolean;
 	mode: string;
 };
+
+export enum MemberRole {
+	OWNER,
+	ADMIN,
+	MEMBER,
+}
