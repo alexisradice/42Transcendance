@@ -30,9 +30,6 @@ const FriendsList = ({ chatSocket }: Props) => {
 	const { mutate } = useSWRConfig();
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [loading, setLoading] = useState<boolean>(false);
-	const [addFriendError, setAddFriendError] = useState<string | undefined>(
-		undefined,
-	);
 	const {
 		data: friends,
 		error,
@@ -45,10 +42,10 @@ const FriendsList = ({ chatSocket }: Props) => {
 		},
 		validate: {
 			friendLogin: (value: string) => {
-				if (/^([a-z]|-)+$/.test(value)) {
+				if (/^(\w|-){1,10}$/.test(value)) {
 					return null;
 				}
-				return "Logins are 3-20 characters long";
+				return "Logins are 1-10 characters long";
 			},
 		},
 	});
@@ -69,17 +66,15 @@ const FriendsList = ({ chatSocket }: Props) => {
 		setLoading(true);
 		try {
 			await axiosPrivate.post("user/friends/add", {
-				friendLogin: values.friendLogin,
+				login: values.friendLogin,
 			});
 			setLoading(false);
-			setAddFriendError(undefined);
-			close();
+			closeModal();
 			mutate("/user/friends/all");
-			form.reset();
 		} catch (err: unknown) {
 			setLoading(false);
 			if (err instanceof AxiosError && err.response?.status === 400) {
-				setAddFriendError(err.response?.data.message);
+				form.setFieldError("friendLogin", err.response?.data.message);
 			} else {
 				errorNotif(err);
 			}
@@ -114,7 +109,6 @@ const FriendsList = ({ chatSocket }: Props) => {
 	const closeModal = () => {
 		close();
 		form.reset();
-		setAddFriendError(undefined);
 	};
 
 	const openChat = (friendLogin: string) => {
@@ -132,10 +126,9 @@ const FriendsList = ({ chatSocket }: Props) => {
 				<form onSubmit={form.onSubmit(addFriend)}>
 					<TextInput
 						placeholder="Friend login"
-						{...form.getInputProps("friendLogin")}
-						error={addFriendError}
 						disabled={loading}
 						data-autofocus
+						{...form.getInputProps("friendLogin")}
 					/>
 					<Group justify="flex-end" align="center">
 						<Button
