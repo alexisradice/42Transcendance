@@ -20,7 +20,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
 
     const updateGameBoardSize = () => {
         const width = window.innerWidth * 0.8; // 80% of window width
-        const height = width * 3 / 4; // maintain 4:3 aspect ratio
+        const height = width * 2 / 4; // maintain 4:2 aspect ratio
         setGameBoardSize({ width, height });
     };
 
@@ -71,7 +71,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
                 if (isMovingDown) newY = Math.min(100, newY + moveAmount);
         
                 //setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
-                socket.emit(isMovingUp ? 'paddleUp' : 'paddleDown', { lobbyId, y: newY, user: user.login });
+                socket.emit(isMovingUp ? 'paddleUp' : 'paddleDown', { });
             }
         };
 
@@ -84,21 +84,17 @@ const PongGame = ({ socket, lobbyId, user }) => {
 
     useEffect(() => {
 
-		socket.on('paddleUpFront', (newY, player) => {
-            console.log('paddleUpFront', newY, player);
-			if (player === 'player2')
-				setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
-			else if (player === 'player1')
-				setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
+		socket.on('paddleUpFront', (player1, player2) => {
+            console.log('paddleUpFront', player1, player2);
+	
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
         });
 
-        socket.on('paddleDownFront', (newY, player) => {
-			console.log('paddleDownFront', newY, player);
-			
-			if (player === 'player2')
-            	setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: newY }));
-			else if (player === 'player1')
-				setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
+        socket.on('paddleDownFront', ( player1, player2) => {
+			console.log('paddleDownFront',player1, player2);
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
+            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
         });
 		
         socket.on('ballPosition', (data) => {

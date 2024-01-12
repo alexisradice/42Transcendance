@@ -258,6 +258,12 @@ export class LobbiesService {
 			console.log("ball position", lobby.game.ball.x, lobby.game.ball.y);
 			socketPlayer1.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
 			socketPlayer2.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
+
+			socketPlayer1.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer2.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer1.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer2.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+
 			if (this.detectScoredPoint(socketPlayer1, lobby)) {
 				console.log("stop interval");
 				clearInterval(intervalId);
@@ -328,13 +334,15 @@ export class LobbiesService {
 	updatePaddleDown(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.paddlePlayer1.y -= 10;
+				lobby.game.paddlePlayer1.y += 1;
 				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
-				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, "player1");
+				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.paddlePlayer2.y -= 10;
+				lobby.game.paddlePlayer2.y += 1;
 				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
-				socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
+				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			}
 		}
 	}
@@ -342,13 +350,15 @@ export class LobbiesService {
 	updatePaddleUp(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.paddlePlayer1.y += 10;
+				lobby.game.paddlePlayer1.y -= 1;
 				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
-				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, "player1");
+				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+				//socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, "player1");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.paddlePlayer2.y += 10;
+				lobby.game.paddlePlayer2.y -= 1;
 				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
-				socket.emit('paddleUpFront', lobby.game.paddlePlayer2.y, "player2");
+				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+				//socket.emit('paddleUpFront', lobby.game.paddlePlayer2.y, "player2");
 			}
 		}
 	}
