@@ -19,10 +19,10 @@ const PongGame = ({ socket, lobbyId, user }) => {
     };
 
     const updateGameBoardSize = () => {
-        const width = window.innerWidth * 0.8; // 80% of window width
-        const height = width * 2 / 4; // maintain 4:2 aspect ratio
-        setGameBoardSize({ width, height });
-    };
+		const width = window.innerWidth * 0.8; // 80% of window width
+		const height = width * 9 / 16; // 16:9 aspect ratio
+		setGameBoardSize({ width, height });
+	};
 
     useEffect(() => {
         updateGameBoardSize();
