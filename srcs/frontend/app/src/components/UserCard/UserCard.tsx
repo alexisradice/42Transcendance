@@ -27,7 +27,7 @@ const UserCard = forwardRef<HTMLButtonElement, Props>(
 				className={classes.card}
 				mt="xs"
 			>
-				<Group align="center">
+				<Group align="center" wrap="nowrap">
 					<Indicator
 						inline
 						size={14}
@@ -41,7 +41,7 @@ const UserCard = forwardRef<HTMLButtonElement, Props>(
 
 					<Box className="flex-1">
 						<Group justify="flex-start" gap={5}>
-							<Text size="md" fw={500}>
+							<Text className={classes.displayName}>
 								{user.displayName}
 							</Text>
 							{icon}

@@ -11,3 +11,8 @@
 		background-color: var(--mantine-color-indigo-1);
 	}
 }
+
+.messageDate {
+	font-size: 0.75rem;
+	color: var(--mantine-color-dimmed);
+}

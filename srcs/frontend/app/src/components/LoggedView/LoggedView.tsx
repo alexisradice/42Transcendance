@@ -109,7 +109,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 						},
 					}}
 					aside={{
-						width: 340,
+						width: 350,
 						breakpoint: "md",
 						collapsed: {
 							mobile: !chatOpened || selectedChannel === "",

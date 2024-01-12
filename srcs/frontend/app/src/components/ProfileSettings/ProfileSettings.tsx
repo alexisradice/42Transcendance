@@ -13,6 +13,7 @@ import { useMyData } from "../../hooks/useMyData";
 import { ProfileSettings } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
+import { useSWRConfig } from "swr";
 
 type Props = {
 	opened: boolean;
@@ -20,7 +21,8 @@ type Props = {
 };
 
 const ProfileSettings = ({ opened, close }: Props) => {
-	const { user, error, isLoading, mutate } = useMyData();
+	const { mutate } = useSWRConfig();
+	const { user, error, isLoading } = useMyData();
 
 	const form = useForm<ProfileSettings>({
 		initialValues: {
@@ -65,7 +67,10 @@ const ProfileSettings = ({ opened, close }: Props) => {
 				},
 			});
 
-			mutate();
+			mutate("/user/me");
+			mutate((key: string) => key.startsWith("/channel/"), undefined, {
+				revalidate: true,
+			});
 
 			close();
 			form.reset();
