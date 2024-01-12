@@ -100,4 +100,5 @@ enum ChannelVisibility {
     PUBLIC
     PRIVATE
     PROTECTED
+    DM
 }
