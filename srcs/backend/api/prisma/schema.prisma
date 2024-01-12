@@ -27,7 +27,6 @@ model User {
     ownerOf      Channel[] @relation("ownership")
     adminOf      Channel[] @relation("admins")
     bannedFrom   Channel[] @relation("banned")
-    // mutedFrom    Channel[] @relation("muted")
     muted        Mute[]    @relation("mutes")
     friends      User[]    @relation("friends")
     friendOf     User[]    @relation("friends")
@@ -55,7 +54,6 @@ model Channel {
     messages   Message[]
     members    User[]            @relation("members")
     banned     User[]            @relation("banned")
-    // muted      User[]            @relation("muted")
     muted      Mute[]            @relation("mutes")
     admins     User[]            @relation("admins")
     owner      User              @relation("ownership", fields: [ownerId], references: [id])
