@@ -19,7 +19,7 @@ import { JwtService } from "@nestjs/jwt";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
-import { UserSettingsDto } from "src/dto";
+import { LoginDto, UserSettingsDto } from "src/dto";
 import { UserService } from "./user.service";
 import { AuthService } from "src/auth/auth.service";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -134,10 +134,8 @@ export class UserController {
 
 	@Post("friends/add")
 	@UseGuards(JwtGuard)
-	async addFriend(
-		@Body("friendLogin") friendLogin: string,
-		@Req() req: Request,
-	) {
+	async addFriend(@Body() loginDto: LoginDto, @Req() req: Request) {
+		const friendLogin = loginDto.login;
 		const login = req.user["login"];
 		if (login === friendLogin) {
 			throw new HttpException("That's you!", 400);

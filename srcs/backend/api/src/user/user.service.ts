@@ -60,11 +60,12 @@ export class UserService {
 				login,
 			},
 		});
-	
-		if (user)
+
+		if (user) {
 			return user;
-		else
+		} else {
 			return null;
+		}
 	}
 
 	async updateUser(login: string, userSettings: UserSettings) {
@@ -200,6 +201,10 @@ export class UserService {
 					blocked: { connect: [{ login: loginB }] },
 					friends: { disconnect: [{ login: loginB }] },
 				},
+			});
+			await this.prisma.user.update({
+				where: { login: loginB },
+				data: { friends: { disconnect: [{ login: loginA }] } },
 			});
 		} catch (e) {
 			if (e.code === "P2025") {
