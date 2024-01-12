@@ -1,0 +1,75 @@
+/* Ensure the game container fits within the viewport without scrolling */
+.game {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	margin: 0 auto;
+	background-color: black;
+	color: white;
+	overflow: hidden; /* This prevents the game from scrolling */
+}
+
+/* The game board should be the same size as the game container */
+.game-board {
+	width: calc(100vw - /* Sidebar width here */);
+	height: calc(100vh - /* Any top/bottom bars if present */);
+	margin: auto;
+	aspect-ratio: 4 / 3;
+}
+
+/* Paddles should be contained within the game-board without causing overflow */
+.paddle {
+	position: absolute;
+	width: 10px; /* Width of the paddle */
+	height: 100px; /* Height of the paddle */
+	background-color: white;
+}
+
+/* Position the left paddle at the left edge */
+.paddle:nth-child(1) {
+	left: 0;
+}
+
+/* Position the right paddle at the right edge */
+.paddle:nth-child(2) {
+	right: 0;
+}
+
+/* Style the ball and ensure it's positioned within bounds */
+.ball {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	background-color: white;
+	border-radius: 50%;
+}
+
+/* Style the score elements */
+.score {
+	position: absolute;
+	top: 20px;
+	font-size: 20px;
+	font-family: Arial, sans-serif;
+}
+
+/* Adjust the left score position */
+.score:nth-child(1) {
+	left: 30%;
+	text-align: right;
+}
+
+/* Adjust the right score position */
+.score:nth-child(2) {
+	right: 30%;
+	text-align: left;
+}
+
+/* Countdown style centered in the game board */
+.countdown {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 40px;
+	font-weight: bold;
+}
