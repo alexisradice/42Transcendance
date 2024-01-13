@@ -278,14 +278,11 @@ export class LobbiesService {
 			socketPlayer1.emit('paddleUpFront', lobby.game);
 			socketPlayer2.emit('paddleUpFront', lobby.game);
 
-			if (this.detectScoredPoint(socketPlayer1, lobby)) {
+			if (this.detectScoredPoint(socketPlayer1, socketPlayer2, lobby)) {
 				console.log("stop interval");
 				clearInterval(intervalId);
 			}
-			if (this.detectScoredPoint(socketPlayer2, lobby)) {
-				console.log("stop interval");
-				clearInterval(intervalId);
-			}
+
 		}, 16.66666);
 
 
@@ -295,7 +292,7 @@ export class LobbiesService {
 	}
 
 
-	detectScoredPoint(socket: Socket, lobby: Lobby) {
+	detectScoredPoint(socketPlayer1: Socket, socketPlayer2: Socket, lobby: Lobby) {
 		//console.log("detectScoredPoint" + lobby.player1.score, lobby.player2.score);
 		const player1Scored = lobby.game.ball.x <= 0;
 		const player2Scored = lobby.game.ball.x >= lobby.game.map.width;
@@ -309,7 +306,8 @@ export class LobbiesService {
 			lobby.game.ball.directionX = Math.cos(angle);
 			lobby.game.ball.directionY = Math.sin(angle);
 
-			socket.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer1.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer2.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
 			console.log("player1Scored", lobby.player1.score, lobby.player2.score);
 
 		} else if (player2Scored) {
@@ -320,7 +318,8 @@ export class LobbiesService {
 			lobby.game.ball.directionX = Math.cos(angle);
 			lobby.game.ball.directionY = Math.sin(angle);
 
-			socket.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer1.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer2.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
 			console.log("player2Scored", lobby.player1.score, lobby.player2.score);
 		}
 		
@@ -337,7 +336,8 @@ export class LobbiesService {
 				this.incrementStats(lobby.player1.name, true, false, true);
 				this.incrementStats(lobby.player2.name, true, true, false);
 			}
-			socket.emit('gameOver', winner.name);
+			socketPlayer1.emit('gameOver', winner.name);
+			socketPlayer2.emit('gameOver', winner.name);
 			console.log("winner" + winner.name);
 
 			return true;
