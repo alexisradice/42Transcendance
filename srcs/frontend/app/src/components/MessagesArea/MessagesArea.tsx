@@ -1,4 +1,4 @@
-import { Avatar, Group, Text, ScrollArea, Stack } from "@mantine/core";
+import { Avatar, ScrollArea } from "@mantine/core";
 import { createRef, useEffect, useRef, useState } from "react";
 import { Message } from "../../types";
 import classes from "./MessagesArea.module.css";
@@ -68,45 +68,25 @@ const MessagesArea = ({ messages }: Props) => {
 			>
 				{messages.map((message: Message, index: number) => {
 					return (
-						<>
-							<Group key={index} mt="xs" gap={8} wrap="nowrap">
-								<Avatar
-									src={message.author.image}
-									style={{ alignSelf: "flex-start" }}
-								/>
-								<Stack gap={0} style={{ width: "100%" }}>
-									<Group gap="xs" align="end">
-										<Text
-											size="sm"
-											style={{
-												overflow: "hidden",
-												textOverflow: "ellipsis",
-												color: "var(--mantine-color-ocean-blue-6)",
-												fontSize: "0.8rem",
-												// #09ADC3
-												flex: 1,
-											}}
-										>
-											{message.author.displayName}
-										</Text>
-										<Text
-											className={classes.messageDate}
-											style={{
-												flexShrink: 0,
-												fontSize: "0.65rem",
-											}}
-										>
-											{getPrettyDate(message.createdAt)}
-										</Text>
-									</Group>
-									<Text
-										style={{ overflowWrap: "break-word" }}
-									>
-										{message.content}
-									</Text>
-								</Stack>
-							</Group>
-						</>
+						<div key={index} className={classes.messageContainer}>
+							<Avatar
+								src={message.author.image}
+								className={classes.avatar}
+							/>
+							<div className={classes.messageData}>
+								<div className={classes.messageInfos}>
+									<p className={classes.displayName}>
+										{message.author.displayName}
+									</p>
+									<p className={classes.messageDate}>
+										{getPrettyDate(message.createdAt)}
+									</p>
+								</div>
+								<p className={classes.messageContent}>
+									{message.content}
+								</p>
+							</div>
+						</div>
 					);
 				})}
 			</ScrollArea>

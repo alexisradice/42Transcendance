@@ -12,7 +12,48 @@
 	}
 }
 
+.messageContainer {
+	display: flex;
+	margin-top: var(--mantine-spacing-xs);
+	gap: 8px;
+	flex-wrap: nowrap;
+}
+
+.avatar {
+	align-self: flex-start;
+}
+
+.messageData {
+	display: flex;
+	flex-direction: column;
+	gap: 0px;
+	align-items: flex-start;
+}
+
+.messageInfos {
+	display: flex;
+	gap: var(--mantine-spacing-xs);
+	align-items: center;
+}
+
+.displayName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--mantine-color-ocean-blue-6);
+	font-size: 0.9rem;
+	flex: 1;
+	min-width: 0;
+}
+
 .messageDate {
 	font-size: 0.75rem;
 	color: var(--mantine-color-dimmed);
+	flex-shrink: 0;
+	font-size: 0.65rem;
+	min-width: 0;
+}
+
+.messageContent {
+	overflow-wrap: break-word;
+	word-break: break-all;
 }

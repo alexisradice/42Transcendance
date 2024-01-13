@@ -206,10 +206,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 			</Group>
 			{chatMode ? (
 				<>
-					<MessagesArea
-						messages={data.messages}
-						userLogin={user.login}
-					/>
+					<MessagesArea messages={data.messages} />
 					<form onSubmit={form.onSubmit(sendMessage)}>
 						<TextInput
 							disabled={isMuted(user.login)}
