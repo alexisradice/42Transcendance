@@ -83,26 +83,30 @@ const PongGame = ({ socket, lobbyId, user }) => {
     }, [isMovingUp, isMovingDown, paddles.paddle1Y, socket, lobbyId, user.login]);
 
     useEffect(() => {
-
-		socket.on('paddleUpFront', (player1, player2) => {
-            console.log('paddleUpFront', player1, player2);
-	
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
+		let receivedPaddle1Y : any;
+		let receivedPaddle2Y : any;
+		socket.on('paddleUpFront', (game : any) => {
+            console.log('paddleUpFront', game);
+			receivedPaddle1Y = game.paddlePlayer1.y;
+			receivedPaddle2Y = game.paddlePlayer2.y;
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
 
-        socket.on('paddleDownFront', ( player1, player2) => {
-			console.log('paddleDownFront',player1, player2);
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
-            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
+        socket.on('paddleDownFront', (game : any) => {
+			console.log('paddleDownFront',game);
+			receivedPaddle1Y = game.paddlePlayer1.y;
+			receivedPaddle2Y = game.paddlePlayer2.y;
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
+            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
 		
-        socket.on('ballPosition', (data) => {
+        socket.on('ballPosition', (data : any) => {
             const scaledPos = scalePosition(data.x, data.y);
             setBallPosition(scaledPos);
         });
 
-        socket.on('gameUpdate', (data) => {
+        socket.on('gameUpdate', (data : any) => {
             setGameState(data.state);
             setPlayerScores(data.scores);
             setBallPosition(data.ballPosition);
