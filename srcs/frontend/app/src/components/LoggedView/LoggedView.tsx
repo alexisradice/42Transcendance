@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { mutate } from "swr";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
-import { Channel, SocketResponse } from "../../types";
+import { Channel, DMChannel, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import ChannelsList from "../ChannelsList/ChannelsList";
 import ChatArea from "../ChatArea/ChatArea";
@@ -75,20 +75,43 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		}
 	};
 
+	const openChannel = (channelId: string) => {
+		setChatOpened(true);
+		setSelectedChannel(channelId);
+		mutate(`/channel/${channelId}`);
+		mutate(`/channel/list`);
+	};
+
 	const joinChannel = (channel: Channel, password?: string) => {
 		chatSocket.emit(
 			"join-chatroom",
 			{ channelId: channel.id, password },
-			(response: SocketResponse) => {
-				if (!response.success || response.error) {
+			(response: SocketResponse<unknown>) => {
+				if (response.error) {
 					const err = new Error();
 					Object.assign(err, response.error);
 					errorNotif(err);
 				} else {
-					setSelectedChannel(channel.id);
-					setChatOpened(true);
-					mutate(`/channel/${channel.id}`);
-					mutate(`/channel/list`);
+					openChannel(channel.id);
+				}
+			},
+		);
+	};
+
+	const joinDM = (friendLogin: string) => {
+		chatSocket.emit(
+			"join-dm",
+			{ destLogin: friendLogin },
+			(response: SocketResponse<DMChannel>) => {
+				if (response.error) {
+					const err = new Error();
+					Object.assign(err, response.error);
+					errorNotif(err);
+				} else if (response.data) {
+					const dmChannel = response.data;
+					openChannel(dmChannel.id);
+				} else {
+					console.warn("No data received from join-dm");
 				}
 			},
 		);
@@ -130,7 +153,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 					<AppShell.Navbar>
 						<ChannelsList joinChannel={joinChannel} />
 						<Divider />
-						<FriendsList chatSocket={chatSocket} />
+						<FriendsList joinDM={joinDM} />
 					</AppShell.Navbar>
 					<AppShell.Main>
 						<MainFrame />
@@ -142,6 +165,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 								channelId={selectedChannel}
 								chatSocket={chatSocket}
 								leaveChannel={leaveChannel}
+								joinDM={joinDM}
 							/>
 						)}
 					</AppShell.Aside>

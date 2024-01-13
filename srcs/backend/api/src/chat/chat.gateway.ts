@@ -123,13 +123,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage("join-dm")
 	async handleJoinDM(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() payload: { destId: string },
+		@MessageBody() payload: { destLogin: string },
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {};
-		const { destId } = payload;
+		const { destLogin } = payload;
 		const user = client.data.user;
 		try {
-			const dest = await this.userService.findOne({ id: destId });
+			const dest = await this.userService.findOne({ login: destLogin });
 			const blockedByDest = await this.userService.isBlockedBy(
 				user.login,
 				dest.login,
@@ -138,12 +138,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new HttpException("This user blocked you.", 400);
 			}
 			const dmChannel = await this.channelService.findOrCreateDm(
-				user.login,
-				dest.login,
+				user.id,
+				dest.id,
 			);
 			client.join(dmChannel.id);
-			client.join(destId); // pas sure du tout de celui la
-			response.data = { channelId: dmChannel.id };
+			client.join(dest.id); // pas sure du tout de celui la
+			response.data = dmChannel;
 		} catch (err) {
 			console.error(err);
 			response.error = err;

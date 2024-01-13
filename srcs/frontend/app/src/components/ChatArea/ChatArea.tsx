@@ -14,7 +14,7 @@ import { IconMessages, IconSend2, IconUser } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import useSWR, { useSWRConfig } from "swr";
-import { Visibility } from "../../constants";
+import { PROTECTED } from "../../constants";
 import {
 	ChannelInfos,
 	ChannelMember,
@@ -35,9 +35,16 @@ type Props = {
 	chatSocket: Socket;
 	user: User;
 	leaveChannel: (channelId: string) => void;
+	joinDM: (friendLogin: string) => void;
 };
 
-const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
+const ChatArea = ({
+	user,
+	channelId,
+	chatSocket,
+	leaveChannel,
+	joinDM,
+}: Props) => {
 	const { mutate } = useSWRConfig();
 	const [chatMode, { toggle, open }] = useDisclosure(true);
 	const { data, error, isLoading } = useSWR<ChannelInfos>(
@@ -83,19 +90,21 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 				content,
 				channelId,
 			},
-			(response: SocketResponse) => {
-				const newMessage = response.payload as Message;
+			(response: SocketResponse<Message>) => {
 				form.reset();
-				if (!response.success || response.error) {
+				if (response.error) {
 					const err = new Error();
 					Object.assign(err, response.error);
 					errorNotif(err);
 					mutate(`/channel/${channelId}`);
-				} else {
+				} else if (response.data) {
+					const newMessage = response.data;
 					mutate(`/channel/${channelId}`, {
 						...data,
 						messages: [...data.messages, newMessage],
 					});
+				} else {
+					console.warn("No message received from send-message");
 				}
 			},
 		);
@@ -163,15 +172,13 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 		chatSocket.emit(
 			"leave-chatroom",
 			{ channelId },
-			(response: SocketResponse) => {
-				if (response.success) {
-					leaveChannel(channelId);
-				} else if (response.error) {
+			(response: SocketResponse<unknown>) => {
+				if (response.error) {
 					const err = new Error();
 					Object.assign(err, response.error);
 					errorNotif(err);
 				} else {
-					errorNotif();
+					leaveChannel(channelId);
 				}
 			},
 		);
@@ -180,7 +187,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
-				{data.channel.visibility === Visibility.PROTECTED ? (
+				{data.channel.visibility === PROTECTED ? (
 					<IconHashLock size={28} />
 				) : (
 					<IconHash size={28} />
@@ -194,9 +201,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 				<UnstyledButton variant="unstyled">
 					<ChannelMenu
 						isOwner={data.owner.login === user.login}
-						hasPassword={
-							data.channel.visibility === Visibility.PROTECTED
-						}
+						hasPassword={data.channel.visibility === PROTECTED}
 						addPassword={addPassword}
 						changePassword={changePassword}
 						removePassword={removePassword}
@@ -245,6 +250,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 						isAdmin={isAdmin()}
 						isMe={user.login === data.owner.login}
 						channelId={channelId}
+						joinDM={joinDM}
 					/>
 					{data.admins.length > 0 && (
 						<>
@@ -265,6 +271,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 											isMe={user.login === admin.login}
 											channelId={channelId}
 											isMuted={isMuted(admin.login)}
+											joinDM={joinDM}
 										/>
 									);
 								},
@@ -290,6 +297,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 											isMe={user.login === member.login}
 											channelId={channelId}
 											isMuted={isMuted(member.login)}
+											joinDM={joinDM}
 										/>
 									);
 								},

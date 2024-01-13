@@ -14,7 +14,6 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
-import { Socket } from "socket.io-client";
 import useSWR, { useSWRConfig } from "swr";
 import { Friend } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
@@ -23,10 +22,10 @@ import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
 
 type Props = {
-	chatSocket: Socket;
+	joinDM: (friendLogin: string) => void;
 };
 
-const FriendsList = ({ chatSocket }: Props) => {
+const FriendsList = ({ joinDM }: Props) => {
 	const { mutate } = useSWRConfig();
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [loading, setLoading] = useState<boolean>(false);
@@ -111,10 +110,6 @@ const FriendsList = ({ chatSocket }: Props) => {
 		form.reset();
 	};
 
-	const openChat = (friendLogin: string) => {
-		chatSocket.emit("join", friendLogin);
-	};
-
 	return (
 		<>
 			<Modal
@@ -159,10 +154,10 @@ const FriendsList = ({ chatSocket }: Props) => {
 							return (
 								<li key={index}>
 									<FriendCard
-										openChat={openChat}
 										friend={friend}
 										removeFriend={removeFriend}
 										blockFriend={blockFriend}
+										joinDM={joinDM}
 									/>
 								</li>
 							);

@@ -1,11 +1,11 @@
 import { Group, Loader, Text } from "@mantine/core";
-import { Visibility } from "../../constants";
+import { useDisclosure } from "@mantine/hooks";
+import { PROTECTED } from "../../constants";
+import { useMyData } from "../../hooks/useMyData";
 import { Channel } from "../../types";
+import { IconHash, IconHashLock } from "../Icons";
 import classes from "./ChannelsList.module.css";
 import JoinProtectedModal from "./JoinProtectedModal";
-import { useDisclosure } from "@mantine/hooks";
-import { IconHashLock, IconHash } from "../Icons";
-import { useMyData } from "../../hooks/useMyData";
 
 type Props = {
 	joinChannel: (channel: Channel, password?: string) => void;
@@ -33,7 +33,7 @@ const ChannelElement = ({ joinChannel, channel }: Props) => {
 						className={classes.item}
 						onClick={() => {
 							if (
-								channel.visibility === Visibility.PROTECTED &&
+								channel.visibility === PROTECTED &&
 								!channel.members.some(
 									(member) => member.login === user.login,
 								)
@@ -45,7 +45,7 @@ const ChannelElement = ({ joinChannel, channel }: Props) => {
 						}}
 					>
 						<Group justify="space-between" align="center" gap={5}>
-							{channel.visibility === Visibility.PROTECTED ? (
+							{channel.visibility === PROTECTED ? (
 								<IconHashLock size={22} />
 							) : (
 								<IconHash size={22} />

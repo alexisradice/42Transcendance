@@ -13,19 +13,20 @@ import {
 } from "@tabler/icons-react";
 import useSWR, { useSWRConfig } from "swr";
 import { useSocket } from "../../hooks/useSocket";
-import { ChannelMember, SocketResponse } from "../../types";
+import { ChannelMember, MemberRole, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import UserCard from "../UserCard/UserCard";
 
 type Props = {
 	member: ChannelMember;
-	memberRole: string;
+	memberRole: MemberRole;
 	isOwner: boolean;
 	isAdmin: boolean;
 	isMe: boolean;
 	channelId: string;
 	isMuted?: boolean;
+	joinDM: (friendLogin: string) => void;
 };
 
 const ChannelMemberMenu = ({
@@ -36,6 +37,7 @@ const ChannelMemberMenu = ({
 	isMe,
 	channelId,
 	isMuted,
+	joinDM,
 }: Props) => {
 	const { mutate } = useSWRConfig();
 	const {
@@ -106,11 +108,13 @@ const ChannelMemberMenu = ({
 			chatSocket.emit(
 				"eject-member",
 				{ kickedId: memberId, channelId, action },
-				(response: SocketResponse) => {
-					if (response.success) {
-						mutate(`/channel/${channelId}`);
+				(response: SocketResponse<unknown>) => {
+					if (response.error) {
+						const err = new Error();
+						Object.assign(err, response.error);
+						errorNotif(err);
 					} else {
-						errorNotif(response.error);
+						mutate(`/channel/${channelId}`);
 					}
 				},
 			);
@@ -190,7 +194,7 @@ const ChannelMemberMenu = ({
 						<Menu.Item
 							leftSection={<IconMessageCircle size={18} />}
 							onClick={() => {
-								// openChat(member.login);
+								joinDM(member.login);
 							}}
 						>
 							Messages

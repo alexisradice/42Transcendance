@@ -58,8 +58,36 @@ export class ChannelService {
 				AND: [
 					{ members: { some: { id: userId } } },
 					{ members: { some: { id: destId } } },
-					{ isDM: true },
+					{ visibility: ChannelVisibility.DM },
 				],
+			},
+			select: {
+				id: true,
+				name: true,
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+					},
+				},
+				members: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+				visibility: true,
 			},
 		});
 		if (foundDm) {
@@ -76,8 +104,35 @@ export class ChannelService {
 				members: {
 					connect: [{ id: userId }, { id: destId }],
 				},
-				isDM: true,
 				visibility: ChannelVisibility.DM,
+			},
+			select: {
+				id: true,
+				name: true,
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+					},
+				},
+				members: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+				visibility: true,
 			},
 		});
 		return createdDm;

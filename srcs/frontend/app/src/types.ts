@@ -1,5 +1,23 @@
 import { Socket } from "socket.io-client";
 
+const visibilityValues = {
+	public: "PUBLIC",
+	protected: "PROTECTED",
+	private: "PRIVATE",
+	dm: "DM",
+} as const;
+
+type Visibility = (typeof visibilityValues)[keyof typeof visibilityValues];
+
+const memberRoleValues = {
+	owner: "owner",
+	admin: "admin",
+	member: "member",
+} as const;
+
+export type MemberRole =
+	(typeof memberRoleValues)[keyof typeof memberRoleValues];
+
 export type ChannelInfos = {
 	channel: ChannelStripped;
 	owner: ChannelMember;
@@ -12,13 +30,13 @@ export type ChannelInfos = {
 export type ChannelStripped = {
 	id: string;
 	name: string;
-	visibility: string;
+	visibility: Visibility;
 };
 
 export type Channel = {
 	id: string;
 	name: string;
-	visibility: string;
+	visibility: Visibility;
 	members: Partial<User>[];
 	owner: Partial<User>;
 	admins: Partial<User>[];
@@ -54,12 +72,6 @@ export type ProfileSettings = {
 	image: string | Blob | null;
 };
 
-export type SocketResponse = {
-	success: boolean;
-	error: unknown;
-	payload?: unknown;
-};
-
 export type LobbyType = {
 	id: string;
 	settings: SettingsType;
@@ -78,14 +90,36 @@ export type PlayerType = {
 export type SettingsType = {
 	ballSpeed: number;
 	paddleSize: string;
-	visibility: string;
+	visibility: Visibility;
 	inviteFriend: string;
 	pause: boolean;
 	mode: string;
 };
 
-export enum MemberRole {
-	OWNER,
-	ADMIN,
-	MEMBER,
+export interface SocketResponse<T> {
+	error?: unknown;
+	data?: T;
 }
+
+export type DMChannel = {
+	id: string;
+	name: string;
+	messages: {
+		id: string;
+		createdAt: string;
+		content: string;
+		author: {
+			id: string;
+			login: string;
+			displayName: string;
+			image: string;
+		};
+	};
+	members: {
+		id: string;
+		login: string;
+		displayName: string;
+		image: string;
+	};
+	visibility: Visibility;
+};
