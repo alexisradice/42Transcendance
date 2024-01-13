@@ -33,9 +33,17 @@ const PongGame = ({ socket, lobbyId, user }) => {
         };
     }, []);
 
+	useEffect(() => {
+		if (countdown > 0) {
+			// Set a timer to decrement the countdown
+			const timerId = setTimeout(() => setCountdown(countdown - 1), 1000);
+			return () => clearTimeout(timerId);
+		} else if (countdown === 0) {
+			return () => clearTimeout(timerId);
+		}
+	}, [countdown]);
+
     useEffect(() => {
-
-
         const handleKeyDown = (event) => {
             if (event.key === 'ArrowUp') {
                 setIsMovingUp(true);
