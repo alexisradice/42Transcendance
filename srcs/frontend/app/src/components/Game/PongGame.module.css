@@ -6,7 +6,7 @@
 	margin: 0 auto;
 	background-color: black;
 	color: white;
-	overflow: hidden; /* This prevents the game from scrolling */
+	overflow: hidden;
 }
 
 /* The game board should be the same size as the game container */
@@ -44,7 +44,8 @@
 .paddle:nth-child(3) {
     right: 0;
 }
-/* Style the ball and ensure it's positioned within bounds */
+
+
 .ball {
 	position: absolute;
 	width: 10px;

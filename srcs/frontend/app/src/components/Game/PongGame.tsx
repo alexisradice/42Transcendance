@@ -73,7 +73,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
         const movePaddle = () => {
             if (isMovingUp || isMovingDown) {
                 let newY = paddles.paddle1Y;
-                const moveAmount = 2; // Adjust speed as necessary
+                const moveAmount = 2;
         
                 if (isMovingUp) newY = Math.max(0, newY - moveAmount);
                 if (isMovingDown) newY = Math.min(100, newY + moveAmount);
