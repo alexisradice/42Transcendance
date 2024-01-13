@@ -34,6 +34,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
     }, []);
 
 	useEffect(() => {
+		let timerId = null;
 		if (countdown > 0) {
 			// Set a timer to decrement the countdown
 			const timerId = setTimeout(() => setCountdown(countdown - 1), 1000);

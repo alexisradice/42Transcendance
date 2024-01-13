@@ -30,6 +30,7 @@ export const GamePage = () => {
     };
 
 useEffect(() => {
+	let currentTimeoutId = null;
     gameSocket.on('connected', () => {
         const settings = sendSettings();
         gameSocket.emit("queue", settings);
@@ -43,10 +44,9 @@ useEffect(() => {
     gameSocket.on('gameOver', (winnerName) => {
         setGameOverMessage(`Game Over! Winner is ${winnerName}`);
         setIsPending(false);
-        const id = setTimeout(() => {
+        currentTimeoutId = setTimeout(() => {
             window.location.href = '/';
         }, 3000);
-        setTimeoutId(id);
     });
 
     return () => {
@@ -55,9 +55,9 @@ useEffect(() => {
         gameSocket.off('gameOver');
         gameSocket.disconnect();
 
-        if (timeoutId) clearTimeout(timeoutId);
+        if (currentTimeoutId) clearTimeout(currentTimeoutId); 
     };
-}, [gameSocket, timeoutId]);
+}, [gameSocket]); 
 
 return (
 	<div>
