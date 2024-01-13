@@ -125,7 +125,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { destId: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: null };
+		const response: SocketResponse = {};
 		const { destId } = payload;
 		const user = client.data.user;
 		try {
@@ -143,11 +143,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 			client.join(dmChannel.id);
 			client.join(destId); // pas sure du tout de celui la
-			client.to(user.id).emit("notif", false);
-			response.success = true;
-			return response;
+			response.data = { channelId: dmChannel.id };
 		} catch (err) {
+			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}
@@ -158,10 +158,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody()
 		payload: { destId: string; channelId: string; content: string },
 	): Promise<SocketResponse> {
-		const response: SocketResponse = {
-			success: false,
-			error: "",
-		};
+		const response: SocketResponse = {};
 		const { destId, channelId, content } = payload;
 		const author = client.data.user;
 		console.log('received dm "' + content + '"');
@@ -194,24 +191,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 				client.to(destId).emit("notif", true);
 				client.to(dmChannel.id).emit("receive-dm", message);
-				return {
-					success: true,
-					error: "",
-					payload: {
-						id: message.id,
-						createdAt: message.createdAt,
-						content: message.content,
-						author: {
-							login: author.login,
-							displayName: author.displayName,
-							image: author.image,
-						},
+				response.data = {
+					id: message.id,
+					createdAt: message.createdAt,
+					content: message.content,
+					author: {
+						login: author.login,
+						displayName: author.displayName,
+						image: author.image,
 					},
 				};
 			}
 		} catch (err) {
 			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}
@@ -221,7 +215,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; password?: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: null };
+		const response: SocketResponse = {};
 		const { channelId, password } = payload;
 		const user: User = client.data.user;
 		try {
@@ -237,7 +231,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User already in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
-				response.success = true;
+				response.data = channelId;
 				return response;
 			}
 			// check if user allowed to enter channel
@@ -254,14 +248,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 				client.join(channelId);
 				this.server.to(channelId).emit("user-joined", channelId);
-				response.success = true;
+				response.data = channelId;
 			} else {
-				response.error = new ForbiddenException("Access Denied");
+				throw new ForbiddenException("Access Denied");
 			}
-			return response;
 		} catch (err) {
 			console.error(err);
 			response.error = err;
+		} finally {
 			return response;
 		}
 	}
@@ -271,7 +265,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string },
 	): Promise<SocketResponse> {
-		const response = { success: false, error: null };
+		const response: SocketResponse = {};
 		const { channelId } = payload;
 		const user: User = client.data.user;
 		let wasAlone = false;
@@ -296,8 +290,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			//leave channel socket room
 			client.leave(channelId);
-			response.success = true;
 			this.server.to(channelId).emit("user-left", channelId);
+			response.data = channelId;
 		} catch (err) {
 			console.error(err);
 			response.error = err;
@@ -311,10 +305,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() payload: { channelId: string; content: string },
 	): Promise<SocketResponse> {
-		const response: SocketResponse = {
-			success: false,
-			error: null,
-		};
+		const response: SocketResponse = {};
 		const { channelId, content } = payload;
 		const author: User = client.data.user;
 		console.log('received message "' + content + '"');
@@ -359,8 +350,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				},
 			};
 			this.server.to(channelId).emit("display-message", channelId);
-			response.success = true;
-			response.payload = newMessage;
+			response.data = newMessage;
 		} catch (err) {
 			console.error(err);
 			response.error = err;
@@ -379,10 +369,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			action: "kick" | "ban";
 		},
 	): Promise<SocketResponse> {
-		const response: SocketResponse = {
-			success: false,
-			error: null,
-		};
+		const response: SocketResponse = {};
 		const { channelId, kickedId, action } = payload;
 		const user: User = client.data.user;
 		try {
@@ -400,13 +387,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				} else if (action === "ban") {
 					await this.channelService.banUser(kickedId, channelId);
 				}
-				const kickedClient = this.clients.get(kickedId);
-				this.server.to(kickedId).emit("user-kicked", {
+				response.data = {
 					action,
 					channelName: channel.name,
-				});
+				};
+				this.server.to(kickedId).emit("user-kicked", response.data);
+				const kickedClient = this.clients.get(kickedId);
 				kickedClient.leave(channelId);
-				response.success = true;
 			}
 		} catch (err) {
 			console.error(err);
