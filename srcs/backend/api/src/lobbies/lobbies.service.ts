@@ -210,6 +210,20 @@ export class LobbiesService {
 			lobby.game.ball.x += lobby.game.ball.directionX * lobby.game.ball.speed;
 			lobby.game.ball.y += lobby.game.ball.directionY * lobby.game.ball.speed;
 
+			// Block paddle position if too high or too low
+			const maxPaddleY = lobby.game.map.height - lobby.game.paddlePlayer1.height;
+			if (lobby.game.paddlePlayer1.y < 0) {
+				lobby.game.paddlePlayer1.y = 0;
+			} else if (lobby.game.paddlePlayer1.y > maxPaddleY) {
+				lobby.game.paddlePlayer1.y = maxPaddleY;
+			}
+		
+			const maxPaddleY2 = lobby.game.map.height - lobby.game.paddlePlayer2.height;
+			if (lobby.game.paddlePlayer2.y < 0) {
+				lobby.game.paddlePlayer2.y = 0;
+			} else if (lobby.game.paddlePlayer2.y > maxPaddleY2) {
+				lobby.game.paddlePlayer2.y = maxPaddleY2;
+			}
 
 
 			// rebond haut et bas de la map
@@ -259,10 +273,10 @@ export class LobbiesService {
 			socketPlayer1.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
 			socketPlayer2.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
 
-			socketPlayer1.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
-			socketPlayer2.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
-			socketPlayer1.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
-			socketPlayer2.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer1.emit('paddleDownFront', lobby.game);
+			socketPlayer2.emit('paddleDownFront', lobby.game);
+			socketPlayer1.emit('paddleUpFront', lobby.game);
+			socketPlayer2.emit('paddleUpFront', lobby.game);
 
 			if (this.detectScoredPoint(socketPlayer1, lobby)) {
 				console.log("stop interval");
@@ -335,12 +349,10 @@ export class LobbiesService {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
 				lobby.game.paddlePlayer1.y += 1;
-				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
 				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			} else if (lobby.player2.socket === socket) {
 				lobby.game.paddlePlayer2.y += 1;
-				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
 				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			}
@@ -351,12 +363,10 @@ export class LobbiesService {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
 				lobby.game.paddlePlayer1.y -= 1;
-				lobby.game.updatePaddlePlayer1(lobby.game.paddlePlayer1.y);
 				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, "player1");
 			} else if (lobby.player2.socket === socket) {
 				lobby.game.paddlePlayer2.y -= 1;
-				lobby.game.updatePaddlePlayer2(lobby.game.paddlePlayer2.y);
 				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleUpFront', lobby.game.paddlePlayer2.y, "player2");
 			}
