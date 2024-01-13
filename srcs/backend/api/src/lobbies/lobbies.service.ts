@@ -306,8 +306,8 @@ export class LobbiesService {
 			lobby.game.ball.directionX = Math.cos(angle);
 			lobby.game.ball.directionY = Math.sin(angle);
 
-			socketPlayer1.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
-			socketPlayer2.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer1.emit('pointScored', lobby.player1.score,lobby.player2.score );
+			socketPlayer2.emit('pointScored', lobby.player1.score, lobby.player2.score );
 			console.log("player1Scored", lobby.player1.score, lobby.player2.score);
 
 		} else if (player2Scored) {
@@ -318,8 +318,8 @@ export class LobbiesService {
 			lobby.game.ball.directionX = Math.cos(angle);
 			lobby.game.ball.directionY = Math.sin(angle);
 
-			socketPlayer1.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
-			socketPlayer2.emit('pointScored', { player1Score: lobby.player1.score, player2Score: lobby.player2.score });
+			socketPlayer1.emit('pointScored',  lobby.player1.score, lobby.player2.score );
+			socketPlayer2.emit('pointScored', lobby.player1.score,  lobby.player2.score );
 			console.log("player2Scored", lobby.player1.score, lobby.player2.score);
 		}
 		

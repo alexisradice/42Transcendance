@@ -86,15 +86,20 @@ const PongGame = ({ socket, lobbyId, user }) => {
 		let receivedPaddle1Y : any;
 		let receivedPaddle2Y : any;
 		socket.on('paddleUpFront', (game : any) => {
-            console.log('paddleUpFront', game);
 			receivedPaddle1Y = game.paddlePlayer1.y;
 			receivedPaddle2Y = game.paddlePlayer2.y;
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
+		
+		socket.on('pointScored', (score1 : any, score2: any) => {
+			playerScores.player1 = score1;
+			playerScores.player2 = score2;
+			setPlayerScores(prevPlayerScores => ({ ...prevPlayerScores, player1: score1 }));
+			setPlayerScores(prevPlayerScores => ({ ...prevPlayerScores, player2: score2 }));
+		});
 
         socket.on('paddleDownFront', (game : any) => {
-			console.log('paddleDownFront',game);
 			receivedPaddle1Y = game.paddlePlayer1.y;
 			receivedPaddle2Y = game.paddlePlayer2.y;
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
@@ -106,17 +111,11 @@ const PongGame = ({ socket, lobbyId, user }) => {
             setBallPosition(scaledPos);
         });
 
-        socket.on('gameUpdate', (data : any) => {
-            setGameState(data.state);
-            setPlayerScores(data.scores);
-            setBallPosition(data.ballPosition);
-            setPaddles(data.paddles);
-        });
 
         return () => {
             socket.off('ballPosition');
-            socket.off('gameUpdate');
 			socket.off('paddleUpFront');
+			socket.off('pointScored');
             socket.off('paddleDownFront');
         };
     }, [socket, lobbyId]);

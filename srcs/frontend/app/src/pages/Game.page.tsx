@@ -32,6 +32,9 @@ export const GamePage = () => {
 				setIsPending(false);
 			});
 		});
+		gameSocket.on('gameOver', () => {
+			console.log("game over");
+		});
 	
 		return () => {
 			gameSocket.off('connected');
