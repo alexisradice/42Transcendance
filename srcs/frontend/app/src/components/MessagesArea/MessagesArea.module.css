@@ -16,7 +16,6 @@
 	display: flex;
 	margin-top: var(--mantine-spacing-xs);
 	gap: 8px;
-	flex-wrap: nowrap;
 }
 
 .avatar {
@@ -32,7 +31,7 @@
 
 .messageInfos {
 	display: flex;
-	gap: var(--mantine-spacing-xs);
+	gap: 5px;
 	align-items: center;
 }
 
@@ -41,8 +40,6 @@
 	text-overflow: ellipsis;
 	color: var(--mantine-color-ocean-blue-6);
 	font-size: 0.9rem;
-	flex: 1;
-	min-width: 0;
 }
 
 .messageDate {
@@ -50,10 +47,8 @@
 	color: var(--mantine-color-dimmed);
 	flex-shrink: 0;
 	font-size: 0.65rem;
-	min-width: 0;
 }
 
 .messageContent {
-	overflow-wrap: break-word;
-	word-break: break-all;
+	word-break: break-word;
 }

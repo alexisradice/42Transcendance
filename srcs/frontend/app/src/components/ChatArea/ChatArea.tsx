@@ -209,6 +209,7 @@ const ChatArea = ({ user, channelId, chatSocket, leaveChannel }: Props) => {
 					<MessagesArea messages={data.messages} />
 					<form onSubmit={form.onSubmit(sendMessage)}>
 						<TextInput
+							autoComplete="off"
 							disabled={isMuted(user.login)}
 							mt="sm"
 							radius="lg"
