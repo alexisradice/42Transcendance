@@ -3,12 +3,27 @@
 	height: 0%;
 }
 
-.messageBubbleSelf {
+.bubble {
+	border-radius: var(--mantine-radius-lg);
+	padding: var(--mantine-spacing-xs);
+	margin-top: var(--mantine-spacing-xs);
+}
+
+.bubbleOthers {
 	@mixin dark {
-		background-color: var(--mantine-color-indigo-9);
+		background-color: var(--mantine-color-gray-8);
 	}
 	@mixin light {
-		background-color: var(--mantine-color-indigo-1);
+		background-color: var(--mantine-color-gray-2);
+	}
+}
+
+.bubbleSelf {
+	@mixin dark {
+		background-color: var(--mantine-color-blue-9);
+	}
+	@mixin light {
+		background-color: var(--mantine-color-blue-1);
 	}
 }
 

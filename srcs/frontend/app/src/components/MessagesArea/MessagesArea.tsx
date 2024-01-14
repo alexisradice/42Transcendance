@@ -1,14 +1,16 @@
-import { Avatar, ScrollArea } from "@mantine/core";
+import { Avatar, Group, ScrollArea } from "@mantine/core";
 import { createRef, useEffect, useRef, useState } from "react";
 import { Message } from "../../types";
 import classes from "./MessagesArea.module.css";
+import cx from "clsx";
 
 type Props = {
 	messages: Message[];
-	// userLogin: string;
+	isDM: boolean;
+	login?: string;
 };
 
-const MessagesArea = ({ messages }: Props) => {
+const MessagesArea = ({ messages, isDM, login }: Props) => {
 	const viewport = useRef<HTMLDivElement>(null);
 	const [, setWindowSize] = useState([0, 0]);
 	const [ScrollAreaHeight, setScrollAreaHeight] = useState(0);
@@ -67,7 +69,23 @@ const MessagesArea = ({ messages }: Props) => {
 				viewportRef={viewport}
 			>
 				{messages.map((message: Message, index: number) => {
-					return (
+					const isSelf = message.author.login === login;
+					return isDM ? (
+						<Group
+							key={index}
+							justify={isSelf ? "flex-end" : "flex-start"}
+						>
+							<div
+								className={cx(
+									classes.bubble,
+									!isSelf && classes.bubbleOthers,
+									isSelf && classes.bubbleSelf,
+								)}
+							>
+								{message.content}
+							</div>
+						</Group>
+					) : (
 						<div key={index} className={classes.messageContainer}>
 							<Avatar
 								src={message.author.image}

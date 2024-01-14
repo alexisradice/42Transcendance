@@ -8,7 +8,7 @@ import { useSocket } from "../../hooks/useSocket";
 import { Channel, DMChannel, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import ChannelsList from "../ChannelsList/ChannelsList";
-import ChatArea from "../ChatArea/ChatArea";
+import Chat from "../Chat/Chat";
 import Footer from "../Footer/Footer";
 import FriendsList from "../FriendsList/FriendsList";
 import Header from "../Header/Header";
@@ -160,10 +160,10 @@ const LoggedView = ({ setIsLogged }: Props) => {
 					</AppShell.Main>
 					<AppShell.Aside>
 						{selectedChannel && (
-							<ChatArea
-								user={user}
-								channelId={selectedChannel}
+							<Chat
 								chatSocket={chatSocket}
+								login={user.login}
+								channelId={selectedChannel}
 								leaveChannel={leaveChannel}
 								joinDM={joinDM}
 							/>
