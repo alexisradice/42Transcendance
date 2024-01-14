@@ -38,15 +38,18 @@ export class UserController {
 	@Get("me")
 	@UseGuards(JwtGuard)
 	async getMe(@Req() req: Request) {
-		const user = await this.userService.findOne({
-			login: req.user["login"],
+		const login = req.user["login"];
+		const user = await this.prisma.user.findFirst({
+			where: { login },
+			select: {
+				id: true,
+				login: true,
+				displayName: true,
+				image: true,
+				twoFA: true,
+			},
 		});
-		return {
-			login: user.login,
-			displayName: user.displayName,
-			image: user.image,
-			twoFA: user.twoFA,
-		};
+		return user;
 	}
 
 	@Get(":login")
@@ -168,17 +171,18 @@ export class UserController {
 	@Get("blocked/all")
 	@UseGuards(JwtGuard)
 	async getBlocked(@Req() req: Request) {
-		const blocked = await this.prisma.user.findMany({
+		const user = await this.prisma.user.findFirst({
 			where: { login: req.user["login"] },
 			select: {
 				blocked: {
 					select: {
+						id: true,
 						login: true,
 					},
 				},
 			},
 		});
-		return blocked[0].blocked;
+		return user.blocked;
 	}
 
 	@Post("block")

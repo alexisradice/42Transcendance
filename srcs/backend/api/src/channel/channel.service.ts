@@ -18,7 +18,12 @@ export class ChannelService {
 					{ visibility: ChannelVisibility.PROTECTED },
 					{ members: { some: { login: login } } },
 				],
-				NOT: { banned: { some: { login: login } } },
+				NOT: [
+					{
+						banned: { some: { login: login } },
+					},
+					{ visibility: ChannelVisibility.DM },
+				],
 			},
 			select: {
 				id: true,
@@ -145,25 +150,55 @@ export class ChannelService {
 				id: true,
 				name: true,
 				visibility: true,
+				owner: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				admins: {
+					select: {
+						login: true,
+						id: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				members: {
+					select: {
+						login: true,
+						id: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+								status: true,
+							},
+						},
+					},
+				},
 			},
 		});
 		return channel;
 	}
 
-	async getChannelOwner(channelId: string) {
-		return await this.prisma.user.findFirst({
-			where: {
-				ownerOf: { some: { id: channelId } },
-			},
-			select: {
-				id: true,
-				login: true,
-				displayName: true,
-				image: true,
-				status: true,
-			},
-		});
-	}
+	async getChannelOwner(channelId: string) {}
 
 	async getChannelAdmins(channelId: string) {
 		return await this.prisma.user.findMany({

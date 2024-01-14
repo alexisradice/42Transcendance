@@ -1,5 +1,6 @@
 import {
 	Button,
+	Center,
 	FileInput,
 	Group,
 	Loader,
@@ -92,8 +93,12 @@ const ProfileSettings = ({ opened, close }: Props) => {
 			}}
 		>
 			{error && <></>}
-			{!error && isLoading && <Loader></Loader>}
-			{!error && !isLoading && (
+			{!error && isLoading && (
+				<Center>
+					<Loader type="dots" />
+				</Center>
+			)}
+			{!error && !isLoading && user && (
 				<>
 					<form onSubmit={form.onSubmit(submitHandler)}>
 						<TextInput

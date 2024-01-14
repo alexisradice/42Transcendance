@@ -13,13 +13,13 @@ import {
 } from "@tabler/icons-react";
 import useSWR, { useSWRConfig } from "swr";
 import { useSocket } from "../../hooks/useSocket";
-import { ChannelMember, MemberRole, SocketResponse } from "../../types";
+import { GeneralUser, MemberRole, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import UserCard from "../UserCard/UserCard";
 
 type Props = {
-	member: ChannelMember;
+	member: GeneralUser;
 	memberRole: MemberRole;
 	isOwner: boolean;
 	isAdmin: boolean;
@@ -47,7 +47,7 @@ const ChannelMemberMenu = ({
 	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
 	const chatSocket = useSocket("chat");
 
-	const promoteToAdmin = async (member: ChannelMember) => {
+	const promoteToAdmin = async (member: GeneralUser) => {
 		if (
 			confirm(
 				`Grant ${member.login} administrator privileges in this channel?`,
@@ -65,7 +65,7 @@ const ChannelMemberMenu = ({
 		}
 	};
 
-	const blockMember = async (member: ChannelMember) => {
+	const blockMember = async (member: GeneralUser) => {
 		if (
 			confirm(
 				`Are you sure you want to block ${member.login}? This will also remove them from your friends list.`,
@@ -84,7 +84,7 @@ const ChannelMemberMenu = ({
 		}
 	};
 
-	const unblockMember = async (member: ChannelMember) => {
+	const unblockMember = async (member: GeneralUser) => {
 		if (confirm(`Are you sure you want to unblock ${member.login}?`)) {
 			try {
 				await axiosPrivate.post("user/unblock", {

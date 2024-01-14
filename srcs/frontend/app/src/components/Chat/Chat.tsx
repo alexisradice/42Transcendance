@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { ChannelInfos } from "../../types";
 import { fetcherPrivate } from "../../utils/fetcher";
 import ChannelChat from "./ChannelChat";
-import DirectMessagesArea from "./DirectMessagesArea";
+import DirectMessages from "./DirectMessages";
 import { Socket } from "socket.io-client";
 
 type Props = {
@@ -21,10 +21,11 @@ const Chat = ({
 	joinDM,
 	leaveChannel,
 }: Props) => {
-	const { data, error, isLoading } = useSWR<ChannelInfos>(
-		`/channel/${channelId}`,
-		fetcherPrivate,
-	);
+	const {
+		data: channel,
+		error,
+		isLoading,
+	} = useSWR<ChannelInfos>(`/channel/${channelId}`, fetcherPrivate);
 
 	if (isLoading) {
 		return (
@@ -34,19 +35,19 @@ const Chat = ({
 		);
 	}
 
-	if (error || !data) {
+	if (error || !channel) {
 		return <></>;
 	}
 
-	return data.channel.visibility === "DM" ? (
-		<DirectMessagesArea
-			channelData={data}
+	return channel.visibility === "DM" ? (
+		<DirectMessages
+			channel={channel}
 			login={login}
 			chatSocket={chatSocket}
-		></DirectMessagesArea>
+		></DirectMessages>
 	) : (
 		<ChannelChat
-			channelData={data}
+			channel={channel}
 			chatSocket={chatSocket}
 			login={login}
 			joinDM={joinDM}

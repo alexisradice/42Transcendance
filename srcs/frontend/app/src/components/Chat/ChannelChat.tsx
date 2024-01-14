@@ -13,12 +13,7 @@ import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { useSWRConfig } from "swr";
 import { PROTECTED } from "../../constants";
-import {
-	ChannelInfos,
-	ChannelMember,
-	Message,
-	SocketResponse,
-} from "../../types";
+import { ChannelInfos, Message, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
 import ChannelMenu from "../ChannelMenu/ChannelMenu";
@@ -28,7 +23,7 @@ import ChannelMemberMenu from "./ChannelMemberMenu";
 import classes from "./Chat.module.css";
 
 type Props = {
-	channelData: ChannelInfos;
+	channel: ChannelInfos;
 	chatSocket: Socket;
 	login: string;
 	leaveChannel: (channelId: string) => void;
@@ -36,7 +31,7 @@ type Props = {
 };
 
 const ChannelChat = ({
-	channelData,
+	channel,
 	chatSocket,
 	login,
 	leaveChannel,
@@ -44,12 +39,12 @@ const ChannelChat = ({
 }: Props) => {
 	const { mutate } = useSWRConfig();
 	const [chatMode, { toggle, open }] = useDisclosure(true);
-	const { channel, owner, admins, members, messages, muted } = channelData;
+	const { owner, admins, members, messages, muted } = channel;
 	const channelId = channel.id;
 
 	useEffect(() => {
 		open();
-	}, [open, channelData.channel.id]);
+	}, [open, channel.id]);
 
 	const form = useForm({
 		initialValues: {
@@ -83,7 +78,7 @@ const ChannelChat = ({
 				} else if (response.data) {
 					const newMessage = response.data;
 					mutate(`/channel/${channelId}`, {
-						...channelData,
+						...channel,
 						messages: [...messages, newMessage],
 					});
 				} else {
@@ -227,7 +222,7 @@ const ChannelChat = ({
 						OWNER
 					</Text>
 					<ChannelMemberMenu
-						member={owner as ChannelMember}
+						member={owner}
 						memberRole="owner"
 						isOwner={login === owner.login}
 						isAdmin={isAdmin()}
@@ -240,23 +235,21 @@ const ChannelChat = ({
 							<Text size="xs" c="dimmed" mt="md">
 								ADMINS ― {admins.length}
 							</Text>
-							{admins.map(
-								(admin: ChannelMember, index: number) => {
-									return (
-										<ChannelMemberMenu
-											key={index}
-											member={admin}
-											memberRole="admin"
-											isOwner={login === owner.login}
-											isAdmin={isAdmin()}
-											isMe={login === admin.login}
-											channelId={channelId}
-											isMuted={isMuted(admin.login)}
-											joinDM={joinDM}
-										/>
-									);
-								},
-							)}
+							{admins.map((admin, index) => {
+								return (
+									<ChannelMemberMenu
+										key={index}
+										member={admin}
+										memberRole="admin"
+										isOwner={login === owner.login}
+										isAdmin={isAdmin()}
+										isMe={login === admin.login}
+										channelId={channelId}
+										isMuted={isMuted(admin.login)}
+										joinDM={joinDM}
+									/>
+								);
+							})}
 						</>
 					)}
 					{members.length > 0 && (
@@ -264,23 +257,21 @@ const ChannelChat = ({
 							<Text size="xs" c="dimmed" mt="md">
 								MEMBERS ― {members.length}
 							</Text>
-							{members.map(
-								(member: ChannelMember, index: number) => {
-									return (
-										<ChannelMemberMenu
-											key={index}
-											member={member}
-											memberRole="member"
-											isOwner={login === owner.login}
-											isAdmin={isAdmin()}
-											isMe={login === member.login}
-											channelId={channelId}
-											isMuted={isMuted(member.login)}
-											joinDM={joinDM}
-										/>
-									);
-								},
-							)}
+							{members.map((member, index) => {
+								return (
+									<ChannelMemberMenu
+										key={index}
+										member={member}
+										memberRole="member"
+										isOwner={login === owner.login}
+										isAdmin={isAdmin()}
+										isMe={login === member.login}
+										channelId={channelId}
+										isMuted={isMuted(member.login)}
+										joinDM={joinDM}
+									/>
+								);
+							})}
 						</>
 					)}
 				</AppShell.Section>

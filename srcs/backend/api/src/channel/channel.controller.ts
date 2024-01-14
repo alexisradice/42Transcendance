@@ -68,13 +68,16 @@ export class ChannelController {
 		}
 		const channel =
 			await this.channelService.findChannelByIdStripped(channelId);
-		const owner = await this.channelService.getChannelOwner(channelId);
-		const admins = await this.channelService.getChannelAdmins(channelId);
-		const members = await this.channelService.getChannelMembers(channelId);
-		const messages = await this.channelService.getChannelMessages(
-			userId,
-			channelId,
+		if (channel.visibility === ChannelVisibility.DM) {
+			return channel;
+		}
+		const admins = channel.admins.filter(
+			(admin) => admin.id !== channel.owner.id,
 		);
+		const members = channel.members.filter((member) => {
+			const isAdmin = admins.find((admin) => admin.id === member.id);
+			return member.id !== channel.owner.id && !isAdmin;
+		});
 		const mutedRaw = await this.channelService.getChannelMuted(channelId);
 		const muted = await Promise.all(
 			mutedRaw.map(async (mutedEntry) => {
@@ -85,7 +88,7 @@ export class ChannelController {
 				return isStillMuted ? mutedEntry.user.login : null;
 			}),
 		).then((results) => results.filter((mutedEntry) => mutedEntry));
-		return { channel, messages, owner, admins, members, muted };
+		return { ...channel, admins, members, muted };
 	}
 
 	@Post("admin/promote")

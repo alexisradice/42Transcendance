@@ -1,4 +1,4 @@
-import { AppShell, Divider } from "@mantine/core";
+import { AppShell, Center, Divider, Loader } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -117,64 +117,72 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		);
 	};
 
+	if (isLoading) {
+		return (
+			<Center>
+				<Loader type="dots" />
+			</Center>
+		);
+	}
+
+	if (error || !user) {
+		return <></>;
+	}
+
 	return (
-		<>
-			{!error && !isLoading && (
-				<AppShell
-					header={{ height: 80 }}
-					footer={{ height: 40 }}
-					navbar={{
-						width: 250,
-						breakpoint: "md",
-						collapsed: {
-							mobile: !leftSectionOpened,
-							desktop: !leftSectionOpened,
-						},
-					}}
-					aside={{
-						width: 350,
-						breakpoint: "md",
-						collapsed: {
-							mobile: !chatOpened || selectedChannel === "",
-							desktop: !chatOpened || selectedChannel === "",
-						},
-					}}
-				>
-					<AppShell.Header p="sm">
-						<Header
-							leftSectionOpened={leftSectionOpened}
-							toggleLeftSection={toggleLeftSection}
-							chatOpened={chatOpened}
-							setChatOpened={setChatOpened}
-							setIsLogged={setIsLogged}
-							selectedChannel={selectedChannel !== ""}
-						/>
-					</AppShell.Header>
-					<AppShell.Navbar>
-						<ChannelsList joinChannel={joinChannel} />
-						<Divider />
-						<FriendsList joinDM={joinDM} />
-					</AppShell.Navbar>
-					<AppShell.Main>
-						<MainFrame />
-					</AppShell.Main>
-					<AppShell.Aside>
-						{selectedChannel && (
-							<Chat
-								chatSocket={chatSocket}
-								login={user.login}
-								channelId={selectedChannel}
-								leaveChannel={leaveChannel}
-								joinDM={joinDM}
-							/>
-						)}
-					</AppShell.Aside>
-					<AppShell.Footer p="xs">
-						<Footer />
-					</AppShell.Footer>
-				</AppShell>
-			)}
-		</>
+		<AppShell
+			header={{ height: 80 }}
+			footer={{ height: 40 }}
+			navbar={{
+				width: 250,
+				breakpoint: "md",
+				collapsed: {
+					mobile: !leftSectionOpened,
+					desktop: !leftSectionOpened,
+				},
+			}}
+			aside={{
+				width: 350,
+				breakpoint: "md",
+				collapsed: {
+					mobile: !chatOpened || selectedChannel === "",
+					desktop: !chatOpened || selectedChannel === "",
+				},
+			}}
+		>
+			<AppShell.Header p="sm">
+				<Header
+					leftSectionOpened={leftSectionOpened}
+					toggleLeftSection={toggleLeftSection}
+					chatOpened={chatOpened}
+					setChatOpened={setChatOpened}
+					setIsLogged={setIsLogged}
+					selectedChannel={selectedChannel !== ""}
+				/>
+			</AppShell.Header>
+			<AppShell.Navbar>
+				<ChannelsList joinChannel={joinChannel} />
+				<Divider />
+				<FriendsList joinDM={joinDM} />
+			</AppShell.Navbar>
+			<AppShell.Main>
+				<MainFrame />
+			</AppShell.Main>
+			<AppShell.Aside>
+				{selectedChannel && (
+					<Chat
+						chatSocket={chatSocket}
+						login={user.login}
+						channelId={selectedChannel}
+						leaveChannel={leaveChannel}
+						joinDM={joinDM}
+					/>
+				)}
+			</AppShell.Aside>
+			<AppShell.Footer p="xs">
+				<Footer />
+			</AppShell.Footer>
+		</AppShell>
 	);
 };
 

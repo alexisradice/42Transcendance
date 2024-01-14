@@ -20,3 +20,8 @@
 .sendButton:hover {
 	cursor: pointer;
 }
+
+.login {
+	font-size: var(--mantine-font-size-sm);
+	color: var(--mantine-color-dimmed);
+}

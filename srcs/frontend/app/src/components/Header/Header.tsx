@@ -47,7 +47,7 @@ export default function Header({
 			<Group>
 				{error && <></>}
 				{!error && isLoading && <Loader type="dots" />}
-				{!error && !isLoading && (
+				{!error && !isLoading && user && (
 					<>
 						<Box visibleFrom="sm">Howdy, {user.displayName}</Box>
 						<UserMenu setIsLogged={setIsLogged}>

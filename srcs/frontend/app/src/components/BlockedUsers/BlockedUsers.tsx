@@ -12,7 +12,7 @@ import {
 import { IconX } from "@tabler/icons-react";
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { User } from "../../types";
+import { BlockedUser } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 
@@ -23,7 +23,19 @@ const BlockedUsers = () => {
 		data: blockedUsers,
 		error,
 		isLoading,
-	} = useSWR("/user/blocked/all", fetcherPrivate);
+	} = useSWR<BlockedUser[]>("/user/blocked/all", fetcherPrivate);
+
+	if (isLoading) {
+		return (
+			<Center>
+				<Loader type="dots" />
+			</Center>
+		);
+	}
+
+	if (error || !blockedUsers) {
+		return <></>;
+	}
 
 	const unblockUser = async (userLogin: string) => {
 		if (window.confirm("Are you sure you want to unblock this user?")) {
@@ -34,9 +46,7 @@ const BlockedUsers = () => {
 				});
 				await mutate(
 					"/user/blocked/all",
-					...blockedUsers.filter(
-						(user: User) => user.login !== userLogin,
-					),
+					...blockedUsers.filter((user) => user.login !== userLogin),
 				);
 				mutate(
 					(key: string) => key.startsWith("/channel/"),
@@ -55,36 +65,27 @@ const BlockedUsers = () => {
 		<>
 			<Divider mt="lg" mb="lg" />
 			<Text>Blocked users</Text>
-			{!error && isLoading && (
-				<Center>
-					<Loader type="dots" />
-				</Center>
-			)}
-			{!error && !isLoading && (
-				<Box mt="md">
-					<ScrollArea.Autosize mah={200} type="scroll">
-						<Stack>
-							{blockedUsers.map(
-								(blockedUser: User, index: number) => (
-									<UnstyledButton
-										key={index}
-										onClick={() => {
-											unblockUser(blockedUser.login);
-										}}
-										disabled={loading}
-										c={loading ? "dimmed" : undefined}
-									>
-										<Group>
-											<IconX size={16} />
-											<Text>{blockedUser.login}</Text>
-										</Group>
-									</UnstyledButton>
-								),
-							)}
-						</Stack>
-					</ScrollArea.Autosize>
-				</Box>
-			)}
+			<Box mt="md">
+				<ScrollArea.Autosize mah={200} type="scroll">
+					<Stack>
+						{blockedUsers.map((blockedUser, index) => (
+							<UnstyledButton
+								key={index}
+								onClick={() => {
+									unblockUser(blockedUser.login);
+								}}
+								disabled={loading}
+								c={loading ? "dimmed" : undefined}
+							>
+								<Group>
+									<IconX size={16} />
+									<Text>{blockedUser.login}</Text>
+								</Group>
+							</UnstyledButton>
+						))}
+					</Stack>
+				</ScrollArea.Autosize>
+			</Box>
 		</>
 	);
 };

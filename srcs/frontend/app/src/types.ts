@@ -18,108 +18,87 @@ const memberRoleValues = {
 export type MemberRole =
 	(typeof memberRoleValues)[keyof typeof memberRoleValues];
 
-export type ChannelInfos = {
-	channel: ChannelStripped;
-	owner: ChannelMember;
-	admins: ChannelMember[];
-	members: ChannelMember[];
-	messages: Message[];
-	muted: string[];
-};
-
-export type ChannelStripped = {
-	id: string;
-	name: string;
-	visibility: Visibility;
-};
-
-export type Channel = {
-	id: string;
-	name: string;
-	visibility: Visibility;
-	members: Partial<User>[];
-	owner: Partial<User>;
-	admins: Partial<User>[];
-};
-
-export type ChannelMember = Friend & {
-	id: string;
-};
-
-export type Message = {
+export interface Message {
 	id: string;
 	createdAt: string;
 	content: string;
-	author: Partial<User>;
-};
+	author: GeneralUser;
+}
 
-export type User = {
-	login: string;
-	displayName: string;
-	image: string;
-	twoFA: boolean;
-};
-
-export type Friend = {
+export interface GeneralUser {
+	id: string;
 	login: string;
 	displayName: string;
 	image: string;
 	status: string;
-};
+}
 
-export type ProfileSettings = {
+export interface MyData {
+	id: string;
+	login: string;
+	displayName: string;
+	image: string;
+	twoFA: boolean;
+}
+
+export interface BlockedUser {
+	id: string;
+	login: string;
+}
+
+export interface ProfileSettings {
 	displayName: string;
 	image: string | Blob | null;
-};
+}
 
-export type LobbyType = {
+export interface LobbyType {
 	id: string;
 	settings: SettingsType;
 	player1: PlayerType;
 	player2: PlayerType;
 	score: number;
 	gameStarted: boolean;
-};
+}
 
-export type PlayerType = {
+export interface PlayerType {
 	name: string;
 	socket: Socket;
 	score: number;
-};
+}
 
-export type SettingsType = {
+export interface SettingsType {
 	ballSpeed: number;
 	paddleSize: string;
 	visibility: Visibility;
 	inviteFriend: string;
 	pause: boolean;
 	mode: string;
-};
+}
 
 export interface SocketResponse<T> {
 	error?: unknown;
 	data?: T;
 }
 
-export type DMChannel = {
+export interface DMChannel {
 	id: string;
 	name: string;
-	messages: {
-		id: string;
-		createdAt: string;
-		content: string;
-		author: {
-			id: string;
-			login: string;
-			displayName: string;
-			image: string;
-		};
-	};
-	members: {
-		id: string;
-		login: string;
-		displayName: string;
-		image: string;
-	};
+	messages: Message[];
+	members: GeneralUser[];
 	visibility: Visibility;
+}
+
+export interface ChannelInfos extends DMChannel {
+	owner: GeneralUser;
+	admins: GeneralUser[];
+	muted: string[];
+}
+
+export type Channel = {
+	id: string;
+	name: string;
+	visibility: Visibility;
+	owner: GeneralUser;
+	admins: GeneralUser[];
+	members: GeneralUser[];
 };

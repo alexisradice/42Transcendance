@@ -1,24 +1,23 @@
 import { Group, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconSend2 } from "@tabler/icons-react";
+import { useMemo } from "react";
 import { Socket } from "socket.io-client";
 import { useSWRConfig } from "swr";
-import { PROTECTED } from "../../constants";
 import { ChannelInfos, Message, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
-import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import classes from "./Chat.module.css";
 
 type Props = {
-	channelData: ChannelInfos;
+	channel: ChannelInfos;
 	chatSocket: Socket;
 	login: string;
 };
 
-const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
+const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 	const { mutate } = useSWRConfig();
-	const { channel, messages } = channelData;
+	const { messages } = channel;
 	const channelId = channel.id;
 
 	const form = useForm({
@@ -34,6 +33,13 @@ const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
 			},
 		},
 	});
+
+	const dest = useMemo(() => {
+		const { members } = channel;
+		console.log("members", members);
+		const dest = members.find((member) => member.login !== login)!;
+		return dest;
+	}, [channel, login]);
 
 	const sendMessage = () => {
 		const content = form.values.content;
@@ -53,7 +59,7 @@ const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
 				} else if (response.data) {
 					const newMessage = response.data;
 					mutate(`/channel/${channelId}`, {
-						...channelData,
+						...channel,
 						messages: [...messages, newMessage],
 					});
 				} else {
@@ -66,13 +72,9 @@ const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
 	return (
 		<div className={classes.chatArea}>
 			<Group className={classes.titleGroup}>
-				{channel.visibility === PROTECTED ? (
-					<IconHashLock size={28} />
-				) : (
-					<IconHash size={28} />
-				)}
 				<Text className={classes.title} lineClamp={1}>
-					{channel.name}
+					{dest.displayName}{" "}
+					<span className={classes.login}>@{dest.login}</span>
 				</Text>
 			</Group>
 			<MessagesArea messages={messages} isDM={true} login={login} />
@@ -81,7 +83,7 @@ const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
 					autoComplete="off"
 					mt="sm"
 					radius="lg"
-					placeholder={`Message #${channel.name}`}
+					placeholder={`Message @${dest.login}`}
 					rightSection={
 						<IconSend2
 							className={classes.sendButton}
@@ -96,4 +98,4 @@ const DirectMessagesArea = ({ channelData, chatSocket, login }: Props) => {
 	);
 };
 
-export default DirectMessagesArea;
+export default DirectMessages;
