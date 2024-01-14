@@ -162,7 +162,7 @@ export class ChannelController {
 	async addPassword(
 		@Req() req: Request,
 		@Body("channelId") channelId: string,
-		@Body("password") passwordDto: PasswordDto,
+		@Body("newPassword") passwordDto: PasswordDto,
 	) {
 		const password = passwordDto.password;
 		const channel = await this.channelService.findChannelById(channelId);

@@ -21,6 +21,7 @@ import { IconHash, IconHashLock } from "../Icons";
 import MessagesArea from "../MessagesArea/MessagesArea";
 import ChannelMemberMenu from "./ChannelMemberMenu";
 import classes from "./Chat.module.css";
+import { notifications } from "@mantine/notifications";
 
 type Props = {
 	channel: ChannelInfos;
@@ -124,7 +125,7 @@ const ChannelChat = ({
 		try {
 			await axiosPrivate.post("/channel/password/add", {
 				channelId,
-				password,
+				newPassword: { password },
 			});
 			mutate(`/channel/${channelId}`);
 			mutate("/channel/list");
@@ -137,10 +138,15 @@ const ChannelChat = ({
 		try {
 			await axiosPrivate.post("/channel/password/change", {
 				channelId,
-				newPassword: password,
+				newPassword: { password },
 			});
 			mutate(`/channel/${channelId}`);
 			mutate("/channel/list");
+			notifications.show({
+				title: "Password changed",
+				message: "The password for this channel has been changed.",
+				color: "green",
+			});
 		} catch (err) {
 			errorNotif(err);
 		}

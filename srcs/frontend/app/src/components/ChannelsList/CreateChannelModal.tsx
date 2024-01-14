@@ -31,7 +31,7 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 		},
 		validate: {
 			channelName: (value: string) => {
-				if (/^(?=.{3,100}$)[a-z]+([a-z0-9]|-)*[a-z]+$/.test(value)) {
+				if (/^(?=.{1,50}$)[a-z]+([a-z0-9]|-)*[a-z0-9]+$/.test(value)) {
 					return null;
 				}
 				return "Invalid channel name";

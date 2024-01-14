@@ -15,7 +15,7 @@ import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { Friend } from "../../types";
+import { GeneralUser } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import FriendCard from "../FriendCard/FriendCard";
@@ -150,7 +150,7 @@ const FriendsList = ({ joinDM }: Props) => {
 					className="h-100 flex-1"
 				>
 					<ul className={classes.list}>
-						{friends.map((friend: Friend, index: number) => {
+						{friends.map((friend: GeneralUser, index: number) => {
 							return (
 								<li key={index}>
 									<FriendCard
@@ -168,7 +168,9 @@ const FriendsList = ({ joinDM }: Props) => {
 			{friends.length === 0 && (
 				<AppShell.Section className="flex-1">
 					<Center className="h-100">
-						<Text fs="italic">*cricket noise*</Text>
+						<Text fs="italic" c="dimmed" size="sm">
+							*cricket noise*
+						</Text>
 					</Center>
 				</AppShell.Section>
 			)}
