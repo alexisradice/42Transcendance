@@ -84,6 +84,7 @@ model Stat {
 enum Status {
     ONLINE
     OFFLINE
+    IN_QUEUE
     IN_GAME
 }
 
