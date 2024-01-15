@@ -15,7 +15,7 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 } from "@nestjs/websockets";
-import { User } from "@prisma/client";
+import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
@@ -29,6 +29,10 @@ import { ChatService } from "./chat.service";
 		credentials: true,
 	},
 	namespace: "chat",
+	connectionStateRecovery: {
+		maxDisconnectionDuration: 2 * 60 * 1000,
+		skipMiddlewares: true,
+	},
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private clients: Map<string, Socket> = new Map();
@@ -74,6 +78,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(client: Socket) {
 		console.log("connected to chat");
+		if (client.recovered) {
+			console.log("recovered");
+			const user = client.data.user;
+			this.clients.set(user.id, client);
+			this.userService.updateStatus(user.login, Status.ONLINE);
+			this.server.emit("status-changed", {
+				login: user.login,
+				status: Status.ONLINE,
+			});
+			return;
+		}
 		const jwtToken = this.extractCookie(
 			client.handshake.headers.cookie,
 			"jwtToken",
@@ -92,21 +107,31 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.data.user = user;
 				this.clients.set(user.id, client);
 				client.join(user.id);
+				this.userService.updateStatus(user.login, Status.ONLINE);
+				this.server.emit("status-changed", {
+					login: user.login,
+					status: Status.ONLINE,
+				});
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
 			}
 		} else {
 			try {
-				const user = await this.jwtService.verifyAsync(jwtToken, {
+				const tokenData = await this.jwtService.verifyAsync(jwtToken, {
 					secret: this.configService.get<string>("JWT_SECRET"),
 				});
-				const dbUser = await this.userService.findOne({
-					login: user.sub,
+				const user = await this.userService.findOne({
+					login: tokenData.sub,
 				});
-				client.data.user = dbUser;
-				this.clients.set(dbUser.id, client);
-				client.join(dbUser.id);
+				client.data.user = user;
+				this.clients.set(user.id, client);
+				client.join(user.id);
+				this.userService.updateStatus(user.login, Status.ONLINE);
+				this.server.emit("status-changed", {
+					login: user.login,
+					status: Status.ONLINE,
+				});
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -117,7 +142,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleDisconnect(client: any) {
 		console.log("client disconnected");
 		const user: User = client.data.user;
-		this.clients?.delete(user.id);
+		if (user) {
+			if (this.clients?.has(user.id)) {
+				this.clients.delete(user.id);
+			}
+			this.userService.updateStatus(user.login, Status.OFFLINE);
+			this.server.emit("status-changed", {
+				login: user.login,
+				status: Status.OFFLINE,
+			});
+		}
 	}
 
 	@SubscribeMessage("join-dm")
@@ -395,6 +429,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				const kickedClient = this.clients.get(kickedId);
 				kickedClient.leave(channelId);
 			}
+		} catch (err) {
+			console.error(err);
+			response.error = err;
+		} finally {
+			return response;
+		}
+	}
+
+	@SubscribeMessage("change-status")
+	async changeStatus(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() status: Status,
+	): Promise<SocketResponse> {
+		const response: SocketResponse = {};
+		const user: User = client.data.user;
+		try {
+			await this.userService.updateStatus(user.login, status);
+			response.data = { login: user.login, status };
+			this.server.emit("status-changed", response.data);
 		} catch (err) {
 			console.error(err);
 			response.error = err;

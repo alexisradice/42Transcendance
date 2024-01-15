@@ -71,7 +71,6 @@ export class AuthController {
 		res.clearCookie("jwtToken");
 		res.clearCookie("jwtRefreshToken");
 		res.clearCookie("isLogged");
-		this.userService.updateStatus(req.user["login"], Status.OFFLINE);
 		return res.json({ success: true });
 	}
 }

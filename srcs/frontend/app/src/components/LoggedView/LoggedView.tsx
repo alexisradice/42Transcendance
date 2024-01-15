@@ -1,11 +1,23 @@
 import { AppShell, Center, Divider, Loader } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { mutate } from "swr";
+import {
+	Dispatch,
+	SetStateAction,
+	useCallback,
+	useEffect,
+	useState,
+} from "react";
+import { useSWRConfig } from "swr";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
-import { Channel, DMChannel, SocketResponse } from "../../types";
+import {
+	Channel,
+	DMChannel,
+	GeneralUser,
+	SocketResponse,
+	Status,
+} from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import ChannelsList from "../ChannelsList/ChannelsList";
 import Chat from "../Chat/Chat";
@@ -19,6 +31,7 @@ type Props = {
 };
 
 const LoggedView = ({ setIsLogged }: Props) => {
+	const { cache, mutate } = useSWRConfig();
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
 	const matches = useMediaQuery("(min-width: 62em)");
@@ -26,6 +39,18 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<string>("");
+
+	const leaveChannel = useCallback(
+		(channelId?: string) => {
+			setChatOpened(false);
+			setSelectedChannel("");
+			mutate("/channel/list");
+			if (channelId) {
+				mutate(`/channel/${channelId}`);
+			}
+		},
+		[mutate],
+	);
 
 	useEffect(() => {
 		if (matches) {
@@ -36,6 +61,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	}, [matches, open, close]);
 
 	useEffect(() => {
+		chatSocket.connect();
 		chatSocket.on("channel-destroyed", () => {
 			mutate("/channel/list");
 		});
@@ -60,20 +86,35 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		chatSocket.on("display-message", (channelId: string) => {
 			mutate(`/channel/${channelId}`);
 		});
+		chatSocket.on(
+			"status-changed",
+			(response: { login: string; status: Status }) => {
+				const { login, status } = response;
+				const friendsList = cache.get("/user/friends/all")?.data;
+				if (friendsList) {
+					const friend = friendsList.find(
+						(friend: GeneralUser) => friend.login === login,
+					);
+					if (friend) {
+						friend.status = status;
+						mutate("/user/friends/all", { ...friendsList, friend });
+					}
+				}
+				if (selectedChannel) {
+					mutate(`/channel/${selectedChannel}`);
+				}
+			},
+		);
+
 		return () => {
+			chatSocket.off("channel-destroyed");
+			chatSocket.off("user-left");
 			chatSocket.off("user-kicked");
 			chatSocket.off("user-joined");
+			chatSocket.off("display-message");
+			chatSocket.disconnect();
 		};
-	}, [chatSocket]);
-
-	const leaveChannel = (channelId?: string) => {
-		setChatOpened(false);
-		setSelectedChannel("");
-		mutate("/channel/list");
-		if (channelId) {
-			mutate(`/channel/${channelId}`);
-		}
-	};
+	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel]);
 
 	const openChannel = (channelId: string) => {
 		setChatOpened(true);

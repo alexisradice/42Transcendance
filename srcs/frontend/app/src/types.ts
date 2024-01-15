@@ -7,7 +7,8 @@ const visibilityValues = {
 	dm: "DM",
 } as const;
 
-type Visibility = (typeof visibilityValues)[keyof typeof visibilityValues];
+export type Visibility =
+	(typeof visibilityValues)[keyof typeof visibilityValues];
 
 const memberRoleValues = {
 	owner: "owner",
@@ -18,6 +19,14 @@ const memberRoleValues = {
 export type MemberRole =
 	(typeof memberRoleValues)[keyof typeof memberRoleValues];
 
+const statusValues = {
+	online: "ONLINE",
+	offline: "OFFLINE",
+	inQueue: "IN_QUEUE",
+	inGame: "IN_GAME",
+} as const;
+
+export type Status = (typeof statusValues)[keyof typeof statusValues];
 export interface Message {
 	id: string;
 	createdAt: string;
