@@ -3,11 +3,67 @@
 	height: 0%;
 }
 
-.messageBubbleSelf {
+.bubble {
+	border-radius: var(--mantine-radius-lg);
+	padding: var(--mantine-spacing-xs);
+	margin-top: var(--mantine-spacing-xs);
+}
+
+.bubbleOthers {
 	@mixin dark {
-		background-color: var(--mantine-color-indigo-9);
+		background-color: var(--mantine-color-gray-8);
 	}
 	@mixin light {
-		background-color: var(--mantine-color-indigo-1);
+		background-color: var(--mantine-color-gray-2);
 	}
+}
+
+.bubbleSelf {
+	@mixin dark {
+		background-color: var(--mantine-color-blue-9);
+	}
+	@mixin light {
+		background-color: var(--mantine-color-blue-1);
+	}
+}
+
+.messageContainer {
+	display: flex;
+	margin-top: var(--mantine-spacing-xs);
+	gap: 8px;
+}
+
+.avatar {
+	align-self: flex-start;
+}
+
+.messageData {
+	display: flex;
+	flex-direction: column;
+	gap: 0px;
+	align-items: flex-start;
+}
+
+.messageInfos {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+}
+
+.displayName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--mantine-color-ocean-blue-6);
+	font-size: 0.9rem;
+}
+
+.messageDate {
+	font-size: 0.75rem;
+	color: var(--mantine-color-dimmed);
+	flex-shrink: 0;
+	font-size: 0.65rem;
+}
+
+.messageContent {
+	word-break: break-word;
 }

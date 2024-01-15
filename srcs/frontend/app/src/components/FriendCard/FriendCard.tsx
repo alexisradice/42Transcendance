@@ -10,12 +10,12 @@ import UserCard from "../UserCard/UserCard";
 
 type Props = {
 	friend: Friend;
-	openChat: (friendLogin: string) => void;
+	joinDM: (friendLogin: string) => void;
 	removeFriend: (friendLogin: string) => void;
 	blockFriend: (friendLogin: string) => void;
 };
 
-const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
+const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 	const handleRemove = () => {
 		if (
 			window.confirm(`Are you sure you want to remove ${friend.login}?`)
@@ -41,7 +41,7 @@ const FriendCard = ({ friend, openChat, removeFriend, blockFriend }: Props) => {
 				<Menu.Item
 					leftSection={<IconMessageCircle size={18} />}
 					onClick={() => {
-						openChat(friend.login);
+						joinDM(friend.login);
 					}}
 				>
 					Messages

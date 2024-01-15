@@ -58,7 +58,6 @@ model Channel {
     admins     User[]            @relation("admins")
     owner      User              @relation("ownership", fields: [ownerId], references: [id])
     ownerId    String
-    isDM       Boolean           @default(false)
     visibility ChannelVisibility @default(PUBLIC)
     password   String?
 }

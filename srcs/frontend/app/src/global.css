@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css?family=Noto+Sans");
+
 a {
 	color: var(--mantine-color-anchor);
 	text-decoration: none;
@@ -5,6 +7,11 @@ a {
 
 a:hover {
 	text-decoration: underline;
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
 }
 
 ul {

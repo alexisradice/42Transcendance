@@ -74,7 +74,9 @@ const ChannelsList = ({ joinChannel }: Props) => {
 					{channels.length === 0 && (
 						<AppShell.Section className="flex-1">
 							<Center className="h-100">
-								<Text fs="italic">Nothing to see here</Text>
+								<Text fs="italic" size="sm" c="dimmed">
+									Nothing to see here
+								</Text>
 							</Center>
 						</AppShell.Section>
 					)}

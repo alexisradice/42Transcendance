@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
-import { Visibility } from "../../constants";
+import { PRIVATE, PROTECTED, PUBLIC } from "../../constants";
 import { Channel } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
@@ -26,33 +26,24 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 	const form = useForm({
 		initialValues: {
 			channelName: "",
-			visibility: Visibility.PUBLIC,
+			visibility: PUBLIC,
 			password: "",
 		},
 		validate: {
 			channelName: (value: string) => {
-				if (/^(?=.{3,100}$)[a-z]+([a-z0-9]|-)*[a-z]+$/.test(value)) {
+				if (/^(?=.{1,50}$)[a-z]+([a-z0-9]|-)*[a-z0-9]+$/.test(value)) {
 					return null;
 				}
 				return "Invalid channel name";
 			},
 			visibility: (value: string) => {
-				if (
-					[
-						Visibility.PUBLIC,
-						Visibility.PROTECTED,
-						Visibility.PRIVATE,
-					].includes(value)
-				) {
+				if ([PUBLIC, PROTECTED, PRIVATE].includes(value)) {
 					return null;
 				}
 				return "Invalid visibility";
 			},
 			password: (value: string) => {
-				if (
-					form.values.visibility !== Visibility.PROTECTED ||
-					value.length >= 8
-				) {
+				if (form.values.visibility !== PROTECTED || value.length >= 8) {
 					return null;
 				}
 				return "Password must be at least 8 characters long";
@@ -99,25 +90,22 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 					label="Visibility"
 					mt="md"
 					data={[
-						{ value: Visibility.PUBLIC, label: "Public" },
+						{ value: PUBLIC, label: "Public" },
 						{
-							value: Visibility.PRIVATE,
+							value: PRIVATE,
 							label: "Private",
 						},
 						{
-							value: Visibility.PROTECTED,
+							value: PROTECTED,
 							label: "Protected",
 						},
 					]}
 					onChange={(value) => {
-						form.setFieldValue(
-							"visibility",
-							value || Visibility.PUBLIC,
-						);
+						form.setFieldValue("visibility", value || PUBLIC);
 					}}
-					defaultValue={Visibility.PUBLIC}
+					defaultValue={PUBLIC}
 				/>
-				{form.values.visibility === Visibility.PROTECTED && (
+				{form.values.visibility === PROTECTED && (
 					<PasswordInput
 						mt="md"
 						label="Password"

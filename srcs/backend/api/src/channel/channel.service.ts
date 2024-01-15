@@ -18,7 +18,12 @@ export class ChannelService {
 					{ visibility: ChannelVisibility.PROTECTED },
 					{ members: { some: { login: login } } },
 				],
-				NOT: { banned: { some: { login: login } } },
+				NOT: [
+					{
+						banned: { some: { login: login } },
+					},
+					{ visibility: ChannelVisibility.DM },
+				],
 			},
 			select: {
 				id: true,
@@ -58,8 +63,36 @@ export class ChannelService {
 				AND: [
 					{ members: { some: { id: userId } } },
 					{ members: { some: { id: destId } } },
-					{ isDM: true },
+					{ visibility: ChannelVisibility.DM },
 				],
+			},
+			select: {
+				id: true,
+				name: true,
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+					},
+				},
+				members: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+				visibility: true,
 			},
 		});
 		if (foundDm) {
@@ -76,8 +109,35 @@ export class ChannelService {
 				members: {
 					connect: [{ id: userId }, { id: destId }],
 				},
-				isDM: true,
 				visibility: ChannelVisibility.DM,
+			},
+			select: {
+				id: true,
+				name: true,
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+					},
+				},
+				members: {
+					select: {
+						id: true,
+						login: true,
+						displayName: true,
+						image: true,
+					},
+				},
+				visibility: true,
 			},
 		});
 		return createdDm;
@@ -90,86 +150,52 @@ export class ChannelService {
 				id: true,
 				name: true,
 				visibility: true,
-			},
-		});
-		return channel;
-	}
-
-	async getChannelOwner(channelId: string) {
-		return await this.prisma.user.findFirst({
-			where: {
-				ownerOf: { some: { id: channelId } },
-			},
-			select: {
-				id: true,
-				login: true,
-				displayName: true,
-				image: true,
-				status: true,
-			},
-		});
-	}
-
-	async getChannelAdmins(channelId: string) {
-		return await this.prisma.user.findMany({
-			where: {
-				adminOf: { some: { id: channelId } },
-				NOT: { ownerOf: { some: { id: channelId } } },
-			},
-			select: {
-				id: true,
-				login: true,
-				displayName: true,
-				image: true,
-				status: true,
-			},
-			orderBy: { displayName: "asc" },
-		});
-	}
-
-	async getChannelMembers(channelId: string) {
-		return await this.prisma.user.findMany({
-			where: {
-				memberOf: { some: { id: channelId } },
-				NOT: [
-					{ adminOf: { some: { id: channelId } } },
-					{ ownerOf: { some: { id: channelId } } },
-				],
-			},
-			select: {
-				id: true,
-				login: true,
-				displayName: true,
-				image: true,
-				status: true,
-			},
-			orderBy: { displayName: "asc" },
-		});
-	}
-
-	async getChannelMessages(userId: string, channelId: string) {
-		return await this.prisma.message.findMany({
-			where: {
-				channelId,
-				NOT: [
-					{ author: { blockedBy: { some: { id: userId } } } },
-					{ author: { bannedFrom: { some: { id: channelId } } } },
-				],
-			},
-			select: {
-				id: true,
-				content: true,
-				createdAt: true,
-				author: {
+				owner: {
 					select: {
+						id: true,
 						login: true,
 						displayName: true,
 						image: true,
+						status: true,
+					},
+				},
+				admins: {
+					select: {
+						login: true,
+						id: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				members: {
+					select: {
+						login: true,
+						id: true,
+						displayName: true,
+						image: true,
+						status: true,
+					},
+				},
+				messages: {
+					select: {
+						id: true,
+						createdAt: true,
+						content: true,
+						author: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+								status: true,
+							},
+						},
 					},
 				},
 			},
-			orderBy: { createdAt: "asc" },
 		});
+		return channel;
 	}
 
 	async getChannelMuted(channelId: string) {

@@ -14,19 +14,18 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
-import { Socket } from "socket.io-client";
 import useSWR, { useSWRConfig } from "swr";
-import { Friend } from "../../types";
+import { GeneralUser } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import FriendCard from "../FriendCard/FriendCard";
 import classes from "./FriendsList.module.css";
 
 type Props = {
-	chatSocket: Socket;
+	joinDM: (friendLogin: string) => void;
 };
 
-const FriendsList = ({ chatSocket }: Props) => {
+const FriendsList = ({ joinDM }: Props) => {
 	const { mutate } = useSWRConfig();
 	const [addFriendOpened, { open, close }] = useDisclosure(false);
 	const [loading, setLoading] = useState<boolean>(false);
@@ -111,10 +110,6 @@ const FriendsList = ({ chatSocket }: Props) => {
 		form.reset();
 	};
 
-	const openChat = (friendLogin: string) => {
-		chatSocket.emit("join", friendLogin);
-	};
-
 	return (
 		<>
 			<Modal
@@ -155,14 +150,14 @@ const FriendsList = ({ chatSocket }: Props) => {
 					className="h-100 flex-1"
 				>
 					<ul className={classes.list}>
-						{friends.map((friend: Friend, index: number) => {
+						{friends.map((friend: GeneralUser, index: number) => {
 							return (
 								<li key={index}>
 									<FriendCard
-										openChat={openChat}
 										friend={friend}
 										removeFriend={removeFriend}
 										blockFriend={blockFriend}
+										joinDM={joinDM}
 									/>
 								</li>
 							);
@@ -173,7 +168,9 @@ const FriendsList = ({ chatSocket }: Props) => {
 			{friends.length === 0 && (
 				<AppShell.Section className="flex-1">
 					<Center className="h-100">
-						<Text fs="italic">*cricket noise*</Text>
+						<Text fs="italic" c="dimmed" size="sm">
+							*cricket noise*
+						</Text>
 					</Center>
 				</AppShell.Section>
 			)}

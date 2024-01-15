@@ -15,3 +15,10 @@
 		background-color: var(--mantine-color-dark-4);
 	}
 }
+
+.displayName {
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+}
