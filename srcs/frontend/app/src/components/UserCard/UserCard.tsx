@@ -8,18 +8,19 @@ import {
 } from "@mantine/core";
 import { IconChevronRight, TablerIconsProps } from "@tabler/icons-react";
 import { ReactElement, forwardRef } from "react";
-import { ChannelMember, Friend } from "../../types";
 import { getStatusColor } from "../../utils/status";
 import classes from "./UserCard.module.css";
+import { GeneralUser } from "../../types";
 
 type Props = {
-	user: ChannelMember | Friend;
+	user: GeneralUser;
 	chevron?: boolean;
 	icon?: ReactElement<TablerIconsProps>;
+	hideStatus?: boolean;
 };
 
 const UserCard = forwardRef<HTMLButtonElement, Props>(
-	({ user, chevron, icon, ...others }: Props, ref) => {
+	({ user, chevron, icon, hideStatus, ...others }: Props, ref) => {
 		return (
 			<UnstyledButton
 				ref={ref}
@@ -28,17 +29,20 @@ const UserCard = forwardRef<HTMLButtonElement, Props>(
 				mt="xs"
 			>
 				<Group align="center" wrap="nowrap">
-					<Indicator
-						inline
-						size={14}
-						offset={5}
-						position="bottom-end"
-						color={getStatusColor(user.status)}
-						withBorder
-					>
+					{hideStatus ? (
 						<Avatar src={user.image} />
-					</Indicator>
-
+					) : (
+						<Indicator
+							inline
+							size={14}
+							offset={5}
+							position="bottom-end"
+							color={getStatusColor(user.status)}
+							withBorder
+						>
+							<Avatar src={user.image} />
+						</Indicator>
+					)}
 					<Box className="flex-1">
 						<Group justify="flex-start" gap={5}>
 							<Text className={classes.displayName}>

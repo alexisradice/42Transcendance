@@ -10,7 +10,7 @@ import {
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { PRIVATE, PROTECTED, PUBLIC } from "../../constants";
-import { Channel } from "../../types";
+import { Channel, Visibility } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
 
@@ -36,7 +36,7 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 				}
 				return "Invalid channel name";
 			},
-			visibility: (value: string) => {
+			visibility: (value: Visibility) => {
 				if ([PUBLIC, PROTECTED, PRIVATE].includes(value)) {
 					return null;
 				}
@@ -84,6 +84,7 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 					placeholder="my-awesome-channel"
 					{...form.getInputProps("channelName")}
 					disabled={loading}
+					data-autofocus
 				/>
 				<Select
 					allowDeselect={false}
@@ -101,7 +102,10 @@ const CreateChannelModal = ({ opened, close, handleChannelCreated }: Props) => {
 						},
 					]}
 					onChange={(value) => {
-						form.setFieldValue("visibility", value || PUBLIC);
+						form.setFieldValue(
+							"visibility",
+							(value as Visibility) || PUBLIC,
+						);
 					}}
 					defaultValue={PUBLIC}
 				/>

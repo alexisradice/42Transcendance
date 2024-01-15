@@ -202,7 +202,11 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				/>
 			</AppShell.Header>
 			<AppShell.Navbar>
-				<ChannelsList joinChannel={joinChannel} />
+				<ChannelsList
+					login={user.login}
+					joinChannel={joinChannel}
+					joinDM={joinDM}
+				/>
 				<Divider />
 				<FriendsList joinDM={joinDM} />
 			</AppShell.Navbar>

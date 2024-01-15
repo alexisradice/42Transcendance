@@ -22,7 +22,6 @@ export class ChannelService {
 					{
 						banned: { some: { login: login } },
 					},
-					{ visibility: ChannelVisibility.DM },
 				],
 			},
 			select: {
@@ -31,6 +30,7 @@ export class ChannelService {
 				visibility: true,
 				members: {
 					select: {
+						displayName: true,
 						login: true,
 						image: true,
 					},

@@ -92,9 +92,9 @@ export interface SocketResponse<T> {
 export interface DMChannel {
 	id: string;
 	name: string;
+	visibility: Visibility;
 	messages: Message[];
 	members: GeneralUser[];
-	visibility: Visibility;
 }
 
 export interface ChannelInfos extends DMChannel {
