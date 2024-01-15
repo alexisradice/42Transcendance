@@ -29,6 +29,10 @@ import { ChatService } from "./chat.service";
 		credentials: true,
 	},
 	namespace: "chat",
+	connectionStateRecovery: {
+		maxDisconnectionDuration: 2 * 60 * 1000,
+		skipMiddlewares: true,
+	},
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private clients: Map<string, Socket> = new Map();
@@ -74,6 +78,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(client: Socket) {
 		console.log("connected to chat");
+		if (client.recovered) {
+			console.log("recovered");
+			const user = client.data.user;
+			this.clients.set(user.id, client);
+			this.userService.updateStatus(user.login, Status.ONLINE);
+			this.server.emit("status-changed", {
+				login: user.login,
+				status: Status.ONLINE,
+			});
+			return;
+		}
 		const jwtToken = this.extractCookie(
 			client.handshake.headers.cookie,
 			"jwtToken",

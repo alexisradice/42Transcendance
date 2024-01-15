@@ -1,9 +1,9 @@
 import { Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { axiosPrivate } from "../../utils/fetcher";
-import ProfileSettings from "../ProfileSettings/ProfileSettings";
 import { errorNotif } from "../../utils/errorNotif";
+import { axiosPrivate } from "../../utils/fetcher";
 import AccountSettings from "../AccountSettings/AccountSettings";
+import ProfileSettings from "../ProfileSettings/ProfileSettings";
 
 type Props = {
 	children: JSX.Element;

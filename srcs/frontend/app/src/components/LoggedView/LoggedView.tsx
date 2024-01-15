@@ -61,6 +61,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	}, [matches, open, close]);
 
 	useEffect(() => {
+		chatSocket.connect();
 		chatSocket.on("channel-destroyed", () => {
 			mutate("/channel/list");
 		});
@@ -111,6 +112,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("user-kicked");
 			chatSocket.off("user-joined");
 			chatSocket.off("display-message");
+			chatSocket.disconnect();
 		};
 	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel]);
 
