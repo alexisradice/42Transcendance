@@ -226,7 +226,7 @@ export class ChannelService {
 		password: string,
 	) {
 		const hashedPassword = await argon2.hash(password);
-		return await this.prisma.channel.create({
+		const channel = await this.prisma.channel.create({
 			data: {
 				name,
 				owner: {
@@ -248,12 +248,31 @@ export class ChannelService {
 				password: hashedPassword,
 			},
 		});
+		if (channel) {
+			return await this.prisma.notif.create({
+				data: {
+					channelId: channel.id,
+					lastChecked: new Date(Date.now()),
+					newMsg: false,
+					user: {
+						connect: {
+							id,
+						},
+					},
+				},
+			});
+		}
 	}
 
 	async destroyChannel(channelId: string) {
-		return await this.prisma.channel.delete({
+		await this.prisma.channel.delete({
 			where: {
 				id: channelId,
+			},
+		});
+		return await this.prisma.notif.deleteMany({
+			where: {
+				channelId: channelId,
 			},
 		});
 	}
@@ -286,7 +305,7 @@ export class ChannelService {
 	}
 
 	async addUserToChannel(user: User, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -296,10 +315,22 @@ export class ChannelService {
 				},
 			},
 		});
+		return await this.prisma.notif.create({
+			data: {
+				channelId: channelId,
+				lastChecked: new Date(Date.now()),
+				newMsg: false,
+				user: {
+					connect: {
+						id: user.id,
+					},
+				},
+			},
+		});
 	}
 
 	async removeUserFromChannel(user: User, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -312,6 +343,11 @@ export class ChannelService {
 						id: user.id,
 					},
 				},
+			},
+		});
+		return await this.prisma.notif.deleteMany({
+			where: {
+				AND: [{ channelId: channelId }, { userId: user.id }],
 			},
 		});
 	}
@@ -438,7 +474,7 @@ export class ChannelService {
 
 	// kicked user isn't a member anymore
 	async kickUser(kickedId: string, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -447,6 +483,11 @@ export class ChannelService {
 				admins: {
 					disconnect: { id: kickedId },
 				},
+			},
+		});
+		return await this.prisma.notif.deleteMany({
+			where: {
+				AND: [{ channelId: channelId }, { userId: kickedId }],
 			},
 		});
 	}
@@ -481,7 +522,7 @@ export class ChannelService {
 
 	// banned user isn't a member anymore and cannot join
 	async banUser(userId: string, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				banned: {
@@ -493,6 +534,11 @@ export class ChannelService {
 				admins: {
 					disconnect: { id: userId },
 				},
+			},
+		});
+		return await this.prisma.notif.deleteMany({
+			where: {
+				AND: [{ channelId: channelId }, { userId: userId }],
 			},
 		});
 	}
@@ -564,5 +610,31 @@ export class ChannelService {
 			},
 		});
 		return false;
+	}
+
+	async updateNotifDate(channelId: string, userId: string) {
+		await this.prisma.notif.updateMany({
+			where: {
+				AND: [{ channelId }, { userId }],
+			},
+			data: {
+				lastChecked: new Date(Date.now()),
+			},
+		});
+	}
+
+	async updateNotifNewMessages(
+		channelId: string,
+		userId: string,
+		newMessages: boolean,
+	) {
+		return await this.prisma.notif.updateMany({
+			where: {
+				AND: [{ channelId }, { userId }],
+			},
+			data: {
+				newMsg: newMessages,
+			},
+		});
 	}
 }

@@ -211,4 +211,35 @@ export class ChannelController {
 		}
 		return { success: true };
 	}
+
+	@Post("notifications/update")
+	@UseGuards(JwtGuard)
+	async updateUserNotifications(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("newMessage") newMessage?: boolean,
+	) {
+		const userId = req.user["id"];
+		if (newMessage !== undefined) {
+			await this.channelService.updateNotifNewMessages(
+				channelId,
+				userId,
+				newMessage,
+			);
+		} else {
+			await this.channelService.updateNotifDate(channelId, userId);
+		}
+		return { success: true };
+	}
+
+	// @Get("notifications")
+	// @UseGuards(JwtGuard)
+	// async getNotifications(
+	// 	@Req() req: Request,
+	// 	@Body("channelId") channelId: string,
+	// ) {
+	// 	const userId = req.user["id"];
+
+	//
+	// }
 }
