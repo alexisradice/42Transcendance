@@ -613,7 +613,7 @@ export class ChannelService {
 	}
 
 	async updateNotifDate(channelId: string, userId: string) {
-		await this.prisma.notif.updateMany({
+		return await this.prisma.notif.updateMany({
 			where: {
 				AND: [{ channelId }, { userId }],
 			},
@@ -637,4 +637,38 @@ export class ChannelService {
 			},
 		});
 	}
+
+	async getNotif(userId: string) {
+		return await this.prisma.notif.findMany({
+			where: {
+				userId,
+			},
+			select: {
+				id: true,
+				channelId: true,
+				lastChecked: true,
+				newMsg: true,
+			},
+		});
+	}
+
+	// async updateNotifications(userId: string) {
+	// 	const notifRaw = await this.getNotif(userId);
+	// 	const muted = await Promise.all(
+	// 		notifRaw.map(async (notifEntry) => {
+	// 			const checkDate = notifEntry.lastChecked;
+	// 			const hasNewMessages = await this.prisma.message.findFirst({
+	// 				where: {
+	// 					AND:[
+	// 						{channelId: notifEntry.channelId},
+	// 						{createdAt: {gte: checkDate}},
+	// 					],
+	// 				},
+	// 			});
+	// 			if (hasNewMessages) {
+	// 				await this.updateNotifNewMessages(notifEntry.channelId, userId, true);
+	// 			}
+	// 		}),
+	// 	);
+	// }
 }
