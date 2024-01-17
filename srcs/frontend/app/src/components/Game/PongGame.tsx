@@ -19,7 +19,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
     };
 
     const updateGameBoardSize = () => {
-		const width = window.innerWidth * 0.8; // 80% of window width
+		const width = window.innerWidth - 250; // remove 250px for the sidebar
 		const height = width * 9 / 16; // 16:9 aspect ratio
 		setGameBoardSize({ width, height });
 	};

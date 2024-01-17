@@ -5,12 +5,15 @@ import "@mantine/notifications/styles.css";
 import { Router } from "./Router";
 import "./global.css";
 import { theme } from "./theme";
+import { SocketProvider } from "./context/SocketContext";
 
 export default function App() {
-	return (
-		<MantineProvider theme={theme} defaultColorScheme="auto">
-			<Notifications limit={3} position="top-center" />
-			<Router />
-		</MantineProvider>
-	);
+    return (
+        <SocketProvider>
+            <MantineProvider theme={theme} defaultColorScheme="auto">
+                <Notifications limit={3} position="top-center" />
+                <Router />
+            </MantineProvider>
+        </SocketProvider>
+    );
 }
