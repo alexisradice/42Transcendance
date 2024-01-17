@@ -34,7 +34,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const { cache, mutate } = useSWRConfig();
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
-	const matches = useMediaQuery("(min-width: 62em)");
+	const isDesktopResolution = useMediaQuery("(min-width: 62em)");
 	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
 		useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
@@ -53,12 +53,20 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	);
 
 	useEffect(() => {
-		if (matches) {
+		if (chatOpened) {
+			chatSocket.emit("toggle-chat", selectedChannel);
+		} else {
+			chatSocket.emit("toggle-chat");
+		}
+	}, [chatSocket, chatOpened, selectedChannel]);
+
+	useEffect(() => {
+		if (isDesktopResolution) {
 			open();
 		} else {
 			close();
 		}
-	}, [matches, open, close]);
+	}, [isDesktopResolution, open, close]);
 
 	useEffect(() => {
 		chatSocket.connect();

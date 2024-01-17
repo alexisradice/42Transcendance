@@ -177,7 +177,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user.id,
 				dest.id,
 			);
-			this.selectedChannelClients.set(user.id, dmChannel.id);
 			this.channelService.updateNotifNewMessages(
 				dmChannel.id,
 				user.id,
@@ -246,7 +245,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 						.to(destId)
 						.emit("notif", { channelId: dmChannel.id });
 				}
-				client.to(dmChannel.id).emit("receive-dm", message);
+				this.server
+					.to(dmChannel.id)
+					.emit("display-message", dmChannel.id);
 				response.data = {
 					id: message.id,
 					createdAt: message.createdAt,
@@ -287,7 +288,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User already in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
-				this.selectedChannelClients.set(user.id, channelId);
 				response.data = channelId;
 				return response;
 			}
@@ -304,7 +304,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User added in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
-				this.selectedChannelClients.set(user.id, channelId);
 				this.server.to(channelId).emit("user-joined", channelId);
 				response.data = channelId;
 			} else {
@@ -477,6 +476,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			response.error = err;
 		} finally {
 			return response;
+		}
+	}
+
+	@SubscribeMessage("toggle-chat")
+	toggleChat(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() channelId: string,
+	) {
+		const user: User = client.data.user;
+		if (channelId && channelId.length > 0) {
+			this.selectedChannelClients.set(user.id, channelId);
+		} else {
+			this.selectedChannelClients.delete(user.id);
 		}
 	}
 }
