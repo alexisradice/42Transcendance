@@ -3,7 +3,6 @@ import {
 	Box,
 	Button,
 	Center,
-	Indicator,
 	Loader,
 	ScrollArea,
 	ScrollAreaAutosize,
@@ -134,25 +133,11 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 												joinDM(dest.login);
 											}}
 										>
-											{notifs?.[channel.id] ? (
-												<Indicator
-													inline
-													size={14}
-													offset={5}
-													position="bottom-end"
-													withBorder
-												>
-													<UserCard
-														user={dest}
-														hideStatus={true}
-													/>
-												</Indicator>
-											) : (
-												<UserCard
-													user={dest}
-													hideStatus={true}
-												/>
-											)}
+											<UserCard
+												user={dest}
+												hideStatus={true}
+												notif={notifs?.[channel.id]}
+											/>
 										</Box>
 									);
 								},
