@@ -111,3 +111,5 @@ export type Channel = {
 	admins: GeneralUser[];
 	members: GeneralUser[];
 };
+
+export type Notifs = Record<string, boolean>;

@@ -5,11 +5,11 @@ import {
 	IconMessageCircle,
 	IconTrash,
 } from "@tabler/icons-react";
-import { Friend } from "../../types";
+import { GeneralUser } from "../../types";
 import UserCard from "../UserCard/UserCard";
 
 type Props = {
-	friend: Friend;
+	friend: GeneralUser;
 	joinDM: (friendLogin: string) => void;
 	removeFriend: (friendLogin: string) => void;
 	blockFriend: (friendLogin: string) => void;

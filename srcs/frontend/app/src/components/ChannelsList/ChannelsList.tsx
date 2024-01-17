@@ -3,6 +3,7 @@ import {
 	Box,
 	Button,
 	Center,
+	Indicator,
 	Loader,
 	ScrollArea,
 	ScrollAreaAutosize,
@@ -14,7 +15,7 @@ import { IconPlus } from "@tabler/icons-react";
 import { useMemo } from "react";
 import useSWR from "swr";
 import { DM } from "../../constants";
-import { Channel } from "../../types";
+import { Channel, Notifs } from "../../types";
 import { fetcherPrivate } from "../../utils/fetcher";
 import UserCard from "../UserCard/UserCard";
 import ChannelElement from "./ChannelElement";
@@ -35,6 +36,11 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 		isLoading,
 		mutate,
 	} = useSWR<Channel[]>("/channel/list", fetcherPrivate);
+
+	const { data: notifs } = useSWR<Notifs>(
+		"/channel/notifications",
+		fetcherPrivate,
+	);
 
 	const sortedChannels = useMemo(() => {
 		const regularChannels: Channel[] = [];
@@ -121,7 +127,6 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 									const dest = channel.members.find(
 										(member) => member.login !== login,
 									)!;
-									console.log("dest", dest);
 									return (
 										<Box
 											key={index}
@@ -129,10 +134,25 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 												joinDM(dest.login);
 											}}
 										>
-											<UserCard
-												user={dest}
-												hideStatus={true}
-											/>
+											{notifs?.[channel.id] ? (
+												<Indicator
+													inline
+													size={14}
+													offset={5}
+													position="bottom-end"
+													withBorder
+												>
+													<UserCard
+														user={dest}
+														hideStatus={true}
+													/>
+												</Indicator>
+											) : (
+												<UserCard
+													user={dest}
+													hideStatus={true}
+												/>
+											)}
 										</Box>
 									);
 								},

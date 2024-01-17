@@ -36,6 +36,8 @@ import { ChatService } from "./chat.service";
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private clients: Map<string, Socket> = new Map();
+	private selectedChannelClients: Map<string, string> = new Map();
+
 	constructor(
 		private jwtService: JwtService,
 		private configService: ConfigService,
@@ -175,8 +177,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user.id,
 				dest.id,
 			);
+			this.selectedChannelClients.set(user.id, dmChannel.id);
 			client.join(dmChannel.id);
-			client.join(dest.id); // pas sure du tout de celui la
+			client.join(dest.id);
 			response.data = dmChannel;
 		} catch (err) {
 			console.error(err);
@@ -194,7 +197,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {};
 		const { destId, channelId, content } = payload;
-		const author = client.data.user;
+		const author: User = client.data.user;
 		console.log('received dm "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
@@ -207,7 +210,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const dmChannel =
 				await this.channelService.findChannelById(channelId);
 			const isUserInChannel = await this.channelService.isChannelMember(
-				author,
+				author.id,
 				dmChannel.id,
 			);
 			const blockedByDest = await this.userService.isBlockedBy(
@@ -223,7 +226,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					author.id,
 					content,
 				);
-				client.to(destId).emit("notif", true);
+				const isOnline = this.clients.has(destId);
+				const isInChannel =
+					isOnline &&
+					this.selectedChannelClients.get(destId) === dmChannel.id;
+				if (!isOnline || !isInChannel)
+					await this.channelService.updateNotifNewMessages(
+						channelId,
+						destId,
+						true,
+					);
+				if (!isInChannel) {
+					client
+						.to(destId)
+						.emit("notif", { channelId: dmChannel.id });
+				}
 				client.to(dmChannel.id).emit("receive-dm", message);
 				response.data = {
 					id: message.id,
@@ -281,6 +298,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User added in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
+				this.selectedChannelClients.set(user.id, channelId);
 				this.server.to(channelId).emit("user-joined", channelId);
 				response.data = channelId;
 			} else {

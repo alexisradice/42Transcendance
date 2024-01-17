@@ -44,8 +44,9 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 	const sendMessage = () => {
 		const content = form.values.content;
 		chatSocket.emit(
-			"send-message",
+			"send-dm",
 			{
+				destId: dest.id,
 				content,
 				channelId,
 			},
@@ -63,7 +64,7 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 						messages: [...messages, newMessage],
 					});
 				} else {
-					console.warn("No message received from send-message");
+					console.warn("No message received from send-dm");
 				}
 			},
 		);

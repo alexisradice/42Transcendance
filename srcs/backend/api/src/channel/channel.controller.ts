@@ -232,14 +232,15 @@ export class ChannelController {
 		return { success: true };
 	}
 
-	// @Get("notifications")
-	// @UseGuards(JwtGuard)
-	// async getNotifications(
-	// 	@Req() req: Request,
-	// 	@Body("channelId") channelId: string,
-	// ) {
-	// 	const userId = req.user["id"];
-
-	//
-	// }
+	@Get("notifications")
+	@UseGuards(JwtGuard)
+	async getNotifications(@Req() req: Request) {
+		const userId = req.user["id"];
+		const notifs = await this.channelService.getNotif(userId);
+		const notifsParsed = {};
+		notifs.forEach((notif) => {
+			notifsParsed[notif.channelId] = notif.newMsg;
+		});
+		return notifsParsed;
+	}
 }

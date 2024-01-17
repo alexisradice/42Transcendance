@@ -106,6 +106,13 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			},
 		);
 
+		chatSocket.on("notif", (response: { channelId: string }) => {
+			const { channelId } = response;
+			if (channelId !== selectedChannel) {
+				mutate("/channel/notifications");
+			}
+		});
+
 		return () => {
 			chatSocket.off("channel-destroyed");
 			chatSocket.off("user-left");
