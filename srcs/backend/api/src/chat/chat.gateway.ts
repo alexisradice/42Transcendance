@@ -205,18 +205,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log('received dm "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
-			if (content.length > 500) {
+			if (content.length === 0 || content.length > 500) {
 				throw new BadRequestException(
-					"Message must be at most 500 characters.",
+					"Message must be 1-500 characters.",
 				);
 			}
 			const dest = await this.userService.findOne({ id: destId });
 			const dmChannel =
 				await this.channelService.findChannelById(channelId);
-			const isUserInChannel = await this.channelService.isChannelMember(
+			const isChannelMember = await this.channelService.isChannelMember(
 				author.id,
 				dmChannel.id,
 			);
+			if (!isChannelMember) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
+				);
+			}
 			const blockedByDest = await this.userService.isBlockedBy(
 				author.login,
 				dest.login,
@@ -224,41 +229,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (blockedByDest) {
 				throw new HttpException("This user blocked you.", 400);
 			}
-			if (isUserInChannel) {
-				const message = await this.chatService.createMessage(
-					dmChannel.id,
-					author.id,
-					content,
+			const message = await this.chatService.createMessage(
+				dmChannel.id,
+				author.id,
+				content,
+			);
+			const isOnline = this.clients.has(destId);
+			const isInChannel =
+				isOnline &&
+				this.selectedChannelClients.get(destId) === dmChannel.id;
+			if (!isOnline || !isInChannel)
+				await this.channelService.updateNotifNewMessages(
+					channelId,
+					destId,
+					true,
 				);
-				const isOnline = this.clients.has(destId);
-				const isInChannel =
-					isOnline &&
-					this.selectedChannelClients.get(destId) === dmChannel.id;
-				if (!isOnline || !isInChannel)
-					await this.channelService.updateNotifNewMessages(
-						channelId,
-						destId,
-						true,
-					);
-				if (!isInChannel) {
-					client
-						.to(destId)
-						.emit("notif", { channelId: dmChannel.id });
-				}
-				this.server
-					.to(dmChannel.id)
-					.emit("display-message", dmChannel.id);
-				response.data = {
-					id: message.id,
-					createdAt: message.createdAt,
-					content: message.content,
-					author: {
-						login: author.login,
-						displayName: author.displayName,
-						image: author.image,
-					},
-				};
+			if (!isInChannel) {
+				client.to(destId).emit("notif", { channelId: dmChannel.id });
 			}
+			const newMessage = {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					login: author.login,
+					displayName: author.displayName,
+					image: author.image,
+				},
+			};
+			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+			response.data = newMessage;
 		} catch (err) {
 			console.error(err);
 			response.error = err;
@@ -368,9 +368,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log('received message "' + content + '"');
 		console.log('sending to room "' + channelId + '"');
 		try {
-			if (content.length > 500) {
+			if (content.length === 0 || content.length > 500) {
 				throw new BadRequestException(
-					"Message must be at most 500 characters.",
+					"Message must be 1-500 characters.",
 				);
 			}
 			const isUserInChannel = await this.channelService.isChannelMember(
