@@ -140,7 +140,26 @@ export class ChannelService {
 				visibility: true,
 			},
 		});
+		if (createdDm) {
+			await this.createNotif(userId, createdDm.id);
+			await this.createNotif(destId, createdDm.id);
+		}
 		return createdDm;
+	}
+
+	async createNotif(userId: string, channelId: string) {
+		return await this.prisma.notif.create({
+			data: {
+				channelId: channelId,
+				lastChecked: new Date(Date.now()),
+				newMsg: false,
+				user: {
+					connect: {
+						id: userId,
+					},
+				},
+			},
+		});
 	}
 
 	async findChannelByIdStripped(id: string) {
@@ -628,14 +647,16 @@ export class ChannelService {
 		userId: string,
 		newMessages: boolean,
 	) {
-		return await this.prisma.notif.updateMany({
+		const notifs = await this.prisma.notif.updateMany({
 			where: {
-				AND: [{ channelId }, { userId }],
+				channelId: channelId,
+				userId: userId,
 			},
 			data: {
 				newMsg: newMessages,
 			},
 		});
+		return notifs;
 	}
 
 	async getNotif(userId: string) {
