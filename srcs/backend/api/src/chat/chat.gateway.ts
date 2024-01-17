@@ -178,6 +178,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				dest.id,
 			);
 			this.selectedChannelClients.set(user.id, dmChannel.id);
+			this.channelService.updateNotifNewMessages(
+				dmChannel.id,
+				user.id,
+				false,
+			);
 			client.join(dmChannel.id);
 			client.join(dest.id);
 			response.data = dmChannel;
@@ -282,6 +287,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					"User already in channel, socket joining " + channelId,
 				);
 				client.join(channelId);
+				this.selectedChannelClients.set(user.id, channelId);
 				response.data = channelId;
 				return response;
 			}

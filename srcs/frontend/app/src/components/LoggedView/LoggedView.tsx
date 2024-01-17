@@ -158,6 +158,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				} else if (response.data) {
 					const dmChannel = response.data;
 					openChannel(dmChannel.id);
+					mutate("/channel/notifications");
 				} else {
 					console.warn("No data received from join-dm");
 				}
