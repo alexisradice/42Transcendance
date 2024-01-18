@@ -13,6 +13,7 @@ import Footer from "../Footer/Footer";
 import FriendsList from "../FriendsList/FriendsList";
 import Header from "../Header/Header";
 import MainFrame from "../MainFrame/MainFrame";
+import { SocketProvider } from "../../context/SocketContext";
 
 type Props = {
 	setIsLogged: Dispatch<SetStateAction<boolean>>;
@@ -133,7 +134,9 @@ const LoggedView = ({ setIsLogged }: Props) => {
 						<FriendsList chatSocket={chatSocket} />
 					</AppShell.Navbar>
 					<AppShell.Main>
-						<MainFrame />
+						<SocketProvider>
+							<MainFrame />
+						</SocketProvider>
 					</AppShell.Main>
 					<AppShell.Aside>
 						{selectedChannel && (

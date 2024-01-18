@@ -89,3 +89,9 @@ export enum MemberRole {
 	ADMIN,
 	MEMBER,
 }
+
+export interface SocketContextType {
+	gameSocket: Socket;
+	isPending: boolean;
+	setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
+}
