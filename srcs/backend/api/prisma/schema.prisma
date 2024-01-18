@@ -33,6 +33,7 @@ model User {
     blocked       User[]    @relation("blocked")
     blockedBy     User[]    @relation("blocked")
     stats         Stat?
+    gamesPlayed   Game[]
     notifications Notif[]
 }
 
@@ -109,4 +110,15 @@ enum ChannelVisibility {
     PRIVATE
     PROTECTED
     DM
+}
+
+model Game {
+    id          String   @id @default(uuid())
+    createdAt   DateTime @default(now())
+    players     User[]
+    winnerScore Int
+    loserScore  Int
+    ballSpeed   Int
+    paddleSize  String
+    winnerId    String
 }

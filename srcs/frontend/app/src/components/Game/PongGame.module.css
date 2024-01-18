@@ -6,13 +6,13 @@
 	margin: 0 auto;
 	background-color: black;
 	color: white;
-	overflow: hidden; /* This prevents the game from scrolling */
+	overflow: hidden;
 }
 
 /* The game board should be the same size as the game container */
 .game-board {
-	width: calc(100vw - /* Sidebar width here */);
-	height: calc(100vh - /* Any top/bottom bars if present */);
+	width: calc(100vw -250);
+	height: calc(100vh);
 	margin: auto;
 	aspect-ratio: 4 / 3;
 }
@@ -20,22 +20,28 @@
 /* Paddles should be contained within the game-board without causing overflow */
 .paddle {
 	position: absolute;
-	width: 10px; /* Width of the paddle */
-	height: 100px; /* Height of the paddle */
+	width: 2%; /* Width as a percentage of the game-board width */
+	height: 15%; /* Height as a percentage of the game-board height */
 	background-color: white;
 }
 
-/* Position the left paddle at the left edge */
-.paddle:nth-child(1) {
-	left: 0;
+/* .paddle-left {
+    right: 0;
 }
 
-/* Position the right paddle at the right edge */
+.paddle-right {
+    right: 0;
+} */
+
+/* paddle on the left */
 .paddle:nth-child(2) {
+	left: 0;
+}
+/* paddle on the right */
+.paddle:nth-child(3) {
 	right: 0;
 }
 
-/* Style the ball and ensure it's positioned within bounds */
 .ball {
 	position: absolute;
 	width: 10px;
@@ -52,16 +58,16 @@
 	font-family: Arial, sans-serif;
 }
 
-/* Adjust the left score position */
-.score:nth-child(1) {
-	left: 30%;
+/* score on the right */
+.score:nth-child(4) {
+	right: 30%; /* Moved to right side */
 	text-align: right;
 }
 
-/* Adjust the right score position */
-.score:nth-child(2) {
-	right: 30%;
-	text-align: left;
+/* score on the left */
+.score:nth-child(5) {
+	left: 30%; /* Moved to left side */
+	text-align: right;
 }
 
 /* Countdown style centered in the game board */
