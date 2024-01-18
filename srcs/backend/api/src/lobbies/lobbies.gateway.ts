@@ -119,7 +119,7 @@ export class LobbiesGateway
 
 		const player = new Player();
 		player.name = client.data.user.login;
-		console.log("client : ", client);
+		//console.log("client : ", client);
 		player.socket = client;
 		player.score = 0;
 		player.settings = settings;
@@ -133,13 +133,13 @@ export class LobbiesGateway
 
 	@SubscribeMessage("paddleUp")
 	paddleUp(client: Socket): void {
-		console.log("paddleUp");
+		//console.log("paddleUp");
 		this.lobbiesService.updatePaddleUp(client);
 	}
 
 	@SubscribeMessage("paddleDown")
 	paddleDown(client: Socket): void {
-		console.log("paddleDown");
+		//console.log("paddleDown");
 		this.lobbiesService.updatePaddleDown(client);
 	}
 

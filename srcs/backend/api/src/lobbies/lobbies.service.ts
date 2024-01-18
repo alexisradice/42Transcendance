@@ -38,56 +38,74 @@ export class LobbiesService {
 	}
 
 	addPlayerToQueue(player: Player): void {
-		// for (const player of this.queue) {
-		// 	console.log("Name:", player.name);
-		// 	console.log("Score:", player.score);
-		// 	console.log("Settings:", player.settings);
-		// 	console.log("---------------------");
-		// }
 
-		const playerExists = this.queue.some(
-			(pplayer) => pplayer.name === player.name,
-		);
-		let queue;
+		const existingLobbyPlayer1 = this.lobbies.find((lobby) => lobby.player1?.name === player.name);
+		const existingLobbyPlayer2 = this.lobbies.find((lobby) => lobby.player2?.name === player.name);
 
-		if (playerExists) {
-			console.log(`player with name ${player.name} exists`);
-			queue = this.queue.find((queue) => queue.name === player.name);
-		} else {
-			console.log(`player with name ${player.name} does not exist`);
-			this.queue.push(player);
-		}
+        if (existingLobbyPlayer1 || existingLobbyPlayer2) {
 
-		if (this.queue.length >= 2) {
-			let matchingPlayer;
+            console.log(`Player ${player.name} is already in a lobby.`);
+			console.log("launch");
 
-			for (let i = 0; i < this.queue.length; i++) {
-				const currentPlayer = this.queue[i];
+			if (existingLobbyPlayer1) {
+            	player.lobby = existingLobbyPlayer1;
+				//player.socket = player.lobby.player1.socket;
+				player = existingLobbyPlayer1.player1;
+				console.log("launch1");
 
-				if (
-					currentPlayer.name !== player.name &&
-					this.areSettingsEqual(
-						currentPlayer.settings,
-						player.settings,
-					)
-				) {
-					matchingPlayer = currentPlayer;
-					break;
-				}
+
+				player.socket.emit("launch", player.lobby.player1.name, player.lobby.id, player.lobby.settings,);
 			}
+			if (existingLobbyPlayer2) {
+            	player.lobby = existingLobbyPlayer2;
+				//player.socket = player.lobby.player2.socket;
 
-			if (matchingPlayer) {
-				const code = this.generateUUID();
-				const lobby = this.lobbyCreateOrFind(code);
+				player = existingLobbyPlayer2.player2;
+				console.log("launch2");
 
-				this.lobbyJoin(player, lobby);
-				this.lobbyJoin(matchingPlayer, lobby);
-
-				this.queue = this.queue.filter(
-					(pplayer) =>
-						pplayer.name !== player.name &&
-						pplayer.name !== matchingPlayer!.name,
-				);
+				player.socket.emit("launch", player.lobby.player2.name, player.lobby.id, player.lobby.settings,);
+			}
+        } else {
+			
+			// for (const player of this.queue) {
+			// 	console.log("Name:", player.name);
+			// 	console.log("Score:", player.score);
+			// 	console.log("Settings:", player.settings);
+			// 	console.log("---------------------");
+			// }
+			
+			const playerExists = this.queue.some((pplayer) => pplayer.name === player.name,);
+			//let queue;
+			
+			if (playerExists) {
+				console.log(`player with name ${player.name} exists`);
+				//queue = this.queue.find((queue) => queue.name === player.name);
+			} else {
+				console.log(`player with name ${player.name} does not exist`);
+				this.queue.push(player);
+			}
+		
+			if (this.queue.length >= 2) {
+				let matchingPlayer;
+			
+				for (let i = 0; i < this.queue.length; i++) {
+					const currentPlayer = this.queue[i];
+				
+					if (currentPlayer.name !== player.name && this.areSettingsEqual( currentPlayer.settings, player.settings,)) {
+						matchingPlayer = currentPlayer;
+						break;
+					}
+				}
+			
+				if (matchingPlayer && !player.lobby) {
+					const code = this.generateUUID();
+					const lobby = this.lobbyCreateOrFind(code);
+				
+					this.lobbyJoin(player, lobby);
+					this.lobbyJoin(matchingPlayer, lobby);
+				
+					this.queue = this.queue.filter((pplayer) => pplayer.name !== player.name && pplayer.name !== matchingPlayer!.name, );
+				}
 			}
 		}
 	}
@@ -155,34 +173,12 @@ export class LobbiesService {
 			console.log("player1 is ", lobby.player1.name);
 			console.log("player2 is ", lobby.player2.name);
 			lobby.settings = lobby.player1.settings;
-			console.log(
-				"Lobby Info: ID",
-				lobby.id,
-				" Settings: ",
-				lobby.settings,
-				" Player1: ",
-				lobby.player1.name,
-				" Player2: ",
-				lobby.player2.name,
-				" GameStarted: ",
-				lobby.gameStarted,
-			);
+			console.log("Lobby Info: ID", lobby.id, " Settings: ", lobby.settings, " Player1: ", lobby.player1.name, " Player2: ", lobby.player2.name, " GameStarted: ", lobby.gameStarted,);
 
-			lobby.player1.socket.emit(
-				"launch",
-				lobby.player1.name,
-				lobby.id,
-				lobby.settings,
-			);
-			lobby.player2.socket.emit(
-				"launch",
-				lobby.player2.name,
-				lobby.id,
-				lobby.settings,
-			);
+			lobby.player1.socket.emit("launch", lobby.player1.name, lobby.id, lobby.settings,);
+			lobby.player2.socket.emit("launch", lobby.player2.name, lobby.id, lobby.settings,);
 
 			
-
 			const game = new Game();
 			game.map = { width: 300, height: 100 };
 			game.ball = { x: game.map.width / 2, y: game.map.height / 2, directionX: 1, directionY: 1, speed: 2};
@@ -192,7 +188,6 @@ export class LobbiesService {
 			lobby.game = game;
 
 			this.movementsBall(lobby.player1.socket, lobby.player2.socket, lobby);
-
 		}
 	}
 
@@ -201,7 +196,7 @@ export class LobbiesService {
 		const paddleWidth = 5;
 		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
 
-		// Set the initial direction of the ball based on the angle
+		// initialiser la direction de la balle en fonction de l'angle
 		lobby.game.ball.directionX = Math.cos(angle);
 		lobby.game.ball.directionY = Math.sin(angle);
 
@@ -210,18 +205,20 @@ export class LobbiesService {
 			lobby.game.ball.x += lobby.game.ball.directionX * lobby.game.ball.speed;
 			lobby.game.ball.y += lobby.game.ball.directionY * lobby.game.ball.speed;
 
-			// Block paddle position if too high or too low
+			// bloqquer le paddle si trop haut ou trop bas
 			const maxPaddleY = lobby.game.map.height - lobby.game.paddlePlayer1.height;
 			if (lobby.game.paddlePlayer1.y < 0) {
 				lobby.game.paddlePlayer1.y = 0;
-			} else if (lobby.game.paddlePlayer1.y > maxPaddleY) {
+			}
+			else if (lobby.game.paddlePlayer1.y > maxPaddleY) {
 				lobby.game.paddlePlayer1.y = maxPaddleY;
 			}
 		
 			const maxPaddleY2 = lobby.game.map.height - lobby.game.paddlePlayer2.height;
 			if (lobby.game.paddlePlayer2.y < 0) {
 				lobby.game.paddlePlayer2.y = 0;
-			} else if (lobby.game.paddlePlayer2.y > maxPaddleY2) {
+			}
+			else if (lobby.game.paddlePlayer2.y > maxPaddleY2) {
 				lobby.game.paddlePlayer2.y = maxPaddleY2;
 			}
 
@@ -232,55 +229,43 @@ export class LobbiesService {
 			}
 
 
-
 			// gestion des collisions avec les raquettes
-			if (
-				(lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer1.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height) &&
-				(
-					(lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x) ||
-					(lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth)
-				)
-			  ) {
-				  // calculer l'angle d'incidence sur la raquette du joueur 1
-				  const relativeIntersectY = (lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height / 2) - lobby.game.ball.y;
-				  const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer1.height / 2);
-				  const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
+			if ((lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer1.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height) && ((lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x) || (lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer1.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer1.x + paddleWidth))) {
+				// calculer l'angle d'incidence sur la raquette du joueur 1
+				const relativeIntersectY = lobby.game.ball.y - (lobby.game.paddlePlayer1.y + lobby.game.paddlePlayer1.height / 2);
+				const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer1.height / 2);
+				const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
 		
-				  // modifier la direction de la balle en fonction de l'angle d'incidence
-				  lobby.game.ball.directionX *= -1; // inverser la direction horizontale
-				  lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
-			  }
+				// modifier la direction de la balle en fonction de l'angle d'incidence
+				lobby.game.ball.directionX *= -1; // inverser la direction horizontale
+				lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
+				lobby.game.ball.x = lobby.game.paddlePlayer1.x + paddleWidth + ballRadius; // Add offset to x position
+			}
 		
-			  if (
-				(lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer2.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height) &&
-				(
-					(lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x) ||
-					(lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth)
-				)
-			  ) {
-				  // calculer l'angle d'incidence sur la raquette du joueur 2
-				  const relativeIntersectY = (lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height / 2) - lobby.game.ball.y;
-				  const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer2.height / 2);
-				  const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
-		
-				  // modifier la direction de la balle en fonction de l'angle d'incidence
-				  lobby.game.ball.directionX *= -1; // inverser la direction horizontale
-				  lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
-			  }
+			if ((lobby.game.ball.y + ballRadius >= lobby.game.paddlePlayer2.y && lobby.game.ball.y - ballRadius <= lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height) && ((lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth && lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x) || (lobby.game.ball.x + ballRadius >= lobby.game.paddlePlayer2.x && lobby.game.ball.x - ballRadius <= lobby.game.paddlePlayer2.x + paddleWidth))) {
+				// calculer l'angle d'incidence sur la raquette du joueur 2
+				const relativeIntersectY = lobby.game.ball.y - (lobby.game.paddlePlayer2.y + lobby.game.paddlePlayer2.height / 2);				  const normalizedRelativeIntersectionY = relativeIntersectY / (lobby.game.paddlePlayer2.height / 2);
+				const bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 4);
+				// modifier la direction de la balle en fonction de l'angle d'incidence
+				lobby.game.ball.directionX *= -1; // inverser la direction horizontale
+				lobby.game.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
+				lobby.game.ball.x = lobby.game.paddlePlayer2.x - ballRadius; // Add offset to x position
+			}
 		
 
-			console.log("ball position", lobby.game.ball.x, lobby.game.ball.y);
+			//onsole.log("ball position", lobby.game.ball.x, lobby.game.ball.y);
 			socketPlayer1.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
 			socketPlayer2.emit('ballPosition', { x: lobby.game.ball.x, y: lobby.game.ball.y });
 
-			socketPlayer1.emit('paddleDownFront', lobby.game);
-			socketPlayer2.emit('paddleDownFront', lobby.game);
-			socketPlayer1.emit('paddleUpFront', lobby.game);
-			socketPlayer2.emit('paddleUpFront', lobby.game);
+			socketPlayer1.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer2.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer1.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
+			socketPlayer2.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 
 			if (this.detectScoredPoint(socketPlayer1, socketPlayer2, lobby)) {
 				console.log("stop interval");
 				clearInterval(intervalId);
+				this.lobbies = this.lobbies.filter((lobbyy) => lobbyy.id !== lobby.id);
 			}
 
 		}, 16.66666);
@@ -293,33 +278,36 @@ export class LobbiesService {
 
 
 	detectScoredPoint(socketPlayer1: Socket, socketPlayer2: Socket, lobby: Lobby) {
-		//console.log("detectScoredPoint" + lobby.player1.score, lobby.player2.score);
 		const player1Scored = lobby.game.ball.x <= 0;
 		const player2Scored = lobby.game.ball.x >= lobby.game.map.width;
-		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
+	
+		if (player1Scored || player2Scored) {
+
+			const newAngle = (Math.random() * 90 - 45) * (Math.PI / 180);
+			
+			let randomDirection;
+			if (Math.random() > 0.5)
+			  randomDirection = 1;
+			else
+			  randomDirection = -1;
+	
+			lobby.game.ball.directionX = Math.cos(newAngle) * randomDirection;
+			lobby.game.ball.directionY = Math.sin(newAngle);
+		}
 	
 		if (player1Scored) {
 			lobby.player1.score++;
 			lobby.game.ball.x = lobby.game.map.width / 2;
 			lobby.game.ball.y = lobby.game.map.height / 2;
-
-			lobby.game.ball.directionX = Math.cos(angle);
-			lobby.game.ball.directionY = Math.sin(angle);
-
-			socketPlayer1.emit('pointScored', lobby.player1.score,lobby.player2.score );
-			socketPlayer2.emit('pointScored', lobby.player1.score, lobby.player2.score );
+			socketPlayer1.emit('pointScored', lobby.player1.score, lobby.player2.score);
+			socketPlayer2.emit('pointScored', lobby.player1.score, lobby.player2.score);
 			console.log("player1Scored", lobby.player1.score, lobby.player2.score);
-
 		} else if (player2Scored) {
 			lobby.player2.score++;
 			lobby.game.ball.x = lobby.game.map.width / 2;
 			lobby.game.ball.y = lobby.game.map.height / 2;
-
-			lobby.game.ball.directionX = Math.cos(angle);
-			lobby.game.ball.directionY = Math.sin(angle);
-
-			socketPlayer1.emit('pointScored',  lobby.player1.score, lobby.player2.score );
-			socketPlayer2.emit('pointScored', lobby.player1.score,  lobby.player2.score );
+			socketPlayer1.emit('pointScored', lobby.player1.score, lobby.player2.score);
+			socketPlayer2.emit('pointScored', lobby.player1.score, lobby.player2.score);
 			console.log("player2Scored", lobby.player1.score, lobby.player2.score);
 		}
 		
@@ -327,14 +315,16 @@ export class LobbiesService {
 		if (lobby.player1.score === 11 || lobby.player2.score === 11) {
 			let winner;
 			if (lobby.player1.score === 11) {
-			winner = lobby.player1;
-			this.incrementStats(lobby.player1.name, true, true, false);
-			this.incrementStats(lobby.player2.name, true, false, true);
+				winner = lobby.player1;
+				this.incrementStats(lobby.player1.name, true, true, false);
+				this.incrementStats(lobby.player2.name, true, false, true);
+				this.addMatchInHistory(lobby.player1.name, lobby.player2.name, lobby.player1.score, lobby.player2.score, lobby);
 			}
 			else if (lobby.player2.score === 11) {
 				winner = lobby.player2;
 				this.incrementStats(lobby.player1.name, true, false, true);
 				this.incrementStats(lobby.player2.name, true, true, false);
+				this.addMatchInHistory(lobby.player2.name, lobby.player1.name, lobby.player2.score, lobby.player1.score, lobby);
 			}
 			socketPlayer1.emit('gameOver', winner.name);
 			socketPlayer2.emit('gameOver', winner.name);
@@ -348,11 +338,11 @@ export class LobbiesService {
 	updatePaddleDown(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.paddlePlayer1.y += 1;
+				lobby.game.paddlePlayer1.y += 3;
 				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.paddlePlayer2.y += 1;
+				lobby.game.paddlePlayer2.y += 3;
 				socket.emit('paddleDownFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleDownFront', lobby.game.paddlePlayer2.y, "player2");
 			}
@@ -362,11 +352,11 @@ export class LobbiesService {
 	updatePaddleUp(socket: Socket) {
 		for (const lobby of this.lobbies) {
 			if (lobby.player1.socket === socket) {
-				lobby.game.paddlePlayer1.y -= 1;
+				lobby.game.paddlePlayer1.y -= 3;
 				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, "player1");
 			} else if (lobby.player2.socket === socket) {
-				lobby.game.paddlePlayer2.y -= 1;
+				lobby.game.paddlePlayer2.y -= 3;
 				socket.emit('paddleUpFront', lobby.game.paddlePlayer1.y, lobby.game.paddlePlayer2.y);
 				//socket.emit('paddleUpFront', lobby.game.paddlePlayer2.y, "player2");
 			}
@@ -419,6 +409,38 @@ export class LobbiesService {
 		});
 		} catch (error) {
 		throw new Error(`Error incrementing stats: ${error.message}`);
+		}
+	}
+
+	async addMatchInHistory(winnerName: string, loserName: string, winnerScore: number, loserScore: number, lobby: Lobby): Promise<any> {
+		try {
+
+		const winner = await this.userService.findOne({
+			login: winnerName,
+		});
+
+		const loser = await this.userService.findOne({
+			login: loserName,
+		});
+	
+		await this.prisma.game.create({
+			data: {
+				players: {
+					connect: [
+					  { id: winner.id },
+					  { id: loser.id },
+					],
+				  },
+				winnerScore: winnerScore,
+				loserScore: loserScore,
+				ballSpeed: lobby.settings.ballSpeed,
+				paddleSize: lobby.settings.paddleSize,
+				winnerId: winner.id,
+			},
+			});
+			
+		} catch (error) {
+			throw new Error(`Error adding match in history: ${error.message}`);
 		}
 	}
 }

@@ -94,9 +94,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
     useEffect(() => {
 		let receivedPaddle1Y : any;
 		let receivedPaddle2Y : any;
-		socket.on('paddleUpFront', (game : any) => {
-			receivedPaddle1Y = game.paddlePlayer1.y;
-			receivedPaddle2Y = game.paddlePlayer2.y;
+		socket.on('paddleUpFront', (receivedPaddle1Y : any, receivedPaddle2Y: any) => {
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
@@ -108,9 +106,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
 			setPlayerScores(prevPlayerScores => ({ ...prevPlayerScores, player2: score2 }));
 		});
 
-        socket.on('paddleDownFront', (game : any) => {
-			receivedPaddle1Y = game.paddlePlayer1.y;
-			receivedPaddle2Y = game.paddlePlayer2.y;
+        socket.on('paddleDownFront', (receivedPaddle1Y : any, receivedPaddle2Y: any) => {
 			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
             setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
