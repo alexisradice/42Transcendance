@@ -3,6 +3,7 @@ import {
 	Box,
 	Button,
 	Center,
+	Indicator,
 	Loader,
 	ScrollArea,
 	ScrollAreaAutosize,
@@ -72,6 +73,10 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 		return <></>;
 	}
 
+	const hasNotifs = Object.keys(notifs || {}).find(
+		(notifId) => notifs?.[notifId],
+	);
+
 	return (
 		<AppShell.Section
 			component={ScrollArea}
@@ -81,7 +86,18 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 			<Tabs defaultValue="channels">
 				<Tabs.List grow>
 					<Tabs.Tab value="channels">Channels</Tabs.Tab>
-					<Tabs.Tab value="messages">Messages</Tabs.Tab>
+					<Tabs.Tab value="messages">
+						<Indicator
+							position="middle-end"
+							offset={-15}
+							disabled={!hasNotifs}
+							processing
+							color="red"
+							size={12}
+						>
+							Messages
+						</Indicator>
+					</Tabs.Tab>
 				</Tabs.List>
 				<CreateChannelModal
 					opened={createModalOpened}
