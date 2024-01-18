@@ -334,18 +334,6 @@ export class ChannelService {
 				},
 			},
 		});
-		return await this.prisma.notif.create({
-			data: {
-				channelId: channelId,
-				lastChecked: new Date(Date.now()),
-				newMsg: false,
-				user: {
-					connect: {
-						id: user.id,
-					},
-				},
-			},
-		});
 	}
 
 	async removeUserFromChannel(user: User, channelId: string) {

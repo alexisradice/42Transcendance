@@ -39,7 +39,6 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 
 	const dest = useMemo(() => {
 		const { members } = channel;
-		console.log("members", members);
 		const dest = members.find((member) => member.login !== login)!;
 		return dest;
 	}, [channel, login]);

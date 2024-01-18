@@ -69,7 +69,6 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	}, [isDesktopResolution, open, close]);
 
 	useEffect(() => {
-		chatSocket.connect();
 		chatSocket.on("channel-destroyed", () => {
 			mutate("/channel/list");
 		});
@@ -114,11 +113,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			},
 		);
 
-		chatSocket.on("notif", (response: { channelId: string }) => {
-			const { channelId } = response;
-			if (channelId !== selectedChannel) {
-				mutate("/channel/notifications");
-			}
+		chatSocket.on("notif", () => {
+			mutate("/channel/notifications");
 		});
 
 		return () => {
@@ -127,7 +123,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("user-kicked");
 			chatSocket.off("user-joined");
 			chatSocket.off("display-message");
-			chatSocket.disconnect();
+			chatSocket.off("status-changed");
+			chatSocket.off("notif");
 		};
 	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel]);
 

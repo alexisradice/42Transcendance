@@ -134,7 +134,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					login: user.login,
 					status: Status.ONLINE,
 				});
-				console.log("client connected");
+				console.log(`${user.login} connected`);
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -143,8 +143,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async handleDisconnect(client: any) {
-		console.log("client disconnected");
 		const user: User = client.data.user;
+		console.log(`${user.login} disconnected`);
 		if (user) {
 			if (this.clients?.has(user.id)) {
 				this.clients.delete(user.id);
@@ -240,14 +240,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const isInChannel =
 				isOnline &&
 				this.selectedChannelClients.get(destId) === dmChannel.id;
-			if (!isOnline || !isInChannel)
+			if (!isInChannel) {
 				await this.channelService.updateNotifNewMessages(
 					channelId,
 					destId,
 					true,
 				);
-			if (!isInChannel) {
-				client.to(destId).emit("notif", { channelId: dmChannel.id });
+				if (isOnline) {
+					client
+						.to(destId)
+						.emit("notif", { channelId: dmChannel.id });
+				}
 			}
 			const newMessage = {
 				id: message.id,
@@ -475,9 +478,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@MessageBody() channelId: string,
 	) {
+		console.log("channelId", channelId);
 		const user: User = client.data.user;
 		if (channelId && channelId.length > 0) {
-			this.selectedChannelClients.delete(user.id);
 			this.selectedChannelClients.set(user.id, channelId);
 		} else {
 			this.selectedChannelClients.delete(user.id);
