@@ -9,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { useSWRConfig } from "swr";
+import { SocketProvider } from "../../context/SocketContext";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
 import {
@@ -224,7 +225,9 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				<FriendsList joinDM={joinDM} />
 			</AppShell.Navbar>
 			<AppShell.Main>
-				<MainFrame />
+				<SocketProvider>
+					<MainFrame />
+				</SocketProvider>
 			</AppShell.Main>
 			<AppShell.Aside>
 				{selectedChannel && (

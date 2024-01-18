@@ -1,23 +1,28 @@
-import React, { createContext, useContext, useState } from 'react';
-import { useSocket } from "../hooks/useSocket"; // Import your useSocket hook
+import { createContext, useState } from "react";
+import { useSocket } from "../hooks/useSocket";
+import { SocketContextType } from "../types";
 
-export const SocketContext = createContext();
+interface Props {
+	children: React.ReactNode;
+}
 
-export const useSocketContext = () => useContext(SocketContext);
+export const SocketContext = createContext<SocketContextType>(
+	{} as SocketContextType,
+);
 
-export const SocketProvider = ({ children }) => {
-    const gameSocket = useSocket("game");
-    const [isPending, setIsPending] = useState(false);
+export const SocketProvider: React.FC<Props> = ({ children }) => {
+	const gameSocket = useSocket("game");
+	const [isPending, setIsPending] = useState(false);
 
-    const value = {
-        gameSocket,
-        isPending,
-        setIsPending
-    };
+	const value = {
+		gameSocket,
+		isPending,
+		setIsPending,
+	};
 
-    return (
-        <SocketContext.Provider value={value}>
-            {children}
-        </SocketContext.Provider>
-    );
+	return (
+		<SocketContext.Provider value={value}>
+			{children}
+		</SocketContext.Provider>
+	);
 };

@@ -113,3 +113,9 @@ export type Channel = {
 };
 
 export type Notifs = Record<string, boolean>;
+
+export interface SocketContextType {
+	gameSocket: Socket;
+	isPending: boolean;
+	setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
+}
