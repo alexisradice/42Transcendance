@@ -3,6 +3,8 @@ import { createRef, useEffect, useRef, useState } from "react";
 import { Message } from "../../types";
 import classes from "./MessagesArea.module.css";
 import cx from "clsx";
+import Linkify from "linkify-react";
+import { Link } from "react-router-dom";
 
 type Props = {
 	messages: Message[];
@@ -61,6 +63,22 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		return `${dayString} ${timeString}`;
 	};
 
+	const renderLink = ({
+		attributes,
+		content,
+	}: {
+		attributes: any;
+		content: string;
+	}) => {
+		console.log("content", content);
+		const { href, ...props } = attributes;
+		return (
+			<Link to={href} {...props}>
+				{content}
+			</Link>
+		);
+	};
+
 	return (
 		<div className={classes.mainContainer} ref={mainContainerRef}>
 			<ScrollArea
@@ -101,7 +119,9 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 									</p>
 								</div>
 								<p className={classes.messageContent}>
-									{message.content}
+									<Linkify options={{ render: renderLink }}>
+										{message.content}
+									</Linkify>
 								</p>
 							</div>
 						</div>

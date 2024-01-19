@@ -9,7 +9,6 @@ import {
 	useState,
 } from "react";
 import { useSWRConfig } from "swr";
-import { SocketProvider } from "../../context/SocketContext";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
 import {
@@ -26,6 +25,7 @@ import Footer from "../Footer/Footer";
 import FriendsList from "../FriendsList/FriendsList";
 import Header from "../Header/Header";
 import MainFrame from "../MainFrame/MainFrame";
+import { useSocketContext } from "../../context/useContextGameSocket";
 
 type Props = {
 	setIsLogged: Dispatch<SetStateAction<boolean>>;
@@ -35,6 +35,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const { cache, mutate } = useSWRConfig();
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
+	const { gameSocket } = useSocketContext();
 	const isDesktopResolution = useMediaQuery("(min-width: 62em)");
 	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
 		useDisclosure();
@@ -118,6 +119,14 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			mutate("/channel/notifications");
 		});
 
+		gameSocket.on("display-message", (channelId: string) => {
+			mutate(`/channel/${channelId}`);
+		});
+
+		gameSocket.on("notif", () => {
+			mutate("/channel/notifications");
+		});
+
 		return () => {
 			chatSocket.off("channel-destroyed");
 			chatSocket.off("user-left");
@@ -127,7 +136,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("status-changed");
 			chatSocket.off("notif");
 		};
-	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel]);
+	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel, gameSocket]);
 
 	const openChannel = (channelId: string) => {
 		setChatOpened(true);
@@ -225,9 +234,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				<FriendsList joinDM={joinDM} />
 			</AppShell.Navbar>
 			<AppShell.Main>
-				<SocketProvider>
-					<MainFrame />
-				</SocketProvider>
+				<MainFrame />
 			</AppShell.Main>
 			<AppShell.Aside>
 				{selectedChannel && (

@@ -221,7 +221,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				dest.login,
 			);
 			if (blockedByDest) {
-				throw new HttpException("This user blocked you.", 400);
+				throw new ForbiddenException("This user blocked you.");
 			}
 			const message = await this.chatService.createMessage(
 				dmChannel.id,

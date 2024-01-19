@@ -1,4 +1,8 @@
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import {
+	ForbiddenException,
+	HttpException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import {
 	WebSocketGateway,
 	WebSocketServer,
@@ -14,6 +18,10 @@ import { UserService } from "../user/user.service";
 import { Player, Lobby, Settings, Game } from "./game.classes";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { SocketResponse } from "src/types";
+import { User } from "@prisma/client";
+import { ChannelService } from "src/channel/channel.service";
+import { ChatService } from "src/chat/chat.service";
 
 @WebSocketGateway({
 	cors: {
@@ -31,6 +39,8 @@ export class LobbiesGateway
 		private userService: UserService,
 		private jwtService: JwtService,
 		private configService: ConfigService,
+		private channelService: ChannelService,
+		private chatService: ChatService,
 	) {}
 
 	extractCookie = (cookieString: string, key: string) => {
@@ -129,6 +139,66 @@ export class LobbiesGateway
 
 		//const lobby = this.lobbiesService.lobbyCreateOrFind();
 		//this.lobbiesService.lobbyJoin(player, client, lobby);
+	}
+
+	@SubscribeMessage("invite-to-game")
+	async inviteToGame(
+		client: Socket,
+		payload: { settings: Settings; opponentLogin: string },
+	) {
+		const response: SocketResponse = {};
+		const { settings, opponentLogin } = payload;
+		const inviter: User = client.data.user;
+		try {
+			const opponent = await this.userService.findOne({
+				login: opponentLogin,
+			});
+			const dmChannel = await this.channelService.findOrCreateDm(
+				inviter.id,
+				opponent.id,
+			);
+			const blockedByOpponent = await this.userService.isBlockedBy(
+				inviter.login,
+				opponent.login,
+			);
+			if (blockedByOpponent) {
+				throw new ForbiddenException("This user blocked you.");
+			}
+
+			client.join(dmChannel.id);
+			client.join(opponent.id);
+
+			const lobbyId = this.lobbiesService.generateUUID();
+			const lobby = this.lobbiesService.lobbyCreateOrFind(lobbyId);
+
+			const player = new Player();
+			player.name = inviter.login;
+			player.socket = client;
+			player.score = 0;
+			player.settings = settings;
+			player.lobby = lobby;
+
+			const message = await this.chatService.createMessage(
+				dmChannel.id,
+				inviter.id,
+				`Hey, join me on this game: http://localhost:5173/game?code=${lobbyId}`,
+			);
+			const newMessage = {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					login: inviter.login,
+					displayName: inviter.displayName,
+					image: inviter.image,
+				},
+			};
+			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+		} catch (err) {
+			response.error = err.message;
+		} finally {
+			return response;
+		}
 	}
 
 	@SubscribeMessage("paddleUp")

@@ -7,6 +7,8 @@ import {
 } from "@tabler/icons-react";
 import { GeneralUser } from "../../types";
 import UserCard from "../UserCard/UserCard";
+import { useSocketContext } from "../../context/useContextGameSocket";
+import sendSettings from "../../utils/sendSettings";
 
 type Props = {
 	friend: GeneralUser;
@@ -16,6 +18,7 @@ type Props = {
 };
 
 const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
+	const { gameSocket } = useSocketContext();
 	const handleRemove = () => {
 		if (
 			window.confirm(`Are you sure you want to remove ${friend.login}?`)
@@ -32,6 +35,13 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 			blockFriend(friend.login);
 		}
 	};
+	const handleInvite = () => {
+		gameSocket.emit("invite-to-game", {
+			settings: sendSettings(),
+			opponentLogin: friend.login,
+		});
+	};
+
 	return (
 		<Menu>
 			<Menu.Target>
@@ -46,7 +56,10 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 				>
 					Messages
 				</Menu.Item>
-				<Menu.Item leftSection={<IconDeviceGamepad2 size={18} />}>
+				<Menu.Item
+					leftSection={<IconDeviceGamepad2 size={18} />}
+					onClick={handleInvite}
+				>
 					Invite to play
 				</Menu.Item>
 				<Menu.Item
