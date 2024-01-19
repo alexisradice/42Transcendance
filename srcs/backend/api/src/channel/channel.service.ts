@@ -267,31 +267,13 @@ export class ChannelService {
 				password: hashedPassword,
 			},
 		});
-		if (channel) {
-			return await this.prisma.notif.create({
-				data: {
-					channelId: channel.id,
-					lastChecked: new Date(Date.now()),
-					newMsg: false,
-					user: {
-						connect: {
-							id,
-						},
-					},
-				},
-			});
-		}
+		return channel;
 	}
 
 	async destroyChannel(channelId: string) {
 		await this.prisma.channel.delete({
 			where: {
 				id: channelId,
-			},
-		});
-		return await this.prisma.notif.deleteMany({
-			where: {
-				channelId: channelId,
 			},
 		});
 	}
@@ -350,11 +332,6 @@ export class ChannelService {
 						id: user.id,
 					},
 				},
-			},
-		});
-		return await this.prisma.notif.deleteMany({
-			where: {
-				AND: [{ channelId: channelId }, { userId: user.id }],
 			},
 		});
 	}
@@ -492,11 +469,6 @@ export class ChannelService {
 				},
 			},
 		});
-		return await this.prisma.notif.deleteMany({
-			where: {
-				AND: [{ channelId: channelId }, { userId: kickedId }],
-			},
-		});
 	}
 
 	async hasRights(
@@ -541,11 +513,6 @@ export class ChannelService {
 				admins: {
 					disconnect: { id: userId },
 				},
-			},
-		});
-		return await this.prisma.notif.deleteMany({
-			where: {
-				AND: [{ channelId: channelId }, { userId: userId }],
 			},
 		});
 	}
