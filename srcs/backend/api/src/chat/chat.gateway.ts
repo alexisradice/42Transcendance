@@ -99,7 +99,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (!jwtToken) {
 			if (!refreshToken) {
-				console.error(new UnauthorizedException("No token provided"));
 				client.disconnect();
 			}
 			try {
@@ -113,7 +112,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					status: Status.ONLINE,
 				});
 			} catch (err) {
-				console.error(err);
 				client.disconnect();
 			}
 		} else {
@@ -133,7 +131,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					status: Status.ONLINE,
 				});
 			} catch (err) {
-				console.error(err);
 				client.disconnect();
 			}
 		}
@@ -186,7 +183,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.join(dest.id);
 			response.data = dmChannel;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -261,7 +257,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
 			response.data = newMessage;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -305,7 +300,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new ForbiddenException("Access Denied");
 			}
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -342,7 +336,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(channelId).emit("user-left", channelId);
 			response.data = channelId;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -399,7 +392,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(channelId).emit("display-message", channelId);
 			response.data = newMessage;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -443,7 +435,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				kickedClient.leave(channelId);
 			}
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -462,7 +453,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			response.data = { login: user.login, status };
 			this.server.emit("status-changed", response.data);
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
