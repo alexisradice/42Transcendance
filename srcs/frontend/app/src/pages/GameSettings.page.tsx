@@ -1,6 +1,6 @@
 import { Button } from "@mantine/core";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SettingsComponent from "../components/Game/ModeSelection";
 import { useSocketContext } from "../context/useContextGameSocket";
 import sendSettings from "../utils/sendSettings";
@@ -9,7 +9,6 @@ import classes from "./GameSettings.module.css";
 const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
 	const navigate = useNavigate();
-	const location = useLocation();
 
 	const handlePlayGame = () => {
 		setIsPending(true); // Show waiting message
@@ -31,19 +30,18 @@ const GameSettings = () => {
 		return () => {
 			gameSocket.off("launch");
 		};
-	}, [gameSocket, navigate]);
+	}, [gameSocket, navigate, setIsPending]);
 
 	return (
 		<div className={classes.container}>
-			{isPending && (
+			{isPending ? (
 				<div className={classes.pendingContainer}>
 					<p>Waiting for a game to start...</p>
 					<Button onClick={handleCancel} color="red">
 						Cancel
 					</Button>
 				</div>
-			)}
-			{location.pathname === "/" && !isPending && (
+			) : (
 				<>
 					<Button
 						className={classes.PlayButton}

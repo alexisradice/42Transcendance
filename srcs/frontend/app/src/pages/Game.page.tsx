@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import PongGame from "../components/Game/PongGame";
 import { useSocketContext } from "../context/useContextGameSocket";
-import { useMyData } from "../hooks/useMyData";
 
 export const GamePage = () => {
 	const [gameOverMessage, setGameOverMessage] = useState("");
-	const { user } = useMyData();
 	const { gameSocket } = useSocketContext();
 
 	useEffect(() => {
@@ -29,9 +27,5 @@ export const GamePage = () => {
 		);
 	}
 
-	return (
-		<div>
-			<PongGame socket={gameSocket} user={user} />
-		</div>
-	);
+	return <PongGame />;
 };

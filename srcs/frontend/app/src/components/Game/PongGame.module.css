@@ -2,19 +2,10 @@
 .game {
 	position: relative;
 	width: 100%;
-	height: 100%;
+	height: calc(100vh - 120px);
 	margin: 0 auto;
 	background-color: black;
 	color: white;
-	overflow: hidden;
-}
-
-/* The game board should be the same size as the game container */
-.game-board {
-	width: calc(100vw -250);
-	height: calc(100vh);
-	margin: auto;
-	aspect-ratio: 4 / 3;
 }
 
 /* Paddles should be contained within the game-board without causing overflow */
