@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import PongGame from "../components/Game/PongGame";
 import { useSocketContext } from "../context/useContextGameSocket";
+import { useNavigate } from "react-router-dom";
 
 export const GamePage = () => {
+	const navigate = useNavigate();
 	const [gameOverMessage, setGameOverMessage] = useState("");
 	const { gameSocket } = useSocketContext();
 
@@ -10,14 +12,14 @@ export const GamePage = () => {
 		gameSocket.on("gameOver", (winnerName) => {
 			setGameOverMessage(`Game Over! Winner is ${winnerName}`);
 			setTimeout(() => {
-				window.location.href = "/";
+				navigate("/");
 			}, 3000);
 		});
 
 		return () => {
 			gameSocket.off("gameOver");
 		};
-	}, [gameSocket]);
+	}, [gameSocket, navigate]);
 
 	if (gameOverMessage) {
 		return (
