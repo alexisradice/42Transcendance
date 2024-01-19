@@ -65,7 +65,7 @@ export class LobbiesGateway
 	@WebSocketServer() server: Server;
 
 	async handleConnection(client: Socket) {
-		console.log("connected to chat");
+		console.log("connected to game");
 		const jwtToken = this.extractCookie(
 			client.handshake.headers.cookie,
 			"jwtToken",
@@ -118,7 +118,7 @@ export class LobbiesGateway
 		//console.log("user!", user);
 
 		const player = new Player();
-		player.name = client.data.user.login;
+		player.name = client.data.user.displayName;
 		//console.log("client : ", client);
 		player.socket = client;
 		player.score = 0;

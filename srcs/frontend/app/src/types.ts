@@ -78,7 +78,7 @@ export interface PlayerType {
 export interface SettingsType {
 	ballSpeed: number;
 	paddleSize: string;
-	visibility: Visibility;
+	visibility: string;
 	inviteFriend: string;
 	pause: boolean;
 	mode: string;
