@@ -125,13 +125,6 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 							)}
 						</ul>
 					)}
-					{channels.length === 0 && (
-						<Center className="h-100">
-							<Text fs="italic" size="sm" c="dimmed">
-								Nothing to see here
-							</Text>
-						</Center>
-					)}
 				</Tabs.Panel>
 
 				<Tabs.Panel value="messages">
@@ -159,13 +152,6 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 								},
 							)}
 						</ul>
-					)}
-					{channels.length === 0 && (
-						<Center className="h-100">
-							<Text fs="italic" size="sm" c="dimmed">
-								Nothing to see here
-							</Text>
-						</Center>
 					)}
 				</Tabs.Panel>
 			</Tabs>
