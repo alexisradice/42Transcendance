@@ -36,6 +36,8 @@ import { ChatService } from "./chat.service";
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private clients: Map<string, Socket> = new Map();
+	private selectedChannelClients: Map<string, string> = new Map();
+
 	constructor(
 		private jwtService: JwtService,
 		private configService: ConfigService,
@@ -77,9 +79,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	server: Server;
 
 	async handleConnection(client: Socket) {
-		console.log("connected to chat");
 		if (client.recovered) {
-			console.log("recovered");
 			const user = client.data.user;
 			this.clients.set(user.id, client);
 			this.userService.updateStatus(user.login, Status.ONLINE);
@@ -99,7 +99,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		if (!jwtToken) {
 			if (!refreshToken) {
-				console.error(new UnauthorizedException("No token provided"));
 				client.disconnect();
 			}
 			try {
@@ -113,7 +112,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					status: Status.ONLINE,
 				});
 			} catch (err) {
-				console.error(err);
 				client.disconnect();
 			}
 		} else {
@@ -133,18 +131,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					status: Status.ONLINE,
 				});
 			} catch (err) {
-				console.error(err);
 				client.disconnect();
 			}
 		}
 	}
 
 	async handleDisconnect(client: any) {
-		console.log("client disconnected");
 		const user: User = client.data.user;
 		if (user) {
 			if (this.clients?.has(user.id)) {
 				this.clients.delete(user.id);
+			}
+			if (this.selectedChannelClients?.has(user.id)) {
+				this.selectedChannelClients.delete(user.id);
 			}
 			this.userService.updateStatus(user.login, Status.OFFLINE);
 			this.server.emit("status-changed", {
@@ -175,11 +174,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user.id,
 				dest.id,
 			);
+			this.channelService.updateNotifNewMessages(
+				dmChannel.id,
+				user.id,
+				false,
+			);
 			client.join(dmChannel.id);
-			client.join(dest.id); // pas sure du tout de celui la
+			client.join(dest.id);
 			response.data = dmChannel;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -194,22 +197,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	): Promise<SocketResponse> {
 		const response: SocketResponse = {};
 		const { destId, channelId, content } = payload;
-		const author = client.data.user;
-		console.log('received dm "' + content + '"');
-		console.log('sending to room "' + channelId + '"');
+		const author: User = client.data.user;
 		try {
-			if (content.length > 500) {
+			if (content.length === 0 || content.length > 500) {
 				throw new BadRequestException(
-					"Message must be at most 500 characters.",
+					"Message must be 1-500 characters.",
 				);
 			}
 			const dest = await this.userService.findOne({ id: destId });
 			const dmChannel =
 				await this.channelService.findChannelById(channelId);
-			const isUserInChannel = await this.channelService.isChannelMember(
-				author,
+			const isChannelMember = await this.channelService.isChannelMember(
+				author.id,
 				dmChannel.id,
 			);
+			if (!isChannelMember) {
+				throw new ForbiddenException(
+					"You can't send a message in this room.",
+				);
+			}
 			const blockedByDest = await this.userService.isBlockedBy(
 				author.login,
 				dest.login,
@@ -217,27 +223,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (blockedByDest) {
 				throw new HttpException("This user blocked you.", 400);
 			}
-			if (isUserInChannel) {
-				const message = await this.chatService.createMessage(
-					dmChannel.id,
-					author.id,
-					content,
+			const message = await this.chatService.createMessage(
+				dmChannel.id,
+				author.id,
+				content,
+			);
+			const isOnline = this.clients.has(destId);
+			const isInChannel =
+				isOnline &&
+				this.selectedChannelClients.get(destId) === dmChannel.id;
+			if (!isInChannel) {
+				await this.channelService.updateNotifNewMessages(
+					channelId,
+					destId,
+					true,
 				);
-				client.to(destId).emit("notif", true);
-				client.to(dmChannel.id).emit("receive-dm", message);
-				response.data = {
-					id: message.id,
-					createdAt: message.createdAt,
-					content: message.content,
-					author: {
-						login: author.login,
-						displayName: author.displayName,
-						image: author.image,
-					},
-				};
+				if (isOnline) {
+					client
+						.to(destId)
+						.emit("notif", { channelId: dmChannel.id });
+				}
 			}
+			const newMessage = {
+				id: message.id,
+				createdAt: message.createdAt,
+				content: message.content,
+				author: {
+					login: author.login,
+					displayName: author.displayName,
+					image: author.image,
+				},
+			};
+			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+			response.data = newMessage;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -261,9 +280,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 			// user was already in channel = no further checks
 			if (isUserInChannel) {
-				console.log(
-					"User already in channel, socket joining " + channelId,
-				);
 				client.join(channelId);
 				response.data = channelId;
 				return response;
@@ -277,9 +293,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 			if (isAllowedInChannel) {
 				await this.channelService.addUserToChannel(user, channelId);
-				console.log(
-					"User added in channel, socket joining " + channelId,
-				);
 				client.join(channelId);
 				this.server.to(channelId).emit("user-joined", channelId);
 				response.data = channelId;
@@ -287,7 +300,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new ForbiddenException("Access Denied");
 			}
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -315,9 +327,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			//leave channel in db
 			await this.channelService.removeUserFromChannel(user, channelId);
-			console.log(
-				"User removed from channel, socket leaving " + channelId,
-			);
 			if (wasAlone) {
 				await this.channelService.destroyChannel(channelId);
 				this.server.emit("channel-destroyed");
@@ -327,7 +336,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(channelId).emit("user-left", channelId);
 			response.data = channelId;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -342,12 +350,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const response: SocketResponse = {};
 		const { channelId, content } = payload;
 		const author: User = client.data.user;
-		console.log('received message "' + content + '"');
-		console.log('sending to room "' + channelId + '"');
 		try {
-			if (content.length > 500) {
+			if (content.length === 0 || content.length > 500) {
 				throw new BadRequestException(
-					"Message must be at most 500 characters.",
+					"Message must be 1-500 characters.",
 				);
 			}
 			const isUserInChannel = await this.channelService.isChannelMember(
@@ -386,7 +392,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(channelId).emit("display-message", channelId);
 			response.data = newMessage;
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -430,7 +435,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				kickedClient.leave(channelId);
 			}
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
@@ -449,10 +453,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			response.data = { login: user.login, status };
 			this.server.emit("status-changed", response.data);
 		} catch (err) {
-			console.error(err);
 			response.error = err;
 		} finally {
 			return response;
+		}
+	}
+
+	@SubscribeMessage("toggle-chat")
+	toggleChat(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() channelId: string,
+	) {
+		const user: User = client.data.user;
+		if (channelId && channelId.length > 0) {
+			this.selectedChannelClients.set(user.id, channelId);
+		} else {
+			this.selectedChannelClients.delete(user.id);
 		}
 	}
 }

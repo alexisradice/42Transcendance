@@ -9,12 +9,11 @@ import {
 	Req,
 	UseGuards,
 } from "@nestjs/common";
-import { ChannelVisibility, Mute } from "@prisma/client";
+import { ChannelVisibility } from "@prisma/client";
 import { Request } from "express";
 import { JwtGuard } from "src/auth/jwtToken.guard";
-import { ChannelService } from "./channel.service";
-import * as argon2 from "argon2";
 import { PasswordDto } from "src/dto";
+import { ChannelService } from "./channel.service";
 
 @Controller("channel")
 export class ChannelController {
@@ -52,43 +51,16 @@ export class ChannelController {
 		return createdChannel;
 	}
 
-	@Get(":channelId")
+	@Get("notifications")
 	@UseGuards(JwtGuard)
-	async getChannel(
-		@Req() req: Request,
-		@Param("channelId") channelId: string,
-	) {
+	async getNotifications(@Req() req: Request) {
 		const userId = req.user["id"];
-		const isUserInChannel = await this.channelService.isChannelMember(
-			userId,
-			channelId,
-		);
-		if (!isUserInChannel) {
-			throw new ForbiddenException();
-		}
-		const channel =
-			await this.channelService.findChannelByIdStripped(channelId);
-		if (channel.visibility === ChannelVisibility.DM) {
-			return channel;
-		}
-		const admins = channel.admins.filter(
-			(admin) => admin.id !== channel.owner.id,
-		);
-		const members = channel.members.filter((member) => {
-			const isAdmin = admins.find((admin) => admin.id === member.id);
-			return member.id !== channel.owner.id && !isAdmin;
+		const notifs = await this.channelService.getNotif(userId);
+		const notifsParsed = {};
+		notifs.forEach((notif) => {
+			notifsParsed[notif.channelId] = notif.newMsg;
 		});
-		const mutedRaw = await this.channelService.getChannelMuted(channelId);
-		const muted = await Promise.all(
-			mutedRaw.map(async (mutedEntry) => {
-				const isStillMuted = await this.channelService.isMuted(
-					mutedEntry.user.id,
-					channelId,
-				);
-				return isStillMuted ? mutedEntry.user.login : null;
-			}),
-		).then((results) => results.filter((mutedEntry) => mutedEntry));
-		return { ...channel, admins, members, muted };
+		return notifsParsed;
 	}
 
 	@Post("admin/promote")
@@ -211,4 +183,65 @@ export class ChannelController {
 		}
 		return { success: true };
 	}
+
+	@Get(":channelId")
+	@UseGuards(JwtGuard)
+	async getChannel(
+		@Req() req: Request,
+		@Param("channelId") channelId: string,
+	) {
+		const userId = req.user["id"];
+		const isUserInChannel = await this.channelService.isChannelMember(
+			userId,
+			channelId,
+		);
+		if (!isUserInChannel) {
+			throw new ForbiddenException();
+		}
+		const channel = await this.channelService.findChannelByIdStripped(
+			channelId,
+			userId,
+		);
+		if (channel.visibility === ChannelVisibility.DM) {
+			return channel;
+		}
+		const admins = channel.admins.filter(
+			(admin) => admin.id !== channel.owner.id,
+		);
+		const members = channel.members.filter((member) => {
+			const isAdmin = admins.find((admin) => admin.id === member.id);
+			return member.id !== channel.owner.id && !isAdmin;
+		});
+		const mutedRaw = await this.channelService.getChannelMuted(channelId);
+		const muted = await Promise.all(
+			mutedRaw.map(async (mutedEntry) => {
+				const isStillMuted = await this.channelService.isMuted(
+					mutedEntry.user.id,
+					channelId,
+				);
+				return isStillMuted ? mutedEntry.user.login : null;
+			}),
+		).then((results) => results.filter((mutedEntry) => mutedEntry));
+		return { ...channel, admins, members, muted };
+	}
+
+	// @Post("notifications/update")
+	// @UseGuards(JwtGuard)
+	// async updateUserNotifications(
+	// 	@Req() req: Request,
+	// 	@Body("channelId") channelId: string,
+	// 	@Body("newMessage") newMessage?: boolean,
+	// ) {
+	// 	const userId = req.user["id"];
+	// 	if (newMessage !== undefined) {
+	// 		await this.channelService.updateNotifNewMessages(
+	// 			channelId,
+	// 			userId,
+	// 			newMessage,
+	// 		);
+	// 	} else {
+	// 		await this.channelService.updateNotifDate(channelId, userId);
+	// 	}
+	// 	return { success: true };
+	// }
 }

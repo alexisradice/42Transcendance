@@ -31,11 +31,4 @@ export class Game {
 	ball: { x: number; y: number; directionX: number; directionY: number, speed: number };
 	paddlePlayer1: { x: number; y: number; height: number };
 	paddlePlayer2: { x: number; y: number; height: number };
-
-	updatePaddlePlayer1(newY: number) {
-		this.paddlePlayer1.y = newY;
-	}
-	updatePaddlePlayer2(newY: number) {
-		this.paddlePlayer2.y = newY;
-	}
 }

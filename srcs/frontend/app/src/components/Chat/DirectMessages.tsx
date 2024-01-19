@@ -26,6 +26,9 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 		},
 		validate: {
 			content: (value: string) => {
+				if (value.length === 0) {
+					return "";
+				}
 				if (value.length > 500) {
 					return "Message must be at most 500 characters.";
 				}
@@ -36,7 +39,6 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 
 	const dest = useMemo(() => {
 		const { members } = channel;
-		console.log("members", members);
 		const dest = members.find((member) => member.login !== login)!;
 		return dest;
 	}, [channel, login]);
@@ -44,8 +46,9 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 	const sendMessage = () => {
 		const content = form.values.content;
 		chatSocket.emit(
-			"send-message",
+			"send-dm",
 			{
+				destId: dest.id,
 				content,
 				channelId,
 			},
@@ -63,7 +66,7 @@ const DirectMessages = ({ channel, chatSocket, login }: Props) => {
 						messages: [...messages, newMessage],
 					});
 				} else {
-					console.warn("No message received from send-message");
+					console.warn("No message received from send-dm");
 				}
 			},
 		);

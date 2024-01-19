@@ -19,7 +19,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
     };
 
     const updateGameBoardSize = () => {
-		const width = window.innerWidth * 0.8; // 80% of window width
+		const width = window.innerWidth - 250; // remove 250px for the sidebar
 		const height = width * 9 / 16; // 16:9 aspect ratio
 		setGameBoardSize({ width, height });
 	};
@@ -33,9 +33,18 @@ const PongGame = ({ socket, lobbyId, user }) => {
         };
     }, []);
 
+	useEffect(() => {
+		let timerId = null;
+		if (countdown > 0) {
+			// Set a timer to decrement the countdown
+			const timerId = setTimeout(() => setCountdown(countdown - 1), 1000);
+			return () => clearTimeout(timerId);
+		} else if (countdown === 0) {
+			return () => clearTimeout(timerId);
+		}
+	}, [countdown]);
+
     useEffect(() => {
-
-
         const handleKeyDown = (event) => {
             if (event.key === 'ArrowUp') {
                 setIsMovingUp(true);
@@ -65,7 +74,7 @@ const PongGame = ({ socket, lobbyId, user }) => {
         const movePaddle = () => {
             if (isMovingUp || isMovingDown) {
                 let newY = paddles.paddle1Y;
-                const moveAmount = 2; // Adjust speed as necessary
+                const moveAmount = 2;
         
                 if (isMovingUp) newY = Math.max(0, newY - moveAmount);
                 if (isMovingDown) newY = Math.min(100, newY + moveAmount);
@@ -83,36 +92,35 @@ const PongGame = ({ socket, lobbyId, user }) => {
     }, [isMovingUp, isMovingDown, paddles.paddle1Y, socket, lobbyId, user.login]);
 
     useEffect(() => {
-
-		socket.on('paddleUpFront', (player1, player2) => {
-            console.log('paddleUpFront', player1, player2);
-	
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
-        });
-
-        socket.on('paddleDownFront', ( player1, player2) => {
-			console.log('paddleDownFront',player1, player2);
-			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: player1 }));
-            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: player2 }));
+		let receivedPaddle1Y : any;
+		let receivedPaddle2Y : any;
+		socket.on('paddleUpFront', (receivedPaddle1Y : any, receivedPaddle2Y: any) => {
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
         });
 		
-        socket.on('ballPosition', (data) => {
+		socket.on('pointScored', (score1 : any, score2: any) => {
+			playerScores.player1 = score1;
+			playerScores.player2 = score2;
+			setPlayerScores(prevPlayerScores => ({ ...prevPlayerScores, player1: score1 }));
+			setPlayerScores(prevPlayerScores => ({ ...prevPlayerScores, player2: score2 }));
+		});
+
+        socket.on('paddleDownFront', (receivedPaddle1Y : any, receivedPaddle2Y: any) => {
+			setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: receivedPaddle1Y }));
+            setPaddles(prevPaddles => ({ ...prevPaddles, paddle2Y: receivedPaddle2Y }));
+        });
+		
+        socket.on('ballPosition', (data : any) => {
             const scaledPos = scalePosition(data.x, data.y);
             setBallPosition(scaledPos);
         });
 
-        socket.on('gameUpdate', (data) => {
-            setGameState(data.state);
-            setPlayerScores(data.scores);
-            setBallPosition(data.ballPosition);
-            setPaddles(data.paddles);
-        });
 
         return () => {
             socket.off('ballPosition');
-            socket.off('gameUpdate');
 			socket.off('paddleUpFront');
+			socket.off('pointScored');
             socket.off('paddleDownFront');
         };
     }, [socket, lobbyId]);

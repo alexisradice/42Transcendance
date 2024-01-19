@@ -11,28 +11,39 @@ datasource db {
 }
 
 model User {
-    id           String    @id @default(uuid())
-    createdAt    DateTime  @default(now())
-    updatedAt    DateTime  @updatedAt
-    login        String    @unique
-    displayName  String    @unique
-    email        String
-    image        String
-    twoFA        Boolean   @default(false)
-    twoFASecret  String?
-    refreshToken String?
-    status       Status    @default(ONLINE)
-    messages     Message[]
-    memberOf     Channel[] @relation("members")
-    ownerOf      Channel[] @relation("ownership")
-    adminOf      Channel[] @relation("admins")
-    bannedFrom   Channel[] @relation("banned")
-    muted        Mute[]    @relation("mutes")
-    friends      User[]    @relation("friends")
-    friendOf     User[]    @relation("friends")
-    blocked      User[]    @relation("blocked")
-    blockedBy    User[]    @relation("blocked")
-    stats        Stat?
+    id            String    @id @default(uuid())
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    login         String    @unique
+    displayName   String    @unique
+    email         String
+    image         String
+    twoFA         Boolean   @default(false)
+    twoFASecret   String?
+    refreshToken  String?
+    status        Status    @default(ONLINE)
+    messages      Message[]
+    memberOf      Channel[] @relation("members")
+    ownerOf       Channel[] @relation("ownership")
+    adminOf       Channel[] @relation("admins")
+    bannedFrom    Channel[] @relation("banned")
+    muted         Mute[]    @relation("mutes")
+    friends       User[]    @relation("friends")
+    friendOf      User[]    @relation("friends")
+    blocked       User[]    @relation("blocked")
+    blockedBy     User[]    @relation("blocked")
+    stats         Stat?
+    gamesPlayed   Game[]
+    notifications Notif[]
+}
+
+model Notif {
+    id          String   @id @default(uuid())
+    channelId   String
+    lastChecked DateTime
+    newMsg      Boolean
+    user        User     @relation(fields: [userId], references: [id])
+    userId      String   @unique
 }
 
 model Message {
@@ -99,4 +110,15 @@ enum ChannelVisibility {
     PRIVATE
     PROTECTED
     DM
+}
+
+model Game {
+    id          String   @id @default(uuid())
+    createdAt   DateTime @default(now())
+    players     User[]
+    winnerScore Int
+    loserScore  Int
+    ballSpeed   Int
+    paddleSize  String
+    winnerId    String
 }

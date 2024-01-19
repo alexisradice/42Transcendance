@@ -92,9 +92,9 @@ export interface SocketResponse<T> {
 export interface DMChannel {
 	id: string;
 	name: string;
+	visibility: Visibility;
 	messages: Message[];
 	members: GeneralUser[];
-	visibility: Visibility;
 }
 
 export interface ChannelInfos extends DMChannel {
@@ -111,3 +111,11 @@ export type Channel = {
 	admins: GeneralUser[];
 	members: GeneralUser[];
 };
+
+export type Notifs = Record<string, boolean>;
+
+export interface SocketContextType {
+	gameSocket: Socket;
+	isPending: boolean;
+	setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
+}

@@ -9,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { useSWRConfig } from "swr";
+import { SocketProvider } from "../../context/SocketContext";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
 import {
@@ -34,7 +35,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const { cache, mutate } = useSWRConfig();
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
-	const matches = useMediaQuery("(min-width: 62em)");
+	const isDesktopResolution = useMediaQuery("(min-width: 62em)");
 	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
 		useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
@@ -53,15 +54,22 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	);
 
 	useEffect(() => {
-		if (matches) {
+		if (chatOpened) {
+			chatSocket.emit("toggle-chat", selectedChannel);
+		} else {
+			chatSocket.emit("toggle-chat");
+		}
+	}, [chatSocket, chatOpened, selectedChannel]);
+
+	useEffect(() => {
+		if (isDesktopResolution) {
 			open();
 		} else {
 			close();
 		}
-	}, [matches, open, close]);
+	}, [isDesktopResolution, open, close]);
 
 	useEffect(() => {
-		chatSocket.connect();
 		chatSocket.on("channel-destroyed", () => {
 			mutate("/channel/list");
 		});
@@ -106,13 +114,18 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			},
 		);
 
+		chatSocket.on("notif", () => {
+			mutate("/channel/notifications");
+		});
+
 		return () => {
 			chatSocket.off("channel-destroyed");
 			chatSocket.off("user-left");
 			chatSocket.off("user-kicked");
 			chatSocket.off("user-joined");
 			chatSocket.off("display-message");
-			chatSocket.disconnect();
+			chatSocket.off("status-changed");
+			chatSocket.off("notif");
 		};
 	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel]);
 
@@ -151,6 +164,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				} else if (response.data) {
 					const dmChannel = response.data;
 					openChannel(dmChannel.id);
+					mutate("/channel/notifications");
 				} else {
 					console.warn("No data received from join-dm");
 				}
@@ -202,12 +216,18 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				/>
 			</AppShell.Header>
 			<AppShell.Navbar>
-				<ChannelsList joinChannel={joinChannel} />
+				<ChannelsList
+					login={user.login}
+					joinChannel={joinChannel}
+					joinDM={joinDM}
+				/>
 				<Divider />
 				<FriendsList joinDM={joinDM} />
 			</AppShell.Navbar>
 			<AppShell.Main>
-				<MainFrame />
+				<SocketProvider>
+					<MainFrame />
+				</SocketProvider>
 			</AppShell.Main>
 			<AppShell.Aside>
 				{selectedChannel && (

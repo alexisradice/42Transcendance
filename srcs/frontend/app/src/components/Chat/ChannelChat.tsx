@@ -53,6 +53,9 @@ const ChannelChat = ({
 		},
 		validate: {
 			content: (value: string) => {
+				if (value.length === 0) {
+					return "";
+				}
 				if (value.length > 500) {
 					return "Message must be at most 500 characters.";
 				}

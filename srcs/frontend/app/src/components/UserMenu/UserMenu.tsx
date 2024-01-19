@@ -4,6 +4,8 @@ import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
 import AccountSettings from "../AccountSettings/AccountSettings";
 import ProfileSettings from "../ProfileSettings/ProfileSettings";
+import { useSocket } from "../../hooks/useSocket";
+import { OFFLINE } from "../../constants";
 
 type Props = {
 	children: JSX.Element;
@@ -11,6 +13,7 @@ type Props = {
 };
 
 const UserMenu = ({ children, setIsLogged }: Props) => {
+	const chatSocket = useSocket("chat");
 	const [profileOpened, { open: openProfile, close: closeProfile }] =
 		useDisclosure(false);
 	const [accountOpened, { open: openAccount, close: closeAccount }] =
@@ -20,6 +23,7 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 		try {
 			await axiosPrivate.patch("/auth/logout");
 			setIsLogged(false);
+			chatSocket.emit("change-status", OFFLINE);
 		} catch (err: unknown) {
 			errorNotif(err);
 		}

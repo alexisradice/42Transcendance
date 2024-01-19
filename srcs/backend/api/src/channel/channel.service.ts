@@ -22,7 +22,12 @@ export class ChannelService {
 					{
 						banned: { some: { login: login } },
 					},
-					{ visibility: ChannelVisibility.DM },
+					// {
+					// 	AND: [
+					// 		{ visibility: ChannelVisibility.DM },
+					// 		{ blocked: { some: { login: login } } },
+					// 	],
+					// },
 				],
 			},
 			select: {
@@ -31,6 +36,7 @@ export class ChannelService {
 				visibility: true,
 				members: {
 					select: {
+						displayName: true,
 						login: true,
 						image: true,
 					},
@@ -140,10 +146,29 @@ export class ChannelService {
 				visibility: true,
 			},
 		});
+		if (createdDm) {
+			await this.createNotif(userId, createdDm.id);
+			await this.createNotif(destId, createdDm.id);
+		}
 		return createdDm;
 	}
 
-	async findChannelByIdStripped(id: string) {
+	async createNotif(userId: string, channelId: string) {
+		return await this.prisma.notif.create({
+			data: {
+				channelId: channelId,
+				lastChecked: new Date(Date.now()),
+				newMsg: false,
+				user: {
+					connect: {
+						id: userId,
+					},
+				},
+			},
+		});
+	}
+
+	async findChannelByIdStripped(id: string, userId: string) {
 		const channel = await this.prisma.channel.findFirst({
 			where: { id },
 			select: {
@@ -167,6 +192,7 @@ export class ChannelService {
 						image: true,
 						status: true,
 					},
+					orderBy: { displayName: "asc" },
 				},
 				members: {
 					select: {
@@ -176,8 +202,14 @@ export class ChannelService {
 						image: true,
 						status: true,
 					},
+					orderBy: { displayName: "asc" },
 				},
 				messages: {
+					where: {
+						NOT: [
+							{ author: { blockedBy: { some: { id: userId } } } },
+						],
+					},
 					select: {
 						id: true,
 						createdAt: true,
@@ -192,6 +224,7 @@ export class ChannelService {
 							},
 						},
 					},
+					orderBy: { createdAt: "asc" },
 				},
 			},
 		});
@@ -226,7 +259,7 @@ export class ChannelService {
 		password: string,
 	) {
 		const hashedPassword = await argon2.hash(password);
-		return await this.prisma.channel.create({
+		const channel = await this.prisma.channel.create({
 			data: {
 				name,
 				owner: {
@@ -248,10 +281,11 @@ export class ChannelService {
 				password: hashedPassword,
 			},
 		});
+		return channel;
 	}
 
 	async destroyChannel(channelId: string) {
-		return await this.prisma.channel.delete({
+		await this.prisma.channel.delete({
 			where: {
 				id: channelId,
 			},
@@ -286,7 +320,7 @@ export class ChannelService {
 	}
 
 	async addUserToChannel(user: User, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -299,7 +333,7 @@ export class ChannelService {
 	}
 
 	async removeUserFromChannel(user: User, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -438,7 +472,7 @@ export class ChannelService {
 
 	// kicked user isn't a member anymore
 	async kickUser(kickedId: string, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				members: {
@@ -481,7 +515,7 @@ export class ChannelService {
 
 	// banned user isn't a member anymore and cannot join
 	async banUser(userId: string, channelId: string) {
-		return await this.prisma.channel.update({
+		await this.prisma.channel.update({
 			where: { id: channelId },
 			data: {
 				banned: {
@@ -565,4 +599,66 @@ export class ChannelService {
 		});
 		return false;
 	}
+
+	async updateNotifDate(channelId: string, userId: string) {
+		return await this.prisma.notif.updateMany({
+			where: {
+				AND: [{ channelId }, { userId }],
+			},
+			data: {
+				lastChecked: new Date(Date.now()),
+			},
+		});
+	}
+
+	async updateNotifNewMessages(
+		channelId: string,
+		userId: string,
+		newMessages: boolean,
+	) {
+		const notifs = await this.prisma.notif.updateMany({
+			where: {
+				channelId: channelId,
+				userId: userId,
+			},
+			data: {
+				newMsg: newMessages,
+			},
+		});
+		return notifs;
+	}
+
+	async getNotif(userId: string) {
+		return await this.prisma.notif.findMany({
+			where: {
+				userId,
+			},
+			select: {
+				id: true,
+				channelId: true,
+				lastChecked: true,
+				newMsg: true,
+			},
+		});
+	}
+
+	// async updateNotifications(userId: string) {
+	// 	const notifRaw = await this.getNotif(userId);
+	// 	const muted = await Promise.all(
+	// 		notifRaw.map(async (notifEntry) => {
+	// 			const checkDate = notifEntry.lastChecked;
+	// 			const hasNewMessages = await this.prisma.message.findFirst({
+	// 				where: {
+	// 					AND:[
+	// 						{channelId: notifEntry.channelId},
+	// 						{createdAt: {gte: checkDate}},
+	// 					],
+	// 				},
+	// 			});
+	// 			if (hasNewMessages) {
+	// 				await this.updateNotifNewMessages(notifEntry.channelId, userId, true);
+	// 			}
+	// 		}),
+	// 	);
+	// }
 }
