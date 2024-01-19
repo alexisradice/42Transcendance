@@ -198,8 +198,10 @@ export class ChannelController {
 		if (!isUserInChannel) {
 			throw new ForbiddenException();
 		}
-		const channel =
-			await this.channelService.findChannelByIdStripped(channelId);
+		const channel = await this.channelService.findChannelByIdStripped(
+			channelId,
+			userId,
+		);
 		if (channel.visibility === ChannelVisibility.DM) {
 			return channel;
 		}

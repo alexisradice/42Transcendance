@@ -22,6 +22,12 @@ export class ChannelService {
 					{
 						banned: { some: { login: login } },
 					},
+					// {
+					// 	AND: [
+					// 		{ visibility: ChannelVisibility.DM },
+					// 		{ blocked: { some: { login: login } } },
+					// 	],
+					// },
 				],
 			},
 			select: {
@@ -162,7 +168,7 @@ export class ChannelService {
 		});
 	}
 
-	async findChannelByIdStripped(id: string) {
+	async findChannelByIdStripped(id: string, userId: string) {
 		const channel = await this.prisma.channel.findFirst({
 			where: { id },
 			select: {
@@ -186,6 +192,7 @@ export class ChannelService {
 						image: true,
 						status: true,
 					},
+					orderBy: { displayName: "asc" },
 				},
 				members: {
 					select: {
@@ -195,8 +202,14 @@ export class ChannelService {
 						image: true,
 						status: true,
 					},
+					orderBy: { displayName: "asc" },
 				},
 				messages: {
+					where: {
+						NOT: [
+							{ author: { blockedBy: { some: { id: userId } } } },
+						],
+					},
 					select: {
 						id: true,
 						createdAt: true,
@@ -211,6 +224,7 @@ export class ChannelService {
 							},
 						},
 					},
+					orderBy: { createdAt: "asc" },
 				},
 			},
 		});
