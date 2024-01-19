@@ -4,3 +4,9 @@
 	align-items: center;
 	font-size: 0.8rem;
 }
+
+@media (max-width: 764px) {
+	.authors {
+		display: none;
+	}
+}
