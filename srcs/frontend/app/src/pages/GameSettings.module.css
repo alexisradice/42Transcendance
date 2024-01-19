@@ -7,14 +7,11 @@
 }
 
 .PlayButton {
-	padding: 2% 4%; /* Adjust percentage as needed */
-	font-size: 2vw; /* Font size relative to viewport width */
-	margin: 2vh 0; /* Use vh for vertical spacing */
-	width: 20vw; /* Width relative to viewport width */
-	height: auto;
+	padding-left: 2.5rem;
+	padding-right: 2.5rem;
+	font-size: 2rem;
+	height: 5rem;
 	border-radius: 10px;
-	border: none;
-	cursor: pointer;
 	transition: background-color 0.3s;
 }
 

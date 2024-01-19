@@ -1,23 +1,7 @@
-/* ModeSelection.module.css */
-
 .container {
-	max-width: 80vw;
-	margin: auto;
-	padding: 2vh; 
 	text-align: center;
-  }
-  
-  .labelText {
-	font-size: 1.5vw; 
-  }
-  
-  @media (max-width: 600px) {
-	.container {
-	  max-width: 95vw;
-	}
-  
-	.labelText {
-	  font-size: 3vw;
-	}
-  }
-  
+}
+
+.labelText {
+	font-size: 1.4rem;
+}
