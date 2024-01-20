@@ -1,10 +1,11 @@
-import { Avatar, Group, ScrollArea } from "@mantine/core";
+import { Avatar, Button, Group, ScrollArea } from "@mantine/core";
 import { createRef, useEffect, useRef, useState } from "react";
 import { Message } from "../../types";
 import classes from "./MessagesArea.module.css";
 import cx from "clsx";
 import Linkify from "linkify-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { validate as uuidValidate } from "uuid";
 
 type Props = {
 	messages: Message[];
@@ -13,6 +14,7 @@ type Props = {
 };
 
 const MessagesArea = ({ messages, isDM, login }: Props) => {
+	const navigate = useNavigate();
 	const viewport = useRef<HTMLDivElement>(null);
 	const [, setWindowSize] = useState([0, 0]);
 	const [ScrollAreaHeight, setScrollAreaHeight] = useState(0);
@@ -63,20 +65,41 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		return `${dayString} ${timeString}`;
 	};
 
-	const renderLink = ({
-		attributes,
-		content,
-	}: {
-		attributes: any;
-		content: string;
-	}) => {
-		console.log("content", content);
+	const renderLink = ({ attributes, content }) => {
 		const { href, ...props } = attributes;
-		return (
-			<Link to={href} {...props}>
-				{content}
-			</Link>
+		const messageURL = new URL(href);
+		const appURL = new URL(import.meta.env.VITE_REDIRECT_URI);
+
+		const isSameSite = messageURL.host === appURL.host;
+		const isGameURL = messageURL.pathname === "/game";
+		const hasCodeParam =
+			messageURL.searchParams.size === 1 &&
+			messageURL.searchParams.has("code");
+		const isCodeValid = uuidValidate(
+			messageURL.searchParams.get("code") || "",
 		);
+
+		const isInviteLink =
+			isSameSite && isGameURL && hasCodeParam && isCodeValid;
+
+		if (isInviteLink) {
+			return (
+				<Button
+					onClick={() =>
+						navigate(messageURL.pathname + messageURL.search)
+					}
+					className={classes.gameInviteButton}
+				>
+					Join game
+				</Button>
+			);
+		} else {
+			return (
+				<Link to={href} {...props}>
+					{content}
+				</Link>
+			);
+		}
 	};
 
 	return (
@@ -100,7 +123,9 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 									isSelf && classes.bubbleSelf,
 								)}
 							>
-								{message.content}
+								<Linkify options={{ render: renderLink }}>
+									{message.content}
+								</Linkify>
 							</div>
 						</Group>
 					) : (

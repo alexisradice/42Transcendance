@@ -67,3 +67,9 @@
 .messageContent {
 	word-break: break-word;
 }
+
+.gameInviteButton {
+	margin-top: var(--mantine-spacing-xs);
+	background-color: var(--mantine-color-green-7);
+	width: 100%;
+}
