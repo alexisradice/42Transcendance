@@ -24,11 +24,13 @@ import { LobbiesService } from "./lobbies.service";
 		origin: "http://localhost:5173",
 		credentials: true,
 	},
-	namespace: "game",
+	namespace: "lobbies",
 })
 export class LobbiesGateway
 	implements OnGatewayConnection, OnGatewayDisconnect
 {
+	@WebSocketServer() server: Server;
+
 	constructor(
 		private lobbiesService: LobbiesService,
 		//private authService: AuthService,
@@ -67,8 +69,6 @@ export class LobbiesGateway
 		}
 		return user;
 	};
-
-	@WebSocketServer() server: Server;
 
 	async handleConnection(client: Socket) {
 		console.log("connected to game");
