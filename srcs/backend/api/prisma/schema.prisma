@@ -88,6 +88,7 @@ model Stat {
     gamesPlayed Int    @default(0)
     wins        Int    @default(0)
     losses      Int    @default(0)
+    winStreak   Int    @default(0)
     user        User   @relation(fields: [userId], references: [id])
     userId      String @unique
 }
@@ -120,5 +121,5 @@ model Game {
     loserScore  Int
     ballSpeed   Int
     paddleSize  String
-    winnerId    String
+    winnerLogin String
 }

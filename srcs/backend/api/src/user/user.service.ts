@@ -48,9 +48,17 @@ export class UserService {
 				image: user.image,
 				refreshToken: null,
 				twoFA: false,
-				// init other things
 			},
 		});
+		if (createdUser) {
+			await this.prisma.stat.create({
+				data: {
+					user: {
+						connect: { id: createdUser.id },
+					},
+				},
+			});
+		}
 		return createdUser;
 	}
 
