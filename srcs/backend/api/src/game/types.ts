@@ -1,9 +1,12 @@
-import { User } from "@prisma/client";
 import { Socket } from "socket.io";
 
 export type LobbyMode = "private" | "public";
 
 export interface ServerPayloads {
+	queue: {
+		gameSettings: Settings;
+	};
+
 	lobbyState: {
 		lobbyId: string;
 		mode: LobbyMode;
@@ -36,6 +39,14 @@ export interface ServerPayloads {
 	gameOver: {
 		winner: string;
 	};
+
+	waitingForOpponent: {
+		lobbyId: string;
+	};
+
+	launch: {
+		lobbyId: string;
+	};
 }
 
 export interface Board {
@@ -65,4 +76,9 @@ export interface InstancePlayer {
 export interface GameResult {
 	winner: InstancePlayer;
 	loser: InstancePlayer;
+}
+
+export class Settings {
+	ballSpeed: number;
+	paddleSize: string;
 }

@@ -1,22 +1,26 @@
 import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import {
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
+	WebSocketServer,
 	WsException,
 	WsResponse,
 } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
+import { response } from "express";
+import { Server, Socket } from "socket.io";
+import { ChannelService } from "src/channel/channel.service";
+import { ChatService } from "src/chat/chat.service";
 import { UserService } from "src/user/user.service";
-import { LobbyManager } from "./lobby/lobby.manager";
-import { GameService } from "./game.service";
 import { InstanceFactory } from "./instance/instance.factory";
-import { LobbyMode, ServerPayloads } from "./types";
+import { LobbyManager } from "./lobby/lobby.manager";
+import { ServerPayloads, Settings } from "./types";
 
 @WebSocketGateway({
 	cors: {
@@ -25,16 +29,20 @@ import { LobbyMode, ServerPayloads } from "./types";
 	},
 	namespace: "game",
 })
-@WebSocketGateway()
 export class GameGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+	@WebSocketServer()
+	server: Server;
+
 	constructor(
 		private jwtService: JwtService,
 		private configService: ConfigService,
 		private userService: UserService,
 		private lobbyManager: LobbyManager,
 		private instanceFactory: InstanceFactory,
+		private channelService: ChannelService,
+		private chatService: ChatService,
 	) {}
 
 	afterInit(server: Server): any {
@@ -114,21 +122,78 @@ export class GameGateway
 		client.data.lobby?.removeClient(client);
 	}
 
-	@SubscribeMessage("create-lobby")
-	onLobbyCreate(
+	@SubscribeMessage("queue")
+	launchQueue(
 		client: Socket,
-		data: { mode: LobbyMode },
-	): WsResponse<ServerPayloads["gameNotif"]> {
-		const lobby = this.lobbyManager.createLobby(data.mode);
+		data: { settings: Settings },
+	): WsResponse<ServerPayloads["waitingForOpponent"]> {
+		const lobby = this.lobbyManager.findOrCreateLobby(
+			"public",
+			data.settings,
+		);
 		lobby.addClient(client);
 
+		const login = client.data.user.login;
+		this.userService.updateStatus(login, Status.IN_QUEUE);
+		this.server.emit("status-changed", {
+			login,
+			status: Status.IN_QUEUE,
+		});
+
 		return {
-			event: "gameNotif",
+			event: "waitingForOpponent",
 			data: {
-				color: "green",
-				message: "Lobby created",
+				lobbyId: lobby.id,
 			},
 		};
+	}
+
+	@SubscribeMessage("create-invite")
+	async onLobbyCreate(
+		client: Socket,
+		data: { settings: Settings; opponentLogin: string },
+	): Promise<WsResponse<ServerPayloads["waitingForOpponent"]>> {
+		const lobby = this.lobbyManager.createLobby("private", data.settings);
+		lobby.addClient(client);
+
+		const inviter: User = client.data.user;
+		const opponentLogin = data.opponentLogin;
+		try {
+			const opponent = await this.userService.findOne({
+				login: opponentLogin,
+			});
+			const dmChannel = await this.channelService.findOrCreateDm(
+				inviter.id,
+				opponent.id,
+			);
+			const blockedByOpponent = await this.userService.isBlockedBy(
+				inviter.login,
+				opponent.login,
+			);
+			if (blockedByOpponent) {
+				throw new ForbiddenException("This user blocked you.");
+			}
+
+			client.join(dmChannel.id);
+			client.join(opponent.id);
+
+			const siteUrl = this.configService.get<string>("REDIRECT_URI");
+
+			await this.chatService.createMessage(
+				dmChannel.id,
+				inviter.id,
+				`Hey, join me on this game: ${siteUrl}invite?code=${lobby.id}`,
+			);
+			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+			return {
+				event: "waitingForOpponent",
+				data: {
+					lobbyId: lobby.id,
+				},
+			};
+		} catch (err) {
+			throw new WsException(err.message);
+		}
 	}
 
 	@SubscribeMessage("join-lobby")

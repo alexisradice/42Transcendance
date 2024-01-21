@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import { Instance } from "../instance/instance";
-import { GameResult, LobbyMode, ServerPayloads } from "../types";
+import { GameResult, LobbyMode, ServerPayloads, Settings } from "../types";
 import { InstanceFactory } from "../instance/instance.factory";
 
 export class Lobby {
@@ -18,15 +18,17 @@ export class Lobby {
 		this.instanceFactory.createInstance(this);
 
 	constructor(
+		private readonly instanceFactory: InstanceFactory,
 		private readonly server: Server,
 		public readonly mode: LobbyMode,
-		private readonly instanceFactory: InstanceFactory,
+		public readonly settings: Settings,
 	) {}
 
 	public addClient(client: Socket): void {
 		this.clients.set(client.id, client);
 		client.join(this.id);
 		client.data.lobby = this;
+		console.log("client joined lobby", this.id, client.id);
 
 		if (this.clients.size === 1) {
 			this.instance.setPlayer1(client);
@@ -45,7 +47,7 @@ export class Lobby {
 		client.leave(this.id);
 		client.data.lobby = null;
 
-		if (!this.instance.hasFinished) {
+		if (this.instance.hasStarted && !this.instance.hasFinished) {
 			// If player leave then the game isn't worth to play anymore
 			const result: GameResult = {} as GameResult;
 			this.clients.forEach((lobbyClient) => {

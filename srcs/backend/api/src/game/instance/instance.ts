@@ -25,6 +25,8 @@ export class Instance {
 		private readonly lobby: Lobby,
 		private readonly gameService: GameService,
 	) {
+		this.player1 = {} as InstancePlayer;
+		this.player2 = {} as InstancePlayer;
 		this.initializeGame();
 	}
 
@@ -32,8 +34,11 @@ export class Instance {
 		if (this.hasStarted) {
 			return;
 		}
-
+		console.log("READY TO RUUUUUMBLE");
 		this.hasStarted = true;
+		this.lobby.dispatchToLobby<ServerPayloads["launch"]>("launch", {
+			lobbyId: this.lobby.id,
+		});
 		this.movementsBall();
 	}
 

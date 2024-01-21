@@ -1,11 +1,12 @@
 import { Avatar, Button, Group, ScrollArea } from "@mantine/core";
-import { createRef, useEffect, useRef, useState } from "react";
-import { Message } from "../../types";
-import classes from "./MessagesArea.module.css";
 import cx from "clsx";
 import Linkify from "linkify-react";
-import { Link, useNavigate } from "react-router-dom";
+import { createRef, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { validate as uuidValidate } from "uuid";
+import { useSocketContext } from "../../context/useContextGameSocket";
+import { Message } from "../../types";
+import classes from "./MessagesArea.module.css";
 
 type Props = {
 	messages: Message[];
@@ -14,7 +15,7 @@ type Props = {
 };
 
 const MessagesArea = ({ messages, isDM, login }: Props) => {
-	const navigate = useNavigate();
+	const { gameSocket } = useSocketContext();
 	const viewport = useRef<HTMLDivElement>(null);
 	const [, setWindowSize] = useState([0, 0]);
 	const [ScrollAreaHeight, setScrollAreaHeight] = useState(0);
@@ -71,13 +72,12 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		const appURL = new URL(import.meta.env.VITE_REDIRECT_URI);
 
 		const isSameSite = messageURL.host === appURL.host;
-		const isGameURL = messageURL.pathname === "/game";
+		const isGameURL = messageURL.pathname === "/invite";
 		const hasCodeParam =
 			messageURL.searchParams.size === 1 &&
 			messageURL.searchParams.has("code");
-		const isCodeValid = uuidValidate(
-			messageURL.searchParams.get("code") || "",
-		);
+		const lobbyId = messageURL.searchParams.get("code");
+		const isCodeValid = uuidValidate(lobbyId || "");
 
 		const isInviteLink =
 			isSameSite && isGameURL && hasCodeParam && isCodeValid;
@@ -85,12 +85,10 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		if (isInviteLink) {
 			return (
 				<Button
-					onClick={() =>
-						navigate(messageURL.pathname + messageURL.search)
-					}
+					onClick={() => gameSocket.emit("join-lobby", lobbyId)}
 					className={classes.gameInviteButton}
 				>
-					Join game
+					Accept invitation
 				</Button>
 			);
 		} else {
