@@ -119,3 +119,7 @@ export interface SocketContextType {
 	isPending: boolean;
 	setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export interface LobbyResponse {
+	lobbyId: string;
+}

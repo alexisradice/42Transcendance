@@ -459,13 +459,6 @@ export class LobbiesService {
 				lobby.player1.score === 11 ? lobby.player2 : lobby.player1;
 			this.incrementStats(winner.name, true);
 			this.incrementStats(loser.name, false);
-			this.addMatchInHistory(
-				winner.name,
-				loser.name,
-				winner.score,
-				loser.score,
-				lobby,
-			);
 			socketPlayer1.emit("gameOver", winner.name);
 			socketPlayer2.emit("gameOver", winner.name);
 			console.log("winner" + winner.name);
@@ -556,31 +549,6 @@ export class LobbiesService {
 			});
 		} catch (error) {
 			throw new Error(`Error incrementing stats: ${error.message}`);
-		}
-	}
-
-	async addMatchInHistory(
-		winnerName: string,
-		loserName: string,
-		winnerScore: number,
-		loserScore: number,
-		lobby: Lobby,
-	): Promise<any> {
-		try {
-			await this.prisma.game.create({
-				data: {
-					players: {
-						connect: [{ login: winnerName }, { login: loserName }],
-					},
-					winnerScore: winnerScore,
-					loserScore: loserScore,
-					ballSpeed: lobby.settings.ballSpeed,
-					paddleSize: lobby.settings.paddleSize,
-					winnerId: winnerName,
-				},
-			});
-		} catch (error) {
-			throw new Error(`Error adding match in history: ${error.message}`);
 		}
 	}
 }

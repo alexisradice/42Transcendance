@@ -1,38 +1,36 @@
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import {
-	ForbiddenException,
-	HttpException,
-	UnauthorizedException,
-} from "@nestjs/common";
-import {
-	WebSocketGateway,
-	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
 } from "@nestjs/websockets";
+import { User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
-import { LobbiesService } from "./lobbies.service";
-import { AuthService } from "../auth/auth.service";
-import { UserService } from "../user/user.service";
-import { Player, Lobby, Settings, Game } from "./game.classes";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { SocketResponse } from "src/types";
-import { User } from "@prisma/client";
 import { ChannelService } from "src/channel/channel.service";
 import { ChatService } from "src/chat/chat.service";
+import { SocketResponse } from "src/types";
+import { v4 as uuidv4 } from "uuid";
+import { UserService } from "../user/user.service";
+import { Player, Settings } from "./game.classes";
+import { LobbiesService } from "./lobbies.service";
 
 @WebSocketGateway({
 	cors: {
 		origin: "http://localhost:5173",
 		credentials: true,
 	},
-	namespace: "game",
+	namespace: "lobbies",
 })
 export class LobbiesGateway
 	implements OnGatewayConnection, OnGatewayDisconnect
 {
+	@WebSocketServer() server: Server;
+
 	constructor(
 		private lobbiesService: LobbiesService,
 		//private authService: AuthService,
@@ -71,8 +69,6 @@ export class LobbiesGateway
 		}
 		return user;
 	};
-
-	@WebSocketServer() server: Server;
 
 	async handleConnection(client: Socket) {
 		console.log("connected to game");
@@ -168,7 +164,7 @@ export class LobbiesGateway
 			client.join(dmChannel.id);
 			client.join(opponent.id);
 
-			const lobbyId = this.lobbiesService.generateUUID();
+			const lobbyId = uuidv4();
 			const lobby = this.lobbiesService.lobbyCreateOrFind(lobbyId);
 
 			const player = new Player();
@@ -178,10 +174,12 @@ export class LobbiesGateway
 			player.settings = settings;
 			player.lobby = lobby;
 
+			const siteUrl = this.configService.get<string>("REDIRECT_URI");
+
 			const message = await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: http://localhost:5173/game?code=${lobbyId}`,
+				`Hey, join me on this game: ${siteUrl}game/${lobbyId}`,
 			);
 			const newMessage = {
 				id: message.id,
@@ -194,6 +192,7 @@ export class LobbiesGateway
 				},
 			};
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+			response.data = newMessage;
 		} catch (err) {
 			response.error = err.message;
 		} finally {

@@ -1,33 +1,63 @@
-import { useEffect, useState } from "react";
+import { notifications } from "@mantine/notifications";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { validate } from "uuid";
 import PongGame from "../components/Game/PongGame";
+import { ONLINE } from "../constants";
 import { useSocketContext } from "../context/useContextGameSocket";
-import { useNavigate } from "react-router-dom";
+import { useSocket } from "../hooks/useSocket";
+import { SocketResponse } from "../types";
 
 export const GamePage = () => {
+	const { lobbyId } = useParams();
 	const navigate = useNavigate();
-	const [gameOverMessage, setGameOverMessage] = useState("");
 	const { gameSocket } = useSocketContext();
+	const chatSocket = useSocket("chat");
 
 	useEffect(() => {
-		gameSocket.on("gameOver", (winnerName) => {
-			setGameOverMessage(`Game Over! Winner is ${winnerName}`);
-			setTimeout(() => {
-				navigate("/");
-			}, 3000);
+		const quitGame = () => {
+			chatSocket.emit("change-status", ONLINE);
+			navigate("/");
+		};
+
+		gameSocket.on("gameOver", (response) => {
+			const { winner } = response;
+			notifications.show({
+				title: "Game Over",
+				message: `Winner is ${winner}`,
+				color: "blue",
+			});
+			quitGame();
 		});
+
+		if (!lobbyId || !validate(lobbyId)) {
+			notifications.show({
+				title: "Error",
+				message: "Lobby does not exist",
+				color: "red",
+			});
+			quitGame();
+		} else {
+			gameSocket.emit(
+				"verify-lobby",
+				{ lobbyId },
+				(response: SocketResponse<undefined>) => {
+					if (response.error) {
+						notifications.show({
+							title: "Error",
+							message: "Lobby does not exist",
+							color: "red",
+						});
+						quitGame();
+					}
+				},
+			);
+		}
 
 		return () => {
 			gameSocket.off("gameOver");
 		};
-	}, [gameSocket, navigate]);
-
-	if (gameOverMessage) {
-		return (
-			<div>
-				<p>{gameOverMessage}</p>
-			</div>
-		);
-	}
+	}, [gameSocket, navigate, lobbyId, chatSocket]);
 
 	return <PongGame />;
 };

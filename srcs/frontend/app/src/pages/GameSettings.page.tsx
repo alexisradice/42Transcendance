@@ -1,36 +1,42 @@
 import { Button } from "@mantine/core";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import SettingsComponent from "../components/Game/ModeSelection";
+import { IN_QUEUE, ONLINE } from "../constants";
 import { useSocketContext } from "../context/useContextGameSocket";
+import { useSocket } from "../hooks/useSocket";
+import { SettingsType } from "../types";
 import sendSettings from "../utils/sendSettings";
 import classes from "./GameSettings.module.css";
 
 const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
-	const navigate = useNavigate();
+	const chatSocket = useSocket("chat");
+
+	const [settings, setSettings] = useState({
+		ballSpeed: 5,
+		paddleSize: "medium",
+		visibility: "public",
+		inviteFriend: "yes",
+		pause: true,
+		mode: "classic",
+	});
+
+	const handleSettingsChange = (newSettings: SettingsType) => {
+		setSettings(newSettings); // Update the settings state
+	};
 
 	const handlePlayGame = () => {
+		chatSocket.emit("change-status", IN_QUEUE);
 		setIsPending(true); // Show waiting message
-		const settings = sendSettings();
+		sendSettings(settings);
 		gameSocket.emit("queue", settings); // Player is trying to queue
-		console.log("queue sent");
 	};
 
 	const handleCancel = () => {
-		gameSocket.emit("cancel");
+		chatSocket.emit("change-status", ONLINE);
+		gameSocket.emit("leave-lobby");
 		setIsPending(false);
 	};
-
-	useEffect(() => {
-		gameSocket.on("launch", (playerName, id) => {
-			navigate(`/game?id=${id}`); // Navigate to the game page with the id
-			setIsPending(false);
-		});
-		return () => {
-			gameSocket.off("launch");
-		};
-	}, [gameSocket, navigate, setIsPending]);
 
 	return (
 		<div className={classes.container}>
@@ -50,7 +56,9 @@ const GameSettings = () => {
 						Play Game
 					</Button>
 					<div className={classes.settingsComponent}>
-						<SettingsComponent />
+						<SettingsComponent
+							onSettingsChange={handleSettingsChange}
+						/>
 					</div>
 				</>
 			)}

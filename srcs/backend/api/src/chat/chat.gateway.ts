@@ -467,7 +467,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user: User = client.data.user;
 		if (channelId && channelId.length > 0) {
 			this.selectedChannelClients.set(user.id, channelId);
-		} else {
+		} else if (user && this.selectedChannelClients.has(user.id)) {
 			this.selectedChannelClients.delete(user.id);
 		}
 	}

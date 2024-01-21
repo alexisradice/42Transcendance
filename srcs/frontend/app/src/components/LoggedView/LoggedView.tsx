@@ -8,7 +8,9 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSWRConfig } from "swr";
+import { useSocketContext } from "../../context/useContextGameSocket";
 import { useMyData } from "../../hooks/useMyData";
 import { useSocket } from "../../hooks/useSocket";
 import {
@@ -25,7 +27,6 @@ import Footer from "../Footer/Footer";
 import FriendsList from "../FriendsList/FriendsList";
 import Header from "../Header/Header";
 import MainFrame from "../MainFrame/MainFrame";
-import { useSocketContext } from "../../context/useContextGameSocket";
 
 type Props = {
 	setIsLogged: Dispatch<SetStateAction<boolean>>;
@@ -35,7 +36,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const { cache, mutate } = useSWRConfig();
 	const { user, isLoading, error } = useMyData();
 	const chatSocket = useSocket("chat");
-	const { gameSocket } = useSocketContext();
+	const { gameSocket, setIsPending } = useSocketContext();
+	const navigate = useNavigate();
 	const isDesktopResolution = useMediaQuery("(min-width: 62em)");
 	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
 		useDisclosure();
@@ -71,6 +73,26 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	}, [isDesktopResolution, open, close]);
 
 	useEffect(() => {
+		const handleStatusChanged = (response: {
+			login: string;
+			status: Status;
+		}) => {
+			const { login, status } = response;
+			const friendsList = cache.get("/user/friends/all")?.data;
+			if (friendsList) {
+				const friend = friendsList.find(
+					(friend: GeneralUser) => friend.login === login,
+				);
+				if (friend) {
+					friend.status = status;
+					mutate("/user/friends/all");
+				}
+			}
+			if (selectedChannel) {
+				mutate(`/channel/${selectedChannel}`);
+			}
+		};
+
 		chatSocket.on("channel-destroyed", () => {
 			mutate("/channel/list");
 		});
@@ -95,25 +117,9 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		chatSocket.on("display-message", (channelId: string) => {
 			mutate(`/channel/${channelId}`);
 		});
-		chatSocket.on(
-			"status-changed",
-			(response: { login: string; status: Status }) => {
-				const { login, status } = response;
-				const friendsList = cache.get("/user/friends/all")?.data;
-				if (friendsList) {
-					const friend = friendsList.find(
-						(friend: GeneralUser) => friend.login === login,
-					);
-					if (friend) {
-						friend.status = status;
-						mutate("/user/friends/all", { ...friendsList, friend });
-					}
-				}
-				if (selectedChannel) {
-					mutate(`/channel/${selectedChannel}`);
-				}
-			},
-		);
+
+		chatSocket.on("status-changed", handleStatusChanged);
+		gameSocket.on("status-changed", handleStatusChanged);
 
 		chatSocket.on("notif", () => {
 			mutate("/channel/notifications");
@@ -123,8 +129,9 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			mutate(`/channel/${channelId}`);
 		});
 
-		gameSocket.on("notif", () => {
-			mutate("/channel/notifications");
+		gameSocket.on("launch", ({ lobbyId }: { lobbyId: string }) => {
+			setIsPending(false);
+			navigate(`/game/${lobbyId}`);
 		});
 
 		return () => {
@@ -135,8 +142,20 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("display-message");
 			chatSocket.off("status-changed");
 			chatSocket.off("notif");
+			gameSocket.off("display-message");
+			gameSocket.off("status-changed");
+			gameSocket.off("launch");
 		};
-	}, [chatSocket, cache, mutate, selectedChannel, leaveChannel, gameSocket]);
+	}, [
+		chatSocket,
+		cache,
+		mutate,
+		selectedChannel,
+		leaveChannel,
+		gameSocket,
+		setIsPending,
+		navigate,
+	]);
 
 	const openChannel = (channelId: string) => {
 		setChatOpened(true);
