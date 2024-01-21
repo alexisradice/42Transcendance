@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input, NumberInput, Slider, Text, Select } from "@mantine/core";
 import styles from "./ModeSelection.module.css";
 
@@ -13,7 +13,7 @@ interface SettingsState {
 	paddleSize: string;
 	visibility: string;
 	inviteFriend: string;
-	pause: string;
+	pause: boolean;
 	mode: string;
 }
 
@@ -24,55 +24,58 @@ const SettingsComponent: React.FC<{
 	const [paddleSize, setPaddleSize] = useState(50);
 	const [visibility, setVisibility] = useState("public");
 	const [inviteFriend, setInviteFriend] = useState("");
-	const [pause, setPause] = useState("on");
+	const [pause, setPause] = useState(true);
 	const [mode, setMode] = useState("custom");
 
 	// Update  component on settings change
-	const updateSettings = () => {
-		onSettingsChange({
-			ballSpeed,
-			paddleSize:
-				marks.find((mark) => mark.value === paddleSize)?.label ||
-				"Medium",
-			visibility,
-			inviteFriend,
-			pause,
-			mode,
-		});
-	};
+	useEffect(() => {
+		const newSettings = {
+		  ballSpeed,
+		  paddleSize:
+			marks.find((mark) => mark.value === paddleSize)?.label || "Medium",
+		  visibility,
+		  inviteFriend,
+		  pause,
+		  mode,
+		};
+		//console.log('Updating Settings:', newSettings);
+		onSettingsChange(newSettings);
+	  }, [ballSpeed, paddleSize, visibility, inviteFriend, pause, mode, onSettingsChange]);
 
 	const handleBallSpeedChange = (value: string | number) => {
-		const numericValue =
-			typeof value === "string" ? parseInt(value, 10) : value;
+		const numericValue = typeof value === 'string' ? parseInt(value, 10) : value;
+		console.log('Ball Speed Changed:', numericValue); 
 		setBallSpeed(numericValue);
-		updateSettings();
-	};
+		//updateSettings();
+	  };
 
 	const handlePaddleSizeChange = (value: number) => {
 		setPaddleSize(value);
-		updateSettings();
+		//updateSettings();
 	};
 
+
 	const handleVisibilityChange = (value: string | null) => {
-		setVisibility(value ?? "public");
-		updateSettings();
+		setVisibility(value ?? "");
+		//updateSettings();
 	};
+
 
 	const handleInviteFriendChange = (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		setInviteFriend(event.target.value);
-		updateSettings();
+		//updateSettings();
 	};
 
 	const handlePauseChange = (value: string | null) => {
-		setPause(value ?? "on");
-		updateSettings();
-	};
+		setPause(value === "on");
+		//updateSettings();
+	  };
 
 	const handleModeChange = (value: string | null) => {
 		setMode(value ?? "classic");
-		updateSettings();
+		//updateSettings();
 	};
 
 	return (
@@ -131,7 +134,7 @@ const SettingsComponent: React.FC<{
 				<Text className={styles.labelText}>Pause</Text>
 				<Select
 					placeholder="Select"
-					value={pause}
+					value={pause ? "on" : "off"}
 					onChange={handlePauseChange}
 					data={[
 						{ value: "on", label: "On" },
@@ -146,9 +149,9 @@ const SettingsComponent: React.FC<{
 				<Select
 					placeholder="Select"
 					value={mode}
-					onChange={handleModeChange}
+					 onChange= {handleModeChange}
 					data={[
-						{ value: "standard", label: "Standard" },
+						{ value: "Classic", label: "Classic" },
 						{ value: "custom", label: "Custom" },
 					]}
 					classNames={{ input: styles.selectRoot }}
