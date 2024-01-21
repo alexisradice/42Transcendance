@@ -2,11 +2,7 @@ import { FC, useEffect, useState } from "react";
 import styles from "./PongGame.module.css";
 import { useSocketContext } from "../../context/useContextGameSocket";
 
-interface Props {
-	// lobbyId: string;
-}
-
-const PongGame: FC<Props> = () => {
+const PongGame: FC = () => {
 	const { gameSocket } = useSocketContext();
 	// const [gameState, setGameState] = useState(null);
 	const [playerScores, setPlayerScores] = useState({
@@ -65,78 +61,61 @@ const PongGame: FC<Props> = () => {
 	useEffect(() => {
 		const movePaddle = () => {
 			if (isMovingUp || isMovingDown) {
-				let newY = paddles.paddle1Y;
-				const moveAmount = 2;
-
-				if (isMovingUp) newY = Math.max(0, newY - moveAmount);
-				if (isMovingDown) newY = Math.min(100, newY + moveAmount);
-
-				//setPaddles(prevPaddles => ({ ...prevPaddles, paddle1Y: newY }));
-				gameSocket.emit(isMovingUp ? "paddleUp" : "paddleDown", {});
+				const direction = isMovingUp ? "up" : "down";
+				gameSocket.emit("move-paddle", { direction });
 			}
 		};
 
-		const intervalId = setInterval(movePaddle, 16); // 60 FPS
+		const intervalId = setInterval(movePaddle, 16.66666); // 60 FPS
 
 		return () => {
 			clearInterval(intervalId);
 		};
-	}, [isMovingUp, isMovingDown, paddles.paddle1Y, gameSocket]);
+	}, [isMovingUp, isMovingDown, gameSocket]);
 
 	useEffect(() => {
-		// let receivedPaddle1Y: any;
-		// let receivedPaddle2Y: any;
 		gameSocket.on(
-			"paddleUpFront",
-			(receivedPaddle1Y: any, receivedPaddle2Y: any) => {
+			"paddlePosition",
+			(response: { P1: number; P2: number }) => {
+				const { P1, P2 } = response;
 				setPaddles((prevPaddles) => ({
 					...prevPaddles,
-					paddle1Y: receivedPaddle1Y,
+					paddle1Y: P1,
 				}));
 				setPaddles((prevPaddles) => ({
 					...prevPaddles,
-					paddle2Y: receivedPaddle2Y,
+					paddle2Y: P2,
 				}));
 			},
 		);
 
-		gameSocket.on("pointScored", (score1: number, score2: number) => {
-			playerScores.player1 = score1;
-			playerScores.player2 = score2;
-			setPlayerScores((prevPlayerScores) => ({
-				...prevPlayerScores,
-				player1: score1,
-			}));
-			setPlayerScores((prevPlayerScores) => ({
-				...prevPlayerScores,
-				player2: score2,
-			}));
-		});
-
 		gameSocket.on(
-			"paddleDownFront",
-			(receivedPaddle1Y: any, receivedPaddle2Y: any) => {
-				setPaddles((prevPaddles) => ({
-					...prevPaddles,
-					paddle1Y: receivedPaddle1Y,
+			"pointScored",
+			(response: { scoreP1: number; scoreP2: number }) => {
+				const { scoreP1, scoreP2 } = response;
+				playerScores.player1 = scoreP1;
+				playerScores.player2 = scoreP2;
+				setPlayerScores((prevPlayerScores) => ({
+					...prevPlayerScores,
+					player1: scoreP1,
 				}));
-				setPaddles((prevPaddles) => ({
-					...prevPaddles,
-					paddle2Y: receivedPaddle2Y,
+				setPlayerScores((prevPlayerScores) => ({
+					...prevPlayerScores,
+					player2: scoreP2,
 				}));
 			},
 		);
 
-		gameSocket.on("ballPosition", (data: any) => {
-			const scaledPos = scalePosition(data.x, data.y);
+		gameSocket.on("ballPosition", (response: { x: number; y: number }) => {
+			const { x, y } = response;
+			const scaledPos = scalePosition(x, y);
 			setBallPosition(scaledPos);
 		});
 
 		return () => {
 			gameSocket.off("ballPosition");
-			gameSocket.off("paddleUpFront");
+			gameSocket.off("paddlePosition");
 			gameSocket.off("pointScored");
-			gameSocket.off("paddleDownFront");
 		};
 	}, [gameSocket, playerScores]);
 

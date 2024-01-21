@@ -3,7 +3,6 @@ import { LobbyMode, Settings } from "../types";
 import { WsException } from "@nestjs/websockets";
 import { Lobby } from "./lobby";
 import { InstanceFactory } from "../instance/instance.factory";
-import { Cron } from "@nestjs/schedule";
 import * as _ from "lodash";
 
 export class LobbyManager {
@@ -16,8 +15,12 @@ export class LobbyManager {
 	>();
 
 	public findOrCreateLobby(mode: LobbyMode, settings: Settings): Lobby {
+		this.lobbiesCleaner();
 		for (let lobby of this.lobbies.values()) {
-			if (_.isEqual(lobby.settings, settings)) {
+			if (
+				!lobby.instance.hasFinished &&
+				_.isEqual(lobby.settings, settings)
+			) {
 				console.log("found lobby");
 				return lobby;
 			}
@@ -47,6 +50,20 @@ export class LobbyManager {
 		return lobby;
 	}
 
+	public verifyLobby(lobbyId: string, client: Socket): void {
+		const lobby = this.lobbies.get(lobbyId);
+
+		if (!lobby) {
+			throw new WsException("Lobby not found");
+		}
+
+		const isInLobby = lobby.clients.has(client.id);
+
+		if (!isInLobby) {
+			throw new WsException("Unauthorized access to lobby");
+		}
+	}
+
 	public joinLobby(lobbyId: string, client: Socket): void {
 		const lobby = this.lobbies.get(lobbyId);
 
@@ -63,17 +80,19 @@ export class LobbyManager {
 				throw new WsException("Already in a lobby");
 			}
 		});
+
 		console.log("lobby and client are ok, joining lobby");
 		lobby.addClient(client);
 	}
 
-	@Cron("*/1 * * * *")
 	private lobbiesCleaner(): void {
 		for (const [lobbyId, lobby] of this.lobbies) {
 			if (lobby.instance.hasFinished) {
 				lobby.clients.forEach((client) => {
+					console.log("Removing client", client.id);
 					lobby.removeClient(client);
 				});
+				console.log("Destroying", lobbyId);
 				this.lobbies.delete(lobbyId);
 			}
 		}

@@ -1,14 +1,13 @@
 import { Button } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import SettingsComponent from "../components/Game/ModeSelection";
 import { useSocketContext } from "../context/useContextGameSocket";
 import sendSettings from "../utils/sendSettings";
 import classes from "./GameSettings.module.css";
+import { SettingsType } from "../types";
 
 const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
-	const navigate = useNavigate();
 
 	const [settings, setSettings] = useState({
 		ballSpeed: 5,
@@ -19,7 +18,7 @@ const GameSettings = () => {
 		mode: "classic",
 	});
 
-	const handleSettingsChange = (newSettings: any) => {
+	const handleSettingsChange = (newSettings: SettingsType) => {
 		setSettings(newSettings); // Update the settings state
 	};
 
@@ -27,24 +26,12 @@ const GameSettings = () => {
 		setIsPending(true); // Show waiting message
 		sendSettings(settings);
 		gameSocket.emit("queue", settings); // Player is trying to queue
-		console.log("queue sent");
-		console.log(settings);
 	};
 
 	const handleCancel = () => {
-		gameSocket.emit("cancel");
+		gameSocket.emit("leave-lobby");
 		setIsPending(false);
 	};
-
-	useEffect(() => {
-		gameSocket.on("launch", (playerName, id) => {
-			navigate(`/game?id=${id}`); // Navigate to the game page with the id
-			setIsPending(false);
-		});
-		return () => {
-			gameSocket.off("launch");
-		};
-	}, [gameSocket, navigate, setIsPending]);
 
 	return (
 		<div className={classes.container}>

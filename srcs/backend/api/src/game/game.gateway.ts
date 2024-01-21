@@ -21,6 +21,7 @@ import { UserService } from "src/user/user.service";
 import { InstanceFactory } from "./instance/instance.factory";
 import { LobbyManager } from "./lobby/lobby.manager";
 import { ServerPayloads, Settings } from "./types";
+import { SocketResponse } from "src/types";
 
 @WebSocketGateway({
 	cors: {
@@ -182,7 +183,7 @@ export class GameGateway
 			await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: ${siteUrl}invite?code=${lobby.id}`,
+				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}`,
 			);
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
 			return {
@@ -193,6 +194,18 @@ export class GameGateway
 			};
 		} catch (err) {
 			throw new WsException(err.message);
+		}
+	}
+
+	@SubscribeMessage("verify-lobby")
+	onVerifyLobby(client: Socket, data: { lobbyId: string }): SocketResponse {
+		const response = {} as SocketResponse;
+		try {
+			this.lobbyManager.verifyLobby(data.lobbyId, client);
+		} catch (err) {
+			response.error = err.message;
+		} finally {
+			return response;
 		}
 	}
 

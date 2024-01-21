@@ -16,14 +16,6 @@
 	background-color: white;
 }
 
-/* .paddle-left {
-    right: 0;
-}
-
-.paddle-right {
-    right: 0;
-} */
-
 /* paddle on the left */
 .paddle:nth-child(2) {
 	left: 0;
@@ -46,7 +38,7 @@
 	position: absolute;
 	top: 20px;
 	font-size: 20px;
-	font-family: Arial, sans-serif;
+	font-family: "Courier New", Courier, monospace;
 }
 
 /* score on the right */

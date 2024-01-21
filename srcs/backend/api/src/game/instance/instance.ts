@@ -71,6 +71,7 @@ export class Instance {
 
 	private initializeGame(): void {
 		this.player1.score = 0;
+		this.player2.score = 0;
 		this.board = { width: 300, height: 100 };
 		this.ball = {
 			x: this.board.width / 2,
@@ -234,12 +235,15 @@ export class Instance {
 		const scoreP1 = this.player1.score;
 		const scoreP2 = this.player2.score;
 
-		if (scoreP1 === 11 || scoreP2 === 11) {
+		const p1won = scoreP1 >= 3;
+		const p2won = scoreP2 >= 3;
+
+		if (p1won || p2won) {
 			const results: GameResult = {} as GameResult;
-			if (scoreP1 === 11) {
+			if (p1won) {
 				results.winner = this.player1;
 				results.loser = this.player2;
-			} else if (scoreP2 === 11) {
+			} else if (p2won) {
 				results.winner = this.player2;
 				results.loser = this.player1;
 			}

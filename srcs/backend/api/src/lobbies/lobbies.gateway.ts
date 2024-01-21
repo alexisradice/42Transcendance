@@ -179,7 +179,7 @@ export class LobbiesGateway
 			const message = await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: ${siteUrl}game?code=${lobbyId}`,
+				`Hey, join me on this game: ${siteUrl}game/${lobbyId}`,
 			);
 			const newMessage = {
 				id: message.id,

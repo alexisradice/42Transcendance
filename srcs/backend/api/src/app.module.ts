@@ -16,7 +16,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ChannelModule } from "./channel/channel.module";
 import { ChatModule } from "./chat/chat.module";
 import { LobbiesModule } from "./lobbies/lobbies.module";
-import { GameModule } from './game/game.module';
+import { GameModule } from "./game/game.module";
 
 @Module({
 	imports: [
