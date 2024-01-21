@@ -52,18 +52,6 @@ export class UserController {
 		return user;
 	}
 
-	@Get(":login")
-	@UseGuards(JwtGuard)
-	async getUser(@Param("login") login: string) {
-		const user = await this.userService.findOne({ login });
-		return {
-			login: user.login,
-			displayName: user.displayName,
-			image: user.image,
-			status: user.status,
-		};
-	}
-
 	@Get("search/:searchString")
 	@UseGuards(JwtGuard)
 	async searchUser(@Param("searchString") searchString: string) {
@@ -235,5 +223,37 @@ export class UserController {
 			data: { twoFA: enable },
 		});
 		return { success: true };
+	}
+
+	@Get("stats")
+	// @UseGuards(JwtGuard)
+	async getStats(@Req() req: Request, @Body("userId") userId: string) {
+		const userStats = await this.prisma.user.findFirst({
+			where: { id: userId },
+			select: {
+				id: true,
+				displayName: true,
+				// image: true,
+				stats: true,
+				gamesPlayed: {
+					orderBy: { createdAt: "desc" },
+				},
+			},
+		});
+		console.log(userStats);
+
+		// return fullStats;
+	}
+
+	@Get(":login")
+	@UseGuards(JwtGuard)
+	async getUser(@Param("login") login: string) {
+		const user = await this.userService.findOne({ login });
+		return {
+			login: user.login,
+			displayName: user.displayName,
+			image: user.image,
+			status: user.status,
+		};
 	}
 }
