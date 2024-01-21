@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { GameService } from "../game.service";
 import { Lobby } from "../lobby/lobby";
 import {
 	Ball,
@@ -8,7 +9,6 @@ import {
 	Paddle,
 	ServerPayloads,
 } from "../types";
-import { GameService } from "../game.service";
 
 export class Instance {
 	public hasStarted: boolean = false;
@@ -235,8 +235,8 @@ export class Instance {
 		const scoreP1 = this.player1.score;
 		const scoreP2 = this.player2.score;
 
-		const p1won = scoreP1 >= 3;
-		const p2won = scoreP2 >= 3;
+		const p1won = scoreP1 >= 11;
+		const p2won = scoreP2 >= 11;
 
 		if (p1won || p2won) {
 			const results: GameResult = {} as GameResult;

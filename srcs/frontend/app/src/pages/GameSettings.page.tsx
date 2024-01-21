@@ -1,13 +1,16 @@
 import { Button } from "@mantine/core";
 import { useState } from "react";
 import SettingsComponent from "../components/Game/ModeSelection";
+import { IN_QUEUE, ONLINE } from "../constants";
 import { useSocketContext } from "../context/useContextGameSocket";
+import { useSocket } from "../hooks/useSocket";
+import { SettingsType } from "../types";
 import sendSettings from "../utils/sendSettings";
 import classes from "./GameSettings.module.css";
-import { SettingsType } from "../types";
 
 const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
+	const chatSocket = useSocket("chat");
 
 	const [settings, setSettings] = useState({
 		ballSpeed: 5,
@@ -23,12 +26,14 @@ const GameSettings = () => {
 	};
 
 	const handlePlayGame = () => {
+		chatSocket.emit("change-status", IN_QUEUE);
 		setIsPending(true); // Show waiting message
 		sendSettings(settings);
 		gameSocket.emit("queue", settings); // Player is trying to queue
 	};
 
 	const handleCancel = () => {
+		chatSocket.emit("change-status", ONLINE);
 		gameSocket.emit("leave-lobby");
 		setIsPending(false);
 	};

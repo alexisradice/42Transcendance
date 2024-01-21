@@ -1,8 +1,11 @@
 import { FC, useEffect, useState } from "react";
 import styles from "./PongGame.module.css";
 import { useSocketContext } from "../../context/useContextGameSocket";
+import { useSocket } from "../../hooks/useSocket";
+import { IN_GAME } from "../../constants";
 
 const PongGame: FC = () => {
+	const chatSocket = useSocket("chat");
 	const { gameSocket } = useSocketContext();
 	// const [gameState, setGameState] = useState(null);
 	const [playerScores, setPlayerScores] = useState({
@@ -20,6 +23,10 @@ const PongGame: FC = () => {
 		const scaledY = (y / 100) * 100; // Scale based on game board height
 		return { x: scaledX, y: scaledY };
 	};
+
+	useEffect(() => {
+		chatSocket.emit("change-status", IN_GAME);
+	}, [chatSocket]);
 
 	useEffect(() => {
 		let timerId: number | undefined;

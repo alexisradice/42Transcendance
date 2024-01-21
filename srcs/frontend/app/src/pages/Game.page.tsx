@@ -1,22 +1,33 @@
-import { useEffect, useState } from "react";
-import PongGame from "../components/Game/PongGame";
-import { useSocketContext } from "../context/useContextGameSocket";
+import { notifications } from "@mantine/notifications";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { validate } from "uuid";
+import PongGame from "../components/Game/PongGame";
+import { ONLINE } from "../constants";
+import { useSocketContext } from "../context/useContextGameSocket";
+import { useSocket } from "../hooks/useSocket";
 import { SocketResponse } from "../types";
-import { notifications } from "@mantine/notifications";
-import { Modal } from "@mantine/core";
 
 export const GamePage = () => {
 	const { lobbyId } = useParams();
 	const navigate = useNavigate();
-	const [gameOverMessage, setGameOverMessage] = useState("");
 	const { gameSocket } = useSocketContext();
+	const chatSocket = useSocket("chat");
 
 	useEffect(() => {
+		const quitGame = () => {
+			chatSocket.emit("change-status", ONLINE);
+			navigate("/");
+		};
+
 		gameSocket.on("gameOver", (response) => {
 			const { winner } = response;
-			setGameOverMessage(`Winner is ${winner}`);
+			notifications.show({
+				title: "Game Over",
+				message: `Winner is ${winner}`,
+				color: "blue",
+			});
+			quitGame();
 		});
 
 		if (!lobbyId || !validate(lobbyId)) {
@@ -25,7 +36,7 @@ export const GamePage = () => {
 				message: "Lobby does not exist",
 				color: "red",
 			});
-			navigate("/");
+			quitGame();
 		} else {
 			gameSocket.emit(
 				"verify-lobby",
@@ -37,7 +48,7 @@ export const GamePage = () => {
 							message: "Lobby does not exist",
 							color: "red",
 						});
-						navigate("/");
+						quitGame();
 					}
 				},
 			);
@@ -46,26 +57,7 @@ export const GamePage = () => {
 		return () => {
 			gameSocket.off("gameOver");
 		};
-	}, [gameSocket, navigate, lobbyId]);
+	}, [gameSocket, navigate, lobbyId, chatSocket]);
 
-	return (
-		<>
-			<Modal
-				radius="md"
-				centered={true}
-				opened={!!gameOverMessage}
-				onClose={() => {
-					navigate("/");
-				}}
-				title="Game Over"
-				overlayProps={{
-					backgroundOpacity: 0.55,
-					blur: 3,
-				}}
-			>
-				{gameOverMessage}
-			</Modal>
-			<PongGame />
-		</>
-	);
+	return <PongGame />;
 };
