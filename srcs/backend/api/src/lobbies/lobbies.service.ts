@@ -576,7 +576,7 @@ export class LobbiesService {
 					loserScore: loserScore,
 					ballSpeed: lobby.settings.ballSpeed,
 					paddleSize: lobby.settings.paddleSize,
-					winnerId: winnerName,
+					winnerLogin: winnerName,
 				},
 			});
 		} catch (error) {

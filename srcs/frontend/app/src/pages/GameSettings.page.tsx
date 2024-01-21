@@ -1,5 +1,5 @@
 import { Button } from "@mantine/core";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SettingsComponent from "../components/Game/ModeSelection";
 import { useSocketContext } from "../context/useContextGameSocket";
@@ -10,11 +10,25 @@ const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
 	const navigate = useNavigate();
 
+	const [settings, setSettings] = useState({
+		ballSpeed: 5,
+		paddleSize: "medium",
+		visibility: "public",
+		inviteFriend: "yes",
+		pause: true,
+		mode: "classic",
+	});
+
+	const handleSettingsChange = (newSettings: any) => {
+		setSettings(newSettings); // Update the settings state
+	};
+
 	const handlePlayGame = () => {
 		setIsPending(true); // Show waiting message
-		const settings = sendSettings();
+		sendSettings(settings);
 		gameSocket.emit("queue", settings); // Player is trying to queue
 		console.log("queue sent");
+		console.log(settings);
 	};
 
 	const handleCancel = () => {
@@ -50,7 +64,9 @@ const GameSettings = () => {
 						Play Game
 					</Button>
 					<div className={classes.settingsComponent}>
-						<SettingsComponent />
+						<SettingsComponent
+							onSettingsChange={handleSettingsChange}
+						/>
 					</div>
 				</>
 			)}
