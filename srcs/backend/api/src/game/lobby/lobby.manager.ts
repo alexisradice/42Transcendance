@@ -3,6 +3,7 @@ import { LobbyMode } from "../types";
 import { WsException } from "@nestjs/websockets";
 import { Lobby } from "./lobby";
 import { InstanceFactory } from "../instance/instance.factory";
+import { Cron } from "@nestjs/schedule";
 
 export class LobbyManager {
 	public server: Server;
@@ -12,14 +13,6 @@ export class LobbyManager {
 		Lobby["id"],
 		Lobby
 	>();
-
-	public initializeSocket(client: Socket): void {
-		client.data.lobby = null;
-	}
-
-	public terminateSocket(client: Socket): void {
-		client.data.lobby?.removeClient(client);
-	}
 
 	public createLobby(mode: LobbyMode): Lobby {
 		// switch (mode) {
@@ -31,7 +24,6 @@ export class LobbyManager {
 		// 		maxClients = 2;
 		// 		break;
 		// }
-
 		const lobby = new Lobby(this.server, mode, this.instanceFactory);
 
 		this.lobbies.set(lobby.id, lobby);
@@ -51,5 +43,17 @@ export class LobbyManager {
 		}
 
 		lobby.addClient(client);
+	}
+
+	@Cron("*/5 * * * *")
+	private lobbiesCleaner(): void {
+		for (const [lobbyId, lobby] of this.lobbies) {
+			if (lobby.instance.hasFinished) {
+				lobby.clients.forEach((client) => {
+					lobby.removeClient(client);
+				});
+				this.lobbies.delete(lobbyId);
+			}
+		}
 	}
 }

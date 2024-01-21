@@ -44,8 +44,6 @@ export class Instance {
 			return;
 		}
 
-		this.hasFinished = true;
-
 		const { winner, loser } = result;
 		const userWinner = winner.client.data.user;
 		const userLoser = loser.client.data.user;
@@ -62,6 +60,8 @@ export class Instance {
 		this.lobby.dispatchToLobby<ServerPayloads["gameOver"]>("gameOver", {
 			winner: userWinner.displayName,
 		});
+
+		this.hasFinished = true;
 	}
 
 	private initializeGame(): void {
@@ -241,5 +241,15 @@ export class Instance {
 			return results;
 		}
 		return null;
+	}
+
+	public movePaddle(direction: "up" | "down", client: Socket): void {
+		const userId = client.data.user.id;
+		const movement = direction === "up" ? -3 : 3;
+		if (userId === this.player1.client.data.user.id) {
+			this.paddleP1.y += movement;
+		} else if (userId === this.player2.client.data.user.id) {
+			this.paddleP2.y += movement;
+		}
 	}
 }

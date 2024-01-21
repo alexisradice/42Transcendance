@@ -25,7 +25,7 @@ export class GameService {
 				if (existingStat.winStreak < 0) {
 					streak = existingStat.winStreak - 1;
 				} else {
-					streak = -1;
+					streak = 0;
 				}
 			}
 			await this.prisma.stat.update({

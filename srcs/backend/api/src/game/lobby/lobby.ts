@@ -45,22 +45,23 @@ export class Lobby {
 		client.leave(this.id);
 		client.data.lobby = null;
 
-		// If player leave then the game isn't worth to play anymore
-		const result: GameResult = {} as GameResult;
-		this.clients.forEach((lobbyClient) => {
-			if (lobbyClient.id === client.id) {
-				result.loser = lobbyClient.data.user;
-			} else {
-				result.winner = lobbyClient.data.user;
-			}
-		});
-		await this.instance.triggerFinish(result);
-
-		// Alert the remaining player that client left lobby
-		this.dispatchToLobby<ServerPayloads["gameNotif"]>("gameNotif", {
-			color: "blue",
-			message: "Opponent left lobby",
-		});
+		if (!this.instance.hasFinished) {
+			// If player leave then the game isn't worth to play anymore
+			const result: GameResult = {} as GameResult;
+			this.clients.forEach((lobbyClient) => {
+				if (lobbyClient.id === client.id) {
+					result.loser = lobbyClient.data.user;
+				} else {
+					result.winner = lobbyClient.data.user;
+				}
+			});
+			await this.instance.triggerFinish(result);
+			// Alert the remaining player that client left lobby
+			this.dispatchToLobby<ServerPayloads["gameNotif"]>("gameNotif", {
+				color: "blue",
+				message: "Opponent left lobby",
+			});
+		}
 
 		this.dispatchLobbyState();
 	}

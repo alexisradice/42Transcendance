@@ -88,7 +88,7 @@ export class GameGateway
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
-				this.lobbyManager.initializeSocket(client);
+				client.data.lobby = null;
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -102,7 +102,7 @@ export class GameGateway
 					login: user.sub,
 				});
 				client.data.user = dbUser;
-				this.lobbyManager.initializeSocket(client);
+				client.data.lobby = null;
 			} catch (err) {
 				console.error(err);
 				client.disconnect();
@@ -111,7 +111,7 @@ export class GameGateway
 	}
 
 	async handleDisconnect(client: Socket) {
-		this.lobbyManager.terminateSocket(client);
+		client.data.lobby?.removeClient(client);
 	}
 
 	@SubscribeMessage("create-lobby")
@@ -142,12 +142,10 @@ export class GameGateway
 	}
 
 	@SubscribeMessage("move-paddle")
-	onRevealCard(client: Socket, data: { direction: "up" | "down" }): void {
+	onMovePaddle(client: Socket, data: { direction: "up" | "down" }): void {
 		if (!client.data.lobby) {
 			throw new WsException("You are not in a lobby");
 		}
-
-		// TODO implement movePaddle
 		client.data.lobby.instance.movePaddle(data.direction, client);
 	}
 }
