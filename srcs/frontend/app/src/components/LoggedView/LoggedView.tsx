@@ -85,7 +85,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 				);
 				if (friend) {
 					friend.status = status;
-					mutate("/user/friends/all", { ...friendsList, friend });
+					mutate("/user/friends/all");
 				}
 			}
 			if (selectedChannel) {
@@ -131,7 +131,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 
 		gameSocket.on("launch", ({ lobbyId }: { lobbyId: string }) => {
 			setIsPending(false);
-			navigate(`/game?id=${lobbyId}`);
+			navigate(`/game/${lobbyId}`);
 		});
 
 		return () => {
