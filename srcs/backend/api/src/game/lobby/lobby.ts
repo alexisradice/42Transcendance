@@ -43,20 +43,17 @@ export class Lobby {
 	}
 
 	public async removeClient(client: Socket): Promise<void> {
-		this.clients.delete(client.id);
-		client.leave(this.id);
-		client.data.lobby = null;
-
 		if (this.instance.hasStarted && !this.instance.hasFinished) {
+			console.log("client leaving while ongoing game:", client.id);
 			// If player leave then the game isn't worth to play anymore
 			const result: GameResult = {} as GameResult;
-			this.clients.forEach((lobbyClient) => {
-				if (lobbyClient.id === client.id) {
-					result.loser = lobbyClient.data.user;
-				} else {
-					result.winner = lobbyClient.data.user;
-				}
-			});
+			if (this.instance.player1.client.id === client.id) {
+				result.loser = this.instance.player1;
+				result.winner = this.instance.player2;
+			} else if (this.instance.player2.client.id === client.id) {
+				result.loser = this.instance.player2;
+				result.winner = this.instance.player1;
+			}
 			await this.instance.triggerFinish(result);
 			// Alert the remaining player that client left lobby
 			this.dispatchToLobby<ServerPayloads["gameNotif"]>("gameNotif", {
@@ -64,6 +61,9 @@ export class Lobby {
 				message: "Opponent left lobby",
 			});
 		}
+		this.clients.delete(client.id);
+		client.leave(this.id);
+		client.data.lobby = null;
 
 		this.dispatchLobbyState();
 	}

@@ -18,8 +18,8 @@ export class Instance {
 	public ball: Ball;
 	public paddleP1: Paddle;
 	public paddleP2: Paddle;
-	private player1: InstancePlayer;
-	private player2: InstancePlayer;
+	public player1: InstancePlayer;
+	public player2: InstancePlayer;
 
 	constructor(
 		private readonly lobby: Lobby,
@@ -49,6 +49,8 @@ export class Instance {
 			return;
 		}
 
+		console.log("winner:", result.winner.client.id);
+		console.log("loser:", result.loser.client.id);
 		const { winner, loser } = result;
 		const userWinner = winner.client.data.user;
 		const userLoser = loser.client.data.user;
