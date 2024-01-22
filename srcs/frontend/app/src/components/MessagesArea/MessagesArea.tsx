@@ -72,20 +72,17 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		const appURL = new URL(import.meta.env.VITE_REDIRECT_URI);
 
 		const isSameSite = messageURL.host === appURL.host;
-		const isGameURL = messageURL.pathname === "/invite";
-		const hasCodeParam =
-			messageURL.searchParams.size === 1 &&
-			messageURL.searchParams.has("code");
-		const lobbyId = messageURL.searchParams.get("code");
+		const pathParts = messageURL.pathname.split("/");
+		const isGameURL = pathParts[1] === "invite";
+		const lobbyId = pathParts[2];
 		const isCodeValid = uuidValidate(lobbyId || "");
 
-		const isInviteLink =
-			isSameSite && isGameURL && hasCodeParam && isCodeValid;
+		const isInviteLink = isSameSite && isGameURL && isCodeValid;
 
 		if (isInviteLink) {
 			return (
 				<Button
-					onClick={() => gameSocket.emit("join-lobby", lobbyId)}
+					onClick={() => gameSocket.emit("join-lobby", { lobbyId })}
 					className={classes.gameInviteButton}
 				>
 					Accept invitation

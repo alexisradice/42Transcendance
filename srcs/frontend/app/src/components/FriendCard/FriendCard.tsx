@@ -20,7 +20,7 @@ type Props = {
 
 const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 	const [gameSettings] = useAtom(gameSettingsAtom);
-	const { gameSocket } = useSocketContext();
+	const { gameSocket, setIsPending } = useSocketContext();
 	const handleRemove = () => {
 		if (
 			window.confirm(`Are you sure you want to remove ${friend.login}?`)
@@ -42,6 +42,7 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 			settings: gameSettings,
 			opponentLogin: friend.login,
 		});
+		setIsPending(true);
 	};
 
 	return (
