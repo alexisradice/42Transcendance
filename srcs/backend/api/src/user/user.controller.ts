@@ -225,24 +225,55 @@ export class UserController {
 		return { success: true };
 	}
 
-	@Get("stats")
-	// @UseGuards(JwtGuard)
-	async getStats(@Req() req: Request, @Body("userId") userId: string) {
+	@Get("stats/:userId")
+	@UseGuards(JwtGuard)
+	async getStats(@Req() req: Request, @Param("userId") userId: string) {
 		const userStats = await this.prisma.user.findFirst({
 			where: { id: userId },
 			select: {
 				id: true,
 				displayName: true,
-				// image: true,
-				stats: true,
+				image: true,
+				stats: {
+					select: {
+						id: true,
+						gamesPlayed: true,
+						wins: true,
+						losses: true,
+						winStreak: true,
+					},
+				},
 				gamesPlayed: {
+					select: {
+						id: true,
+						createdAt: true,
+						winner: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+						loser: {
+							select: {
+								id: true,
+								login: true,
+								displayName: true,
+								image: true,
+							},
+						},
+						winnerScore: true,
+						loserScore: true,
+						ballSpeed: true,
+						paddleSize: true,
+					},
 					orderBy: { createdAt: "desc" },
 				},
 			},
 		});
-		console.log(userStats);
-
-		// return fullStats;
+		// console.log(userStats);
+		return userStats;
 	}
 
 	@Get(":login")

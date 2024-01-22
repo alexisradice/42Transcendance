@@ -37,10 +37,7 @@ export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
 		consumer
 			.apply(JwtRefreshMiddleware)
-			.exclude(
-				{ path: "auth/login", method: RequestMethod.POST },
-				{ path: "user/stats", method: RequestMethod.GET }, //TODO remove after testing
-			)
+			.exclude({ path: "auth/login", method: RequestMethod.POST })
 			.forRoutes("*");
 	}
 }

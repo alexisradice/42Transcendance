@@ -9,6 +9,7 @@ import {
 	IconMessageCircle,
 	IconMessageOff,
 	IconSword,
+	IconUserScan,
 	IconVolumeOff,
 } from "@tabler/icons-react";
 import useSWR, { useSWRConfig } from "swr";
@@ -17,6 +18,8 @@ import { GeneralUser, MemberRole, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate, fetcherPrivate } from "../../utils/fetcher";
 import UserCard from "../UserCard/UserCard";
+import { useDisclosure } from "@mantine/hooks";
+import StatsModal from "../StatsModal/StatsModal";
 
 type Props = {
 	member: GeneralUser;
@@ -40,6 +43,7 @@ const ChannelMemberMenu = ({
 	joinDM,
 }: Props) => {
 	const { mutate } = useSWRConfig();
+	const [gameStatsOpened, { open, close }] = useDisclosure(false);
 	const {
 		data: blockedUsers,
 		error,
@@ -173,6 +177,7 @@ const ChannelMemberMenu = ({
 
 	return (
 		<>
+			<StatsModal user={member} opened={gameStatsOpened} close={close} />
 			{isMe ? (
 				<UserCard
 					user={member}
@@ -198,6 +203,12 @@ const ChannelMemberMenu = ({
 							}}
 						>
 							Messages
+						</Menu.Item>
+						<Menu.Item
+							leftSection={<IconUserScan size={18} />}
+							onClick={open}
+						>
+							Gamer Profile
 						</Menu.Item>
 						<Menu.Item
 							leftSection={<IconDeviceGamepad2 size={18} />}

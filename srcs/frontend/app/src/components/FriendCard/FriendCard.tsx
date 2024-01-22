@@ -4,11 +4,14 @@ import {
 	IconDeviceGamepad2,
 	IconMessageCircle,
 	IconTrash,
+	IconUserScan,
 } from "@tabler/icons-react";
 import { GeneralUser } from "../../types";
 import UserCard from "../UserCard/UserCard";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import sendSettings from "../../utils/sendSettings";
+import { useDisclosure } from "@mantine/hooks";
+import StatsModal from "../StatsModal/StatsModal";
 
 type Props = {
 	friend: GeneralUser;
@@ -19,6 +22,7 @@ type Props = {
 
 const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 	const { gameSocket } = useSocketContext();
+	const [gameStatsOpened, { open, close }] = useDisclosure(false);
 	const handleRemove = () => {
 		if (
 			window.confirm(`Are you sure you want to remove ${friend.login}?`)
@@ -43,41 +47,50 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 	};
 
 	return (
-		<Menu>
-			<Menu.Target>
-				<UserCard user={friend} chevron={true} />
-			</Menu.Target>
-			<Menu.Dropdown>
-				<Menu.Item
-					leftSection={<IconMessageCircle size={18} />}
-					onClick={() => {
-						joinDM(friend.login);
-					}}
-				>
-					Messages
-				</Menu.Item>
-				<Menu.Item
-					leftSection={<IconDeviceGamepad2 size={18} />}
-					onClick={handleInvite}
-				>
-					Invite to play
-				</Menu.Item>
-				<Menu.Item
-					color="red"
-					onClick={handleRemove}
-					leftSection={<IconTrash size={18} />}
-				>
-					Remove friend
-				</Menu.Item>
-				<Menu.Item
-					color="red"
-					onClick={handleBlock}
-					leftSection={<IconBan size={18} />}
-				>
-					Block friend
-				</Menu.Item>
-			</Menu.Dropdown>
-		</Menu>
+		<>
+			<StatsModal user={friend} opened={gameStatsOpened} close={close} />
+			<Menu>
+				<Menu.Target>
+					<UserCard user={friend} chevron={true} />
+				</Menu.Target>
+				<Menu.Dropdown>
+					<Menu.Item
+						leftSection={<IconMessageCircle size={18} />}
+						onClick={() => {
+							joinDM(friend.login);
+						}}
+					>
+						Messages
+					</Menu.Item>
+					<Menu.Item
+						leftSection={<IconUserScan size={18} />}
+						onClick={open}
+					>
+						Gamer Profile
+					</Menu.Item>
+					<Menu.Item
+						leftSection={<IconDeviceGamepad2 size={18} />}
+						onClick={handleInvite}
+					>
+						Invite to play
+					</Menu.Item>
+					<Menu.Item
+						color="red"
+						onClick={handleRemove}
+						leftSection={<IconTrash size={18} />}
+					>
+						Remove friend
+					</Menu.Item>
+					<Menu.Item
+						color="red"
+						onClick={handleBlock}
+						leftSection={<IconBan size={18} />}
+					>
+						Block friend
+					</Menu.Item>
+				</Menu.Dropdown>
+			</Menu>
+		</>
 	);
 };
 

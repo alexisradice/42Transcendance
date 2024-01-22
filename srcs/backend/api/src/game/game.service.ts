@@ -56,11 +56,12 @@ export class GameService {
 					players: {
 						connect: [{ id: winnerId }, { id: loserId }],
 					},
+					winner: { connect: { id: winnerId } },
+					loser: { connect: { id: loserId } },
 					winnerScore,
 					loserScore,
 					ballSpeed: 5, // TODO: change this
 					paddleSize: "small", // TODO: change this
-					winnerId,
 				},
 			});
 		} catch (error) {

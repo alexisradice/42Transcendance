@@ -210,8 +210,8 @@ export class Instance {
 	}
 
 	private detectScoredPoint(): GameResult | null {
-		const player1Scored = this.ball.x <= 0;
-		const player2Scored = this.ball.x >= this.board.width;
+		const player2Scored = this.ball.x <= 0;
+		const player1Scored = this.ball.x >= this.board.width;
 
 		if (player1Scored || player2Scored) {
 			if (player1Scored) {

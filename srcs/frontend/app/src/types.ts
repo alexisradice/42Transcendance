@@ -123,3 +123,30 @@ export interface SocketContextType {
 export interface LobbyResponse {
 	lobbyId: string;
 }
+
+export interface UserStats {
+	id: string;
+	gamesPlayed: number;
+	wins: number;
+	losses: number;
+	winStreak: number;
+}
+
+export interface GameSession {
+	id: string;
+	createdAt: Date;
+	winner: GeneralUser;
+	loser: GeneralUser;
+	winnerScore: number;
+	loserScore: number;
+	ballSpeed: number;
+	paddleSize: string;
+}
+
+export interface GameStats {
+	id: string;
+	displayName: string;
+	image: true;
+	stats: UserStats;
+	gamesPlayed: GameSession[];
+}
