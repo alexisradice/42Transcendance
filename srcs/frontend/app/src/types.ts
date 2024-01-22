@@ -77,11 +77,7 @@ export interface PlayerType {
 
 export interface SettingsType {
 	ballSpeed: number;
-	paddleSize: string;
-	visibility: string;
-	inviteFriend: string;
-	pause: boolean;
-	mode: string;
+	paddleSize: number;
 }
 
 export interface SocketResponse<T> {

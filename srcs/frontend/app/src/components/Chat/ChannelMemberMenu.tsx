@@ -11,7 +11,10 @@ import {
 	IconSword,
 	IconVolumeOff,
 } from "@tabler/icons-react";
+import { useAtom } from "jotai";
 import useSWR, { useSWRConfig } from "swr";
+import { gameSettingsAtom } from "../../context/atoms";
+import { useSocketContext } from "../../context/useContextGameSocket";
 import { useSocket } from "../../hooks/useSocket";
 import { GeneralUser, MemberRole, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
@@ -46,6 +49,8 @@ const ChannelMemberMenu = ({
 		isLoading,
 	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
 	const chatSocket = useSocket("chat");
+	const { gameSocket } = useSocketContext();
+	const [gameSettings] = useAtom(gameSettingsAtom);
 
 	const promoteToAdmin = async (member: GeneralUser) => {
 		if (
@@ -159,6 +164,13 @@ const ChannelMemberMenu = ({
 		}
 	};
 
+	const handleInvite = (login: string) => {
+		gameSocket.emit("invite-to-game", {
+			settings: gameSettings,
+			opponentLogin: login,
+		});
+	};
+
 	if (isLoading) {
 		return (
 			<Center>
@@ -201,6 +213,9 @@ const ChannelMemberMenu = ({
 						</Menu.Item>
 						<Menu.Item
 							leftSection={<IconDeviceGamepad2 size={18} />}
+							onClick={() => {
+								handleInvite(member.login);
+							}}
 						>
 							Invite to play
 						</Menu.Item>

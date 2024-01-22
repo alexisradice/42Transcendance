@@ -5,10 +5,11 @@ import {
 	IconMessageCircle,
 	IconTrash,
 } from "@tabler/icons-react";
+import { useAtom } from "jotai";
+import { gameSettingsAtom } from "../../context/atoms";
+import { useSocketContext } from "../../context/useContextGameSocket";
 import { GeneralUser } from "../../types";
 import UserCard from "../UserCard/UserCard";
-import { useSocketContext } from "../../context/useContextGameSocket";
-import sendSettings from "../../utils/sendSettings";
 
 type Props = {
 	friend: GeneralUser;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
+	const [gameSettings] = useAtom(gameSettingsAtom);
 	const { gameSocket } = useSocketContext();
 	const handleRemove = () => {
 		if (
@@ -37,7 +39,7 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 	};
 	const handleInvite = () => {
 		gameSocket.emit("invite-to-game", {
-			settings: sendSettings(),
+			settings: gameSettings,
 			opponentLogin: friend.login,
 		});
 	};
