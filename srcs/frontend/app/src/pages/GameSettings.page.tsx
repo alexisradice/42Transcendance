@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button, Text } from "@mantine/core";
 import { useAtom } from "jotai";
 import SettingsComponent from "../components/Game/ModeSelection";
 import { IN_QUEUE, ONLINE } from "../constants";
@@ -28,8 +28,8 @@ const GameSettings = () => {
 		<div className={classes.container}>
 			{isPending ? (
 				<div className={classes.pendingContainer}>
-					<p>Waiting for a game to start...</p>
-					<Button onClick={handleCancel} color="red">
+					<Text size="xl">Waiting for a game to start...</Text>
+					<Button onClick={handleCancel} color="red" mt="md">
 						Cancel
 					</Button>
 				</div>

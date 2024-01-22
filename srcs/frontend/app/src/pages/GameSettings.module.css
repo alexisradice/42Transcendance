@@ -6,6 +6,10 @@
 	height: calc(100vh - 120px);
 }
 
+.pendingContainer {
+	text-align: center;
+}
+
 .PlayButton {
 	padding-left: 2.5rem;
 	padding-right: 2.5rem;
