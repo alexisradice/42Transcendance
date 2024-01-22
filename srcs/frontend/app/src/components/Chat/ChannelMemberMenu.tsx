@@ -165,7 +165,7 @@ const ChannelMemberMenu = ({
 	};
 
 	const handleInvite = (login: string) => {
-		gameSocket.emit("invite-to-game", {
+		gameSocket.emit("create-invite", {
 			settings: gameSettings,
 			opponentLogin: login,
 		});

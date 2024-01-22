@@ -38,7 +38,7 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 		}
 	};
 	const handleInvite = () => {
-		gameSocket.emit("invite-to-game", {
+		gameSocket.emit("create-invite", {
 			settings: gameSettings,
 			opponentLogin: friend.login,
 		});
