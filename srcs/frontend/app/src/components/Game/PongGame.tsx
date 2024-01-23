@@ -4,6 +4,8 @@ import { IN_GAME } from "../../constants";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import { useSocket } from "../../hooks/useSocket";
 import classes from "./PongGame.module.css";
+import { gameSettingsAtom } from "../../context/atoms";
+import { useAtom } from "jotai";
 
 const PongGame: FC = () => {
 	const chatSocket = useSocket("chat");
@@ -17,6 +19,7 @@ const PongGame: FC = () => {
 	const [isMovingDown, setIsMovingDown] = useState(false);
 	const [paddles, setPaddles] = useState({ P1: 50, P2: 50 });
 	const [countdown, setCountdown] = useState(3);
+	const [gameSettings] = useAtom(gameSettingsAtom);
 
 	const scalePosition = (x: number, y: number) => {
 		const scaledX = (x / 300) * 100; // Scale based on game board width
@@ -29,12 +32,14 @@ const PongGame: FC = () => {
 	}, [chatSocket]);
 
 	useEffect(() => {
+		const ball = document.getElementById("ball")!;
 		let timerId: number | undefined;
 		if (countdown > 0) {
 			// Set a timer to decrement the countdown
 			timerId = setTimeout(() => setCountdown(countdown - 1), 1000);
 			return () => clearTimeout(timerId);
 		} else if (countdown === 0) {
+			ball.style.display = "block";
 			return () => clearTimeout(timerId);
 		}
 	}, [countdown]);
@@ -120,9 +125,9 @@ const PongGame: FC = () => {
 
 	return (
 		<div className={classes.game}>
-			{/* {countdown > 0 && (
+			{countdown > 0 && (
 				<div className={classes.countdown}>{countdown}</div>
-			)} */}
+			)}
 			<div className={classes.score}>
 				<div className={classes.player1Score}>{playerScores.P1}</div>
 				<div className={classes.player2Score}>{playerScores.P2}</div>
@@ -140,16 +145,18 @@ const PongGame: FC = () => {
 				id="player1-paddle"
 				className={cx(classes.paddle, classes.left)}
 				style={{
+					height: `${gameSettings.paddleSize}%`,
 					top: `${paddles.P1}%`,
-					transform: `translateY(${paddles.P1}%))`,
+					transform: `translateY(-50%))`,
 				}}
 			></div>
 			<div
 				id="player2-paddle"
 				className={cx(classes.paddle, classes.right)}
 				style={{
+					height: `${gameSettings.paddleSize}%`,
 					top: `${paddles.P2}%`,
-					transform: `translateY(${paddles.P2}%))`,
+					transform: `translateY(-50%))`,
 				}}
 			></div>
 		</div>

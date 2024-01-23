@@ -15,7 +15,7 @@ const GameSettings = () => {
 	const handlePlayGame = () => {
 		chatSocket.emit("change-status", IN_QUEUE);
 		setIsPending(true); // Show waiting message
-		gameSocket.emit("queue", settings); // Player is trying to queue
+		gameSocket.emit("queue", { settings }); // Player is trying to queue
 	};
 
 	const handleCancel = () => {

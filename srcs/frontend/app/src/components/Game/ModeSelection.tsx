@@ -13,21 +13,25 @@ const ballMarks = [
 ];
 
 const paddleMarks = [
-	{ value: 0, label: "Small" },
-	{ value: 50, label: "Medium" },
-	{ value: 100, label: "Large" },
+	{ value: 10, label: "Very small" },
+	{ value: 15, label: "Small" },
+	{ value: 20, label: "Medium" },
+	{ value: 25, label: "Large" },
+	{ value: 30, label: "Very large" },
 ];
 
 const SettingsComponent: React.FC = () => {
 	const [, setSettings] = useAtom(gameSettingsAtom);
 	const [ballSpeed, setBallSpeed] = useState(2);
-	const [paddleSize, setPaddleSize] = useState(50);
+	const [paddleSize, setPaddleSize] = useState(20);
+	// const [rainbowMode, setRainbowMode] = useState(false);
 
 	// Update  component on settings change
 	useEffect(() => {
 		setSettings({
 			ballSpeed,
 			paddleSize,
+			// rainbowMode,
 		});
 	}, [ballSpeed, paddleSize, setSettings]);
 
@@ -53,16 +57,28 @@ const SettingsComponent: React.FC = () => {
 				<Text className={styles.labelText}>Paddle Size</Text>
 				<Slider
 					className={styles.slider}
-					defaultValue={50}
+					defaultValue={20}
 					onChangeEnd={setPaddleSize}
 					label={(val) =>
 						paddleMarks.find((mark) => mark.value === val)!.label
 					}
 					marks={paddleMarks}
-					step={50}
+					min={10}
+					max={30}
+					step={5}
 					styles={{ markLabel: { display: "none" } }}
 				/>
 			</div>
+
+			{/* <div className={styles.settingRow}>
+				<Text className={styles.labelText}>Rainbow mode</Text>
+				<Checkbox
+					checked={rainbowMode}
+					onChange={(event) =>
+						setRainbowMode(event.currentTarget.checked)
+					}
+				/>
+			</div> */}
 		</div>
 	);
 };

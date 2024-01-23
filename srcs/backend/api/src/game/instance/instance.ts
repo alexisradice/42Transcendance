@@ -7,6 +7,7 @@ import {
 	GameResult,
 	InstancePlayer,
 	Paddle,
+	PlayerPaddle,
 	ServerPayloads,
 } from "../types";
 
@@ -16,8 +17,9 @@ export class Instance {
 	public isSuspended: boolean = false;
 	public board: Board;
 	public ball: Ball;
-	public paddleP1: Paddle;
-	public paddleP2: Paddle;
+	public paddleSettings: Paddle;
+	public paddleP1: PlayerPaddle;
+	public paddleP2: PlayerPaddle;
 	public player1: InstancePlayer;
 	public player2: InstancePlayer;
 
@@ -30,7 +32,7 @@ export class Instance {
 		this.initializeGame();
 	}
 
-	public triggerStart(): void {
+	public triggerStart = (): void => {
 		if (this.hasStarted) {
 			return;
 		}
@@ -39,12 +41,12 @@ export class Instance {
 		this.lobby.dispatchToLobby<ServerPayloads["launch"]>("launch", {
 			lobbyId: this.lobby.id,
 		});
-		this.movementsBall();
-	}
+		setTimeout(this.movementsBall, 3000); // 3s starting countdown
+	};
 
-	public async triggerFinish(
+	public triggerFinish = async (
 		result: GameResult,
-	): Promise<Promise<Promise<void>>> {
+	): Promise<Promise<Promise<void>>> => {
 		if (this.hasFinished || !this.hasStarted) {
 			return;
 		}
@@ -69,9 +71,10 @@ export class Instance {
 		});
 
 		this.hasFinished = true;
-	}
+	};
 
-	private initializeGame(): void {
+	private initializeGame = (): void => {
+		console.log("this.lobby.settings", this.lobby.settings);
 		this.player1.score = 0;
 		this.player2.score = 0;
 		this.board = { width: 300, height: 100 };
@@ -80,11 +83,16 @@ export class Instance {
 			y: this.board.height / 2,
 			directionX: 1,
 			directionY: 1,
-			speed: 2, // TODO faire ça dynamiquement
+			speed: this.lobby.settings.ballSpeed,
+			radius: 3,
 		};
-		this.paddleP1 = { x: 1, y: 50, height: 20 };
-		this.paddleP2 = { x: 299, y: 50, height: 20 };
-	}
+		this.paddleSettings = {
+			height: this.lobby.settings.paddleSize,
+			width: 6,
+		};
+		this.paddleP1 = { x: 1, y: 50 };
+		this.paddleP2 = { x: 299, y: 50 };
+	};
 
 	public setPlayer1(client: Socket): void {
 		this.player1.client = client;
@@ -102,9 +110,10 @@ export class Instance {
 		return this.player2.score;
 	}
 
-	private movementsBall(): void {
-		const ballRadius = 3;
-		const paddleWidth = 6;
+	private movementsBall = (): void => {
+		const ballRadius = this.ball.radius;
+		const paddleHeight = this.paddleSettings.height;
+		const paddleWidth = this.paddleSettings.width;
 		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
 
 		// initialiser la direction de la balle en fonction de l'angle
@@ -117,18 +126,17 @@ export class Instance {
 			this.ball.y += this.ball.directionY * this.ball.speed;
 
 			// bloqquer le paddle si trop haut ou trop bas
-			const maxPaddleY = this.board.height - this.paddleP1.height;
+			const maxPaddleY = this.board.height - paddleHeight;
 			if (this.paddleP1.y < 0) {
 				this.paddleP1.y = 0;
 			} else if (this.paddleP1.y > maxPaddleY) {
 				this.paddleP1.y = maxPaddleY;
 			}
 
-			const maxPaddleY2 = this.board.height - this.paddleP2.height;
 			if (this.paddleP2.y < 0) {
 				this.paddleP2.y = 0;
-			} else if (this.paddleP2.y > maxPaddleY2) {
-				this.paddleP2.y = maxPaddleY2;
+			} else if (this.paddleP2.y > maxPaddleY) {
+				this.paddleP2.y = maxPaddleY;
 			}
 
 			// rebond haut et bas de la map
@@ -139,8 +147,7 @@ export class Instance {
 			// gestion des collisions avec les raquettes
 			if (
 				this.ball.y + ballRadius >= this.paddleP1.y &&
-				this.ball.y - ballRadius <=
-					this.paddleP1.y + this.paddleP1.height &&
+				this.ball.y - ballRadius <= this.paddleP1.y + paddleHeight &&
 				((this.ball.x - ballRadius <= this.paddleP1.x + paddleWidth &&
 					this.ball.x + ballRadius >= this.paddleP1.x) ||
 					(this.ball.x + ballRadius >= this.paddleP1.x &&
@@ -149,9 +156,9 @@ export class Instance {
 			) {
 				// calculer l'angle d'incidence sur la raquette du joueur 1
 				const relativeIntersectY =
-					this.ball.y - (this.paddleP1.y + this.paddleP1.height / 2);
+					this.ball.y - (this.paddleP1.y + paddleHeight / 2);
 				const normalizedRelativeIntersectionY =
-					relativeIntersectY / (this.paddleP1.height / 2);
+					relativeIntersectY / (paddleHeight / 2);
 				const bounceAngle =
 					normalizedRelativeIntersectionY * (Math.PI / 4);
 
@@ -163,8 +170,7 @@ export class Instance {
 
 			if (
 				this.ball.y + ballRadius >= this.paddleP2.y &&
-				this.ball.y - ballRadius <=
-					this.paddleP2.y + this.paddleP2.height &&
+				this.ball.y - ballRadius <= this.paddleP2.y + paddleHeight &&
 				((this.ball.x - ballRadius <= this.paddleP2.x + paddleWidth &&
 					this.ball.x + ballRadius >= this.paddleP2.x) ||
 					(this.ball.x + ballRadius >= this.paddleP2.x &&
@@ -173,9 +179,9 @@ export class Instance {
 			) {
 				// calculer l'angle d'incidence sur la raquette du joueur 2
 				const relativeIntersectY =
-					this.ball.y - (this.paddleP2.y + this.paddleP2.height / 2);
+					this.ball.y - (this.paddleP2.y + paddleHeight / 2);
 				const normalizedRelativeIntersectionY =
-					relativeIntersectY / (this.paddleP2.height / 2);
+					relativeIntersectY / (paddleHeight / 2);
 				const bounceAngle =
 					normalizedRelativeIntersectionY * (Math.PI / 4);
 				// modifier la direction de la balle en fonction de l'angle d'incidence
@@ -207,9 +213,9 @@ export class Instance {
 				this.triggerFinish(winner);
 			}
 		}, 16.66666);
-	}
+	};
 
-	private detectScoredPoint(): GameResult | null {
+	private detectScoredPoint = (): GameResult | null => {
 		const player2Scored = this.ball.x <= 0;
 		const player1Scored = this.ball.x >= this.board.width;
 
@@ -252,9 +258,9 @@ export class Instance {
 			return results;
 		}
 		return null;
-	}
+	};
 
-	public movePaddle(direction: "up" | "down", client: Socket): void {
+	public movePaddle = (direction: "up" | "down", client: Socket): void => {
 		const userId = client.data.user.id;
 		const movement = direction === "up" ? -3 : 3;
 		if (userId === this.player1.client.data.user.id) {
@@ -262,5 +268,5 @@ export class Instance {
 		} else if (userId === this.player2.client.data.user.id) {
 			this.paddleP2.y += movement;
 		}
-	}
+	};
 }

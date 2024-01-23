@@ -15,7 +15,6 @@
 	position: absolute;
 	background-color: var(--foreground-color);
 	width: 2%;
-	height: 20%;
 }
 
 .left {
@@ -31,6 +30,7 @@
 	background-color: var(--foreground-color);
 	width: 2.5vh;
 	height: 2.5vh;
+	display: none;
 }
 
 .score {
@@ -67,4 +67,5 @@
 	transform: translate(-50%, -50%);
 	font-size: 40px;
 	font-weight: bold;
+	font-family: "Pong", Courier, monospace;
 }
