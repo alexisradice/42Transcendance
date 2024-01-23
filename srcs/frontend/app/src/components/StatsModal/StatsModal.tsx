@@ -1,4 +1,5 @@
 import { GameStats, GeneralUser } from "../../types";
+import { useMediaQuery } from "@mantine/hooks";
 import {
 	Center,
 	Loader,
@@ -22,6 +23,7 @@ const StatsModal = ({ user, opened, close }: Props) => {
 		`/user/stats/${user.id}`,
 		fetcherPrivate,
 	);
+	const isMobile = useMediaQuery("(max-width: 50em)");
 
 	if (isLoading) {
 		return (
@@ -39,8 +41,10 @@ const StatsModal = ({ user, opened, close }: Props) => {
 		<Modal
 			opened={opened}
 			onClose={close}
-			title="Gamer Stats and Match History"
+			title={`Gamer Profile of ${data.displayName} (@${data.login})`}
 			centered
+			fullScreen={isMobile}
+			// size="xl"
 		>
 			<Tabs variant="outline" radius="md" defaultValue="stats">
 				<Tabs.List grow>
@@ -61,7 +65,7 @@ const StatsModal = ({ user, opened, close }: Props) => {
 								return (
 									<Timeline.Item
 										key={gamePlayed.id}
-										title="COMBAT"
+										title={`VS ${data.id === gamePlayed.winner.id ? gamePlayed.loser.displayName : gamePlayed.winner.displayName}`}
 										bullet={
 											<Avatar
 												size={22}
@@ -70,7 +74,15 @@ const StatsModal = ({ user, opened, close }: Props) => {
 											/>
 										}
 									>
-										{`winner was ${gamePlayed.winner.displayName}`}
+										<Text size="xs">
+											{`Ball speed: ${gamePlayed.ballSpeed}, Paddle size: ${gamePlayed.paddleSize}`}
+										</Text>
+										<Text size="xs">
+											{`Final score: ${gamePlayed.winnerScore} - ${gamePlayed.loserScore}`}
+										</Text>
+										<Text size="sm">
+											{`Winner was ${gamePlayed.winner.displayName}`}
+										</Text>
 									</Timeline.Item>
 								);
 							}

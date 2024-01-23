@@ -233,6 +233,7 @@ export class UserController {
 			select: {
 				id: true,
 				displayName: true,
+				login: true,
 				image: true,
 				stats: {
 					select: {

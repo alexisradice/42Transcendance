@@ -142,6 +142,7 @@ export interface GameSession {
 export interface GameStats {
 	id: string;
 	displayName: string;
+	login: string;
 	image: true;
 	stats: UserStats;
 	gamesPlayed: GameSession[];
