@@ -33,8 +33,10 @@ model User {
     blocked       User[]    @relation("blocked")
     blockedBy     User[]    @relation("blocked")
     stats         Stat?
-    gamesPlayed   Game[]
+    gamesPlayed   Game[]    @relation("played")
     notifications Notif[]
+    winnerOf      Game[]    @relation("wins")
+    loserOf       Game[]    @relation("losses")
 }
 
 model Notif {
@@ -116,10 +118,13 @@ enum ChannelVisibility {
 model Game {
     id          String   @id @default(uuid())
     createdAt   DateTime @default(now())
-    players     User[]
+    players     User[]   @relation("played")
+    winner      User     @relation("wins", fields: [winnerId], references: [id])
+    loser       User     @relation("losses", fields: [loserId], references: [id])
     winnerScore Int
     loserScore  Int
     ballSpeed   Int
     paddleSize  String
     winnerId    String
+    loserId     String
 }
