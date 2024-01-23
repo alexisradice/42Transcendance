@@ -53,7 +53,7 @@ const ChannelMemberMenu = ({
 		isLoading,
 	} = useSWR<Array<{ login: string }>>("/user/blocked/all", fetcherPrivate);
 	const chatSocket = useSocket("chat");
-	const { gameSocket } = useSocketContext();
+	const { gameSocket, setIsPending } = useSocketContext();
 	const [gameSettings] = useAtom(gameSettingsAtom);
 
 	const promoteToAdmin = async (member: GeneralUser) => {
@@ -169,10 +169,17 @@ const ChannelMemberMenu = ({
 	};
 
 	const handleInvite = (login: string) => {
-		gameSocket.emit("create-invite", {
-			settings: gameSettings,
-			opponentLogin: login,
-		});
+		if (
+			confirm(
+				`You'll invite ${login} your current selected game settings. Is this ok?`,
+			)
+		) {
+			gameSocket.emit("create-invite", {
+				settings: gameSettings,
+				opponentLogin: login,
+			});
+			setIsPending(true);
+		}
 	};
 
 	if (isLoading) {

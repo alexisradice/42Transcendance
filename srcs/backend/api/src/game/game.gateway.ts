@@ -191,7 +191,7 @@ export class GameGateway
 			await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}`,
+				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}. Ball speed: ${lobby.settings.ballSpeed}, paddle size: ${lobby.settings.paddleSize}`,
 			);
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
 			return {

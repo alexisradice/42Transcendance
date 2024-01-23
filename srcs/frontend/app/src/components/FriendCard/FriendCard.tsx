@@ -42,11 +42,17 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 		}
 	};
 	const handleInvite = () => {
-		gameSocket.emit("create-invite", {
-			settings: gameSettings,
-			opponentLogin: friend.login,
-		});
-		setIsPending(true);
+		if (
+			confirm(
+				`You'll invite ${friend.login} your current selected game settings. Is this ok?`,
+			)
+		) {
+			gameSocket.emit("create-invite", {
+				settings: gameSettings,
+				opponentLogin: friend.login,
+			});
+			setIsPending(true);
+		}
 	};
 
 	return (
