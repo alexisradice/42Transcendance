@@ -74,10 +74,10 @@ const StatsModal = ({ user, opened, close }: Props) => {
 											/>
 										}
 									>
-										<Text size="xs">
+										<Text size="xs" c="dimmed">
 											{`Ball speed: ${gamePlayed.ballSpeed}, Paddle size: ${gamePlayed.paddleSize}`}
 										</Text>
-										<Text size="xs">
+										<Text size="xs" c="dimmed">
 											{`Final score: ${gamePlayed.winnerScore} - ${gamePlayed.loserScore}`}
 										</Text>
 										<Text size="sm">
