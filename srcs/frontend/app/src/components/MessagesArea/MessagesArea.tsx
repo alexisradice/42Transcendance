@@ -114,6 +114,7 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 							<div
 								className={cx(
 									classes.bubble,
+									classes.messageContent,
 									!isSelf && classes.bubbleOthers,
 									isSelf && classes.bubbleSelf,
 								)}
