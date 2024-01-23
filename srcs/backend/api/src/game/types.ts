@@ -60,12 +60,17 @@ export interface Ball {
 	directionX: number;
 	directionY: number;
 	speed: number;
+	radius: number;
 }
 
 export interface Paddle {
+	height: number;
+	width: number;
+}
+
+export interface PlayerPaddle {
 	x: number;
 	y: number;
-	height: number;
 }
 
 export interface InstancePlayer {
@@ -80,5 +85,5 @@ export interface GameResult {
 
 export class Settings {
 	ballSpeed: number;
-	paddleSize: string;
+	paddleSize: number;
 }

@@ -29,15 +29,6 @@ export class LobbyManager {
 	}
 
 	public createLobby(mode: LobbyMode, settings: Settings): Lobby {
-		// switch (mode) {
-		// 	case "solo":
-		// 		maxClients = 1;
-		// 		break;
-
-		// 	case "duo":
-		// 		maxClients = 2;
-		// 		break;
-		// }
 		const lobby = new Lobby(
 			this.instanceFactory,
 			this.server,

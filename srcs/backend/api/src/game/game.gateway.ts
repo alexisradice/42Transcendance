@@ -13,15 +13,14 @@ import {
 } from "@nestjs/websockets";
 import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";
-import { response } from "express";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { ChatService } from "src/chat/chat.service";
+import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { InstanceFactory } from "./instance/instance.factory";
 import { LobbyManager } from "./lobby/lobby.manager";
 import { ServerPayloads, Settings } from "./types";
-import { SocketResponse } from "src/types";
 
 @WebSocketGateway({
 	cors: {
@@ -131,10 +130,16 @@ export class GameGateway
 		client: Socket,
 		data: { settings: Settings },
 	): WsResponse<ServerPayloads["waitingForOpponent"]> {
-		const lobby = this.lobbyManager.findOrCreateLobby(
-			"public",
-			data.settings,
-		);
+		const { settings } = data;
+		if (
+			settings.ballSpeed < 1 ||
+			settings.ballSpeed > 3 ||
+			settings.paddleSize < 10 ||
+			settings.paddleSize > 30
+		) {
+			throw new WsException("Invalid settings");
+		}
+		const lobby = this.lobbyManager.findOrCreateLobby("public", settings);
 		lobby.addClient(client);
 
 		const login = client.data.user.login;
@@ -186,7 +191,7 @@ export class GameGateway
 			await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}`,
+				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}. Ball speed: ${lobby.settings.ballSpeed}, paddle size: ${lobby.settings.paddleSize}`,
 			);
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
 			return {
