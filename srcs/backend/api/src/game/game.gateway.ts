@@ -133,7 +133,7 @@ export class GameGateway
 		const { settings } = data;
 		if (
 			settings.ballSpeed < 1 ||
-			settings.ballSpeed > 3 ||
+				settings.ballSpeed > 5 ||
 			settings.paddleSize < 10 ||
 			settings.paddleSize > 30
 		) {

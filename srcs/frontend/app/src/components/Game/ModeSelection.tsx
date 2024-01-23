@@ -6,10 +6,10 @@ import { gameSettingsAtom } from "../../context/atoms";
 
 const ballMarks = [
 	{ value: 1, label: "Very slow" },
-	{ value: 1.5, label: "Slow" },
-	{ value: 2, label: "Normal" },
-	{ value: 2.5, label: "Fast" },
-	{ value: 3, label: "Very Fast" },
+	{ value: 2, label: "Slow" },
+	{ value: 3, label: "Normal" },
+	{ value: 4, label: "Fast" },
+	{ value: 5, label: "Very Fast" },
 ];
 
 const paddleMarks = [
@@ -22,7 +22,7 @@ const paddleMarks = [
 
 const SettingsComponent: React.FC = () => {
 	const [, setSettings] = useAtom(gameSettingsAtom);
-	const [ballSpeed, setBallSpeed] = useState(2);
+	const [ballSpeed, setBallSpeed] = useState(3);
 	const [paddleSize, setPaddleSize] = useState(20);
 	// const [rainbowMode, setRainbowMode] = useState(false);
 
@@ -40,15 +40,15 @@ const SettingsComponent: React.FC = () => {
 			<div className={styles.settingRow}>
 				<Text className={styles.labelText}>Ball Speed</Text>
 				<Slider
-					defaultValue={2}
+					defaultValue={3}
 					onChangeEnd={setBallSpeed}
 					label={(val) =>
 						ballMarks.find((mark) => mark.value === val)!.label
 					}
 					marks={ballMarks}
 					min={1}
-					max={3}
-					step={0.5}
+					max={5}
+					step={1}
 					styles={{ markLabel: { display: "none" } }}
 				/>
 			</div>
