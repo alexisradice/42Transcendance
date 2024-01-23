@@ -15,7 +15,6 @@ import { JwtRefreshMiddleware } from "./auth/jwtRefresh.middleware";
 import { JwtService } from "@nestjs/jwt";
 import { ChannelModule } from "./channel/channel.module";
 import { ChatModule } from "./chat/chat.module";
-import { LobbiesModule } from "./lobbies/lobbies.module";
 import { GameModule } from "./game/game.module";
 
 @Module({
@@ -27,7 +26,6 @@ import { GameModule } from "./game/game.module";
 		PrismaModule,
 		ChannelModule,
 		ChatModule,
-		LobbiesModule,
 		GameModule,
 	],
 	controllers: [AppController],
