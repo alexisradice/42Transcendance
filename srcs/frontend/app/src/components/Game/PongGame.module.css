@@ -1,56 +1,62 @@
-/* Ensure the game container fits within the viewport without scrolling */
 .game {
-	position: relative;
-	width: 100%;
+	--hue: 200;
+	--saturation: 50%;
+	--foreground-color: hsl(var(--hue), var(--saturation), 75%);
+	--background-color: hsl(var(--hue), var(--saturation), 20%);
+
+	background-color: var(--background-color);
 	height: calc(100vh - 120px);
-	margin: 0 auto;
-	background-color: black;
-	color: white;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
 }
 
-/* Paddles should be contained within the game-board without causing overflow */
 .paddle {
 	position: absolute;
-	width: 2%; /* Width as a percentage of the game-board width */
-	height: 15%; /* Height as a percentage of the game-board height */
-	background-color: white;
+	background-color: var(--foreground-color);
+	width: 2%;
+	height: 20%;
 }
 
-/* paddle on the left */
-.paddle:nth-child(2) {
+.left {
 	left: 0;
 }
-/* paddle on the right */
-.paddle:nth-child(3) {
+
+.right {
 	right: 0;
 }
 
 .ball {
 	position: absolute;
-	width: 10px;
-	height: 10px;
-	background-color: white;
-	border-radius: 50%;
+	background-color: var(--foreground-color);
+	width: 2.5vh;
+	height: 2.5vh;
 }
 
-/* Style the score elements */
 .score {
-	position: absolute;
-	top: 20px;
-	font-size: 20px;
-	font-family: "Courier New", Courier, monospace;
+	display: flex;
+	justify-content: center;
+	font-weight: bold;
+	font-size: 7vh;
+	color: var(--foreground-color);
+	font-family: "Pong", Courier, monospace;
 }
 
-/* score on the right */
-.score:nth-child(4) {
-	right: 30%; /* Moved to right side */
-	text-align: right;
+.score > * {
+	flex-grow: 1;
+	flex-basis: 0;
+	padding: 0 15%;
+	margin: 1vh 0;
+	opacity: 0.3;
 }
 
-/* score on the left */
-.score:nth-child(5) {
-	left: 30%; /* Moved to left side */
+.player1Score {
 	text-align: right;
+	/* border-right: 0.5vh solid var(--foreground-color); */
+}
+
+.player2Score {
+	text-align: left;
 }
 
 /* Countdown style centered in the game board */

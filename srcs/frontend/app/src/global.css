@@ -1,5 +1,10 @@
 @import url("https://fonts.googleapis.com/css?family=Noto+Sans");
 
+@font-face {
+	font-family: "Pong";
+	src: url("../fonts/pong-score.otf") format("opentype");
+}
+
 a {
 	color: var(--mantine-color-anchor);
 	text-decoration: none;

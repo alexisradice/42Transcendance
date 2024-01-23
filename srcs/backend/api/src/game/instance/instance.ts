@@ -103,8 +103,8 @@ export class Instance {
 	}
 
 	private movementsBall(): void {
-		const ballRadius = 2;
-		const paddleWidth = 5;
+		const ballRadius = 3;
+		const paddleWidth = 6;
 		const angle = (Math.random() * 90 - 45) * (Math.PI / 180);
 
 		// initialiser la direction de la balle en fonction de l'angle
