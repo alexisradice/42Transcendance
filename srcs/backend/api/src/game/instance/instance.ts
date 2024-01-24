@@ -64,6 +64,7 @@ export class Instance {
 			userLoser.id,
 			winner.score,
 			loser.score,
+			this.lobby.settings,
 		);
 
 		this.lobby.dispatchToLobby<ServerPayloads["gameOver"]>("gameOver", {

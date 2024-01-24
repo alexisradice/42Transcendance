@@ -132,7 +132,7 @@ export interface GameSession {
 	winnerScore: number;
 	loserScore: number;
 	ballSpeed: number;
-	paddleSize: string;
+	paddleSize: number;
 }
 
 export interface GameStats {

@@ -1,0 +1,22 @@
+.stack {
+	height: 100%;
+	align-items: center;
+	justify-content: space-around;
+}
+
+.statsText {
+	font-size: var(--mantine-font-size-xl);
+}
+
+.scoreValue {
+	margin-left: 10px;
+	font-size: 1.6rem;
+}
+
+.scoreColorSuccess {
+	color: var(--mantine-color-green-6);
+}
+
+.scoreColorFailure {
+	color: var(--mantine-color-red-6);
+}

@@ -3,22 +3,7 @@ import React, { useEffect, useState } from "react";
 import classes from "./ModeSelection.module.css";
 import { useAtom } from "jotai";
 import { gameSettingsAtom, rainbowModeAtom } from "../../context/atoms";
-
-const ballMarks = [
-	{ value: 1, label: "Very slow" },
-	{ value: 2, label: "Slow" },
-	{ value: 3, label: "Normal" },
-	{ value: 4, label: "Fast" },
-	{ value: 5, label: "Very Fast" },
-];
-
-const paddleMarks = [
-	{ value: 10, label: "Very small" },
-	{ value: 15, label: "Small" },
-	{ value: 20, label: "Medium" },
-	{ value: 25, label: "Large" },
-	{ value: 30, label: "Very large" },
-];
+import { BALL_MARKS, PADDLE_MARKS } from "../../constants";
 
 const SettingsComponent: React.FC = () => {
 	const [, setSettings] = useAtom(gameSettingsAtom);
@@ -43,9 +28,9 @@ const SettingsComponent: React.FC = () => {
 					defaultValue={3}
 					onChangeEnd={setBallSpeed}
 					label={(val) =>
-						ballMarks.find((mark) => mark.value === val)!.label
+						BALL_MARKS.find((mark) => mark.value === val)!.label
 					}
-					marks={ballMarks}
+					marks={BALL_MARKS}
 					min={1}
 					max={5}
 					step={1}
@@ -60,9 +45,9 @@ const SettingsComponent: React.FC = () => {
 					defaultValue={20}
 					onChangeEnd={setPaddleSize}
 					label={(val) =>
-						paddleMarks.find((mark) => mark.value === val)!.label
+						PADDLE_MARKS.find((mark) => mark.value === val)!.label
 					}
-					marks={paddleMarks}
+					marks={PADDLE_MARKS}
 					min={10}
 					max={30}
 					step={5}

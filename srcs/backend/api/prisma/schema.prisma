@@ -124,7 +124,7 @@ model Game {
     winnerScore Int
     loserScore  Int
     ballSpeed   Int
-    paddleSize  String
+    paddleSize  Int
     winnerId    String
     loserId     String
 }

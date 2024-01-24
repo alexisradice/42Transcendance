@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Lobby } from "./lobby/lobby";
+import { Settings } from "./types";
 
 @Injectable()
 export class GameService {
@@ -22,7 +23,7 @@ export class GameService {
 					streak = 1;
 				}
 			} else {
-				if (existingStat.winStreak < 0) {
+				if (existingStat.winStreak <= 0) {
 					streak = existingStat.winStreak - 1;
 				} else {
 					streak = 0;
@@ -49,6 +50,7 @@ export class GameService {
 		loserId: string,
 		winnerScore: number,
 		loserScore: number,
+		lobbySettings: Settings,
 	): Promise<any> {
 		try {
 			await this.prisma.game.create({
@@ -60,8 +62,8 @@ export class GameService {
 					loser: { connect: { id: loserId } },
 					winnerScore,
 					loserScore,
-					ballSpeed: 5, // TODO: change this
-					paddleSize: "small", // TODO: change this
+					ballSpeed: lobbySettings.ballSpeed,
+					paddleSize: lobbySettings.paddleSize,
 				},
 			});
 		} catch (error) {
