@@ -1,7 +1,5 @@
 import { Status, Visibility } from "./types";
 
-export const LOGO_SIZE = 50;
-
 export const PUBLIC: Visibility = "PUBLIC";
 export const PROTECTED: Visibility = "PROTECTED";
 export const PRIVATE: Visibility = "PRIVATE";

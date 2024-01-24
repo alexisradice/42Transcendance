@@ -1,6 +1,4 @@
 import { Avatar, Box, Burger, Group, Image, Loader } from "@mantine/core";
-import { Link } from "react-router-dom";
-import { LOGO_SIZE } from "../../constants";
 import { useMyData } from "../../hooks/useMyData";
 import ColorSchemeToggle from "../ColorSchemeToggle/ColorSchemeToggle";
 import UserMenu from "../UserMenu/UserMenu";
@@ -33,16 +31,16 @@ export default function Header({
 					aria-label="Toggle navigation"
 				/>
 				<ColorSchemeToggle />
-				<Link to="/">
-					<Group>
-						<Image
-							src={"/pongu.png"}
-							radius="md"
-							h={LOGO_SIZE}
-							w={LOGO_SIZE}
-						/>
-					</Group>
-				</Link>
+				<Image
+					src={"/pongu.png"}
+					className={classes.pongu}
+					onClick={() => {
+						if (leftSectionOpened) {
+							toggleLeftSection();
+						}
+						setChatOpened(false);
+					}}
+				/>
 			</Group>
 			<Group>
 				{error && <></>}
