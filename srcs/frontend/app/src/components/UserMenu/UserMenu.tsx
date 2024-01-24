@@ -6,6 +6,7 @@ import AccountSettings from "../AccountSettings/AccountSettings";
 import ProfileSettings from "../ProfileSettings/ProfileSettings";
 import { useSocket } from "../../hooks/useSocket";
 import { OFFLINE } from "../../constants";
+import { useSocketContext } from "../../context/useContextGameSocket";
 
 type Props = {
 	children: JSX.Element;
@@ -14,6 +15,7 @@ type Props = {
 
 const UserMenu = ({ children, setIsLogged }: Props) => {
 	const chatSocket = useSocket("chat");
+	const { gameSocket, setIsPending } = useSocketContext();
 	const [profileOpened, { open: openProfile, close: closeProfile }] =
 		useDisclosure(false);
 	const [accountOpened, { open: openAccount, close: closeAccount }] =
@@ -22,8 +24,12 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 	const logOut = async () => {
 		try {
 			await axiosPrivate.patch("/auth/logout");
-			setIsLogged(false);
+
 			chatSocket.emit("change-status", OFFLINE);
+			setIsLogged(false);
+
+			gameSocket.emit("leave-lobby");
+			setIsPending(false);
 		} catch (err: unknown) {
 			errorNotif(err);
 		}

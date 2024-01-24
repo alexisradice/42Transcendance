@@ -6,11 +6,22 @@ import { useSocketContext } from "../context/useContextGameSocket";
 import { useSocket } from "../hooks/useSocket";
 import classes from "./GameSettings.module.css";
 import { gameSettingsAtom } from "../context/atoms";
+import { useCallback, useEffect } from "react";
 
 const GameSettings = () => {
 	const { gameSocket, isPending, setIsPending } = useSocketContext();
 	const chatSocket = useSocket("chat");
 	const [settings] = useAtom(gameSettingsAtom);
+
+	const cleanLobby = useCallback(() => {
+		gameSocket.emit("leave-lobby");
+		chatSocket.emit("change-status", ONLINE);
+		setIsPending(false);
+	}, [gameSocket, chatSocket, setIsPending]);
+
+	useEffect(() => {
+		cleanLobby();
+	}, [cleanLobby]);
 
 	const handlePlayGame = () => {
 		chatSocket.emit("change-status", IN_QUEUE);
@@ -19,9 +30,7 @@ const GameSettings = () => {
 	};
 
 	const handleCancel = () => {
-		chatSocket.emit("change-status", ONLINE);
-		gameSocket.emit("leave-lobby");
-		setIsPending(false);
+		cleanLobby();
 	};
 
 	return (
