@@ -12,7 +12,7 @@ import { IconMessages, IconSend2, IconUser } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { Socket } from "socket.io-client";
 import { useSWRConfig } from "swr";
-import { PROTECTED } from "../../constants";
+import { PRIVATE, PROTECTED } from "../../constants";
 import { ChannelInfos, Message, SocketResponse } from "../../types";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
@@ -155,6 +155,40 @@ const ChannelChat = ({
 		}
 	};
 
+	const setPrivateOn = async () => {
+		if (
+			confirm(
+				"This channel will be hidden to all non-members (password protection is disabled). Are you sure?",
+			)
+		) {
+			try {
+				await axiosPrivate.post("/channel/private", {
+					channelId,
+					activate: "true",
+				});
+				mutate(`/channel/${channelId}`);
+				mutate("/channel/list");
+			} catch (err) {
+				errorNotif(err);
+			}
+		}
+	};
+
+	const setPrivateOff = async () => {
+		if (confirm("This channel will be publicly open. Are you sure?")) {
+			try {
+				await axiosPrivate.post("/channel/private", {
+					channelId,
+					activate: "false",
+				});
+				mutate(`/channel/${channelId}`);
+				mutate("/channel/list");
+			} catch (err) {
+				errorNotif(err);
+			}
+		}
+	};
+
 	const leaveChatRoom = () => {
 		chatSocket.emit(
 			"leave-chatroom",
@@ -189,9 +223,12 @@ const ChannelChat = ({
 					<ChannelMenu
 						isOwner={owner.login === login}
 						hasPassword={channel.visibility === PROTECTED}
+						isPrivate={channel.visibility === PRIVATE}
 						addPassword={addPassword}
 						changePassword={changePassword}
 						removePassword={removePassword}
+						setPrivateOn={setPrivateOn}
+						setPrivateOff={setPrivateOff}
 						leaveChatRoom={leaveChatRoom}
 					/>
 				</UnstyledButton>

@@ -642,23 +642,27 @@ export class ChannelService {
 		});
 	}
 
-	// async updateNotifications(userId: string) {
-	// 	const notifRaw = await this.getNotif(userId);
-	// 	const muted = await Promise.all(
-	// 		notifRaw.map(async (notifEntry) => {
-	// 			const checkDate = notifEntry.lastChecked;
-	// 			const hasNewMessages = await this.prisma.message.findFirst({
-	// 				where: {
-	// 					AND:[
-	// 						{channelId: notifEntry.channelId},
-	// 						{createdAt: {gte: checkDate}},
-	// 					],
-	// 				},
-	// 			});
-	// 			if (hasNewMessages) {
-	// 				await this.updateNotifNewMessages(notifEntry.channelId, userId, true);
-	// 			}
-	// 		}),
-	// 	);
-	// }
+	async activatePrivate(channelId: string) {
+		console.log("in activate function");
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PRIVATE,
+			},
+		});
+	}
+
+	async deactivatePrivate(channelId: string) {
+		console.log("in deactivate function");
+		return await this.prisma.channel.update({
+			where: {
+				id: channelId,
+			},
+			data: {
+				visibility: ChannelVisibility.PUBLIC,
+			},
+		});
+	}
 }

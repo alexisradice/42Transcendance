@@ -184,6 +184,31 @@ export class ChannelController {
 		return { success: true };
 	}
 
+	@Post("private")
+	@UseGuards(JwtGuard)
+	async activatePrivate(
+		@Req() req: Request,
+		@Body("channelId") channelId: string,
+		@Body("activate") activate: boolean,
+	) {
+		const channel = await this.channelService.findChannelById(channelId);
+		const isOwner = await this.channelService.isChannelOwner(
+			req.user["id"],
+			channel,
+		);
+		if (!isOwner) {
+			return { success: false };
+		}
+		if (!activate) {
+			console.log("activate :", activate);
+			await this.channelService.deactivatePrivate(channelId);
+		} else {
+			console.log("activate :", activate);
+			await this.channelService.activatePrivate(channelId);
+		}
+		return { success: true };
+	}
+
 	@Get(":channelId")
 	@UseGuards(JwtGuard)
 	async getChannel(
@@ -224,24 +249,4 @@ export class ChannelController {
 		).then((results) => results.filter((mutedEntry) => mutedEntry));
 		return { ...channel, admins, members, muted };
 	}
-
-	// @Post("notifications/update")
-	// @UseGuards(JwtGuard)
-	// async updateUserNotifications(
-	// 	@Req() req: Request,
-	// 	@Body("channelId") channelId: string,
-	// 	@Body("newMessage") newMessage?: boolean,
-	// ) {
-	// 	const userId = req.user["id"];
-	// 	if (newMessage !== undefined) {
-	// 		await this.channelService.updateNotifNewMessages(
-	// 			channelId,
-	// 			userId,
-	// 			newMessage,
-	// 		);
-	// 	} else {
-	// 		await this.channelService.updateNotifDate(channelId, userId);
-	// 	}
-	// 	return { success: true };
-	// }
 }

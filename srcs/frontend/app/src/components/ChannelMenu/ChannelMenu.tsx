@@ -10,6 +10,8 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconDoorExit,
+	IconEye,
+	IconEyeOff,
 	IconPassword,
 	IconSettings,
 	IconShieldOff,
@@ -20,18 +22,24 @@ import { useState } from "react";
 type Props = {
 	isOwner: boolean;
 	hasPassword: boolean;
+	isPrivate: boolean;
 	addPassword: (password: string) => Promise<void>;
 	changePassword: (password: string) => Promise<void>;
 	removePassword: () => Promise<void>;
+	setPrivateOn: () => Promise<void>;
+	setPrivateOff: () => Promise<void>;
 	leaveChatRoom: () => void;
 };
 
 const ChannelMenu = ({
 	isOwner,
 	hasPassword,
+	isPrivate,
 	addPassword,
 	changePassword,
 	removePassword,
+	setPrivateOn,
+	setPrivateOff,
 	leaveChatRoom,
 }: Props) => {
 	const [opened, { open, close }] = useDisclosure(false);
@@ -195,6 +203,21 @@ const ChannelMenu = ({
 									</Menu.Item>
 									<Menu.Divider />
 								</>
+							)}
+							{!isPrivate ? (
+								<Menu.Item
+									leftSection={<IconEyeOff size={18} />}
+									onClick={setPrivateOn}
+								>
+									Set as private
+								</Menu.Item>
+							) : (
+								<Menu.Item
+									leftSection={<IconEye size={18} />}
+									onClick={setPrivateOff}
+								>
+									Set as public
+								</Menu.Item>
 							)}
 						</>
 					)}
