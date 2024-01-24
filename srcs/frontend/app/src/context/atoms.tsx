@@ -5,3 +5,5 @@ export const gameSettingsAtom = atom<SettingsType>({
 	ballSpeed: 3,
 	paddleSize: 20,
 });
+
+export const rainbowModeAtom = atom<boolean>(false);

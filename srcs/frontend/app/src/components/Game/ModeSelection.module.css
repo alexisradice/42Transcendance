@@ -12,3 +12,9 @@
 .settingRow {
 	width: 100%;
 }
+
+.epilepsyWarning {
+	color: var(--mantine-color-dimmed);
+	font-size: var(--mantine-font-size-xs);
+	margin-left: var(--mantine-spacing-xs);
+}

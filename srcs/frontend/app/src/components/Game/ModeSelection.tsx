@@ -1,8 +1,8 @@
-import { Slider, Text } from "@mantine/core";
+import { Checkbox, Group, Slider, Text } from "@mantine/core";
 import React, { useEffect, useState } from "react";
-import styles from "./ModeSelection.module.css";
+import classes from "./ModeSelection.module.css";
 import { useAtom } from "jotai";
-import { gameSettingsAtom } from "../../context/atoms";
+import { gameSettingsAtom, rainbowModeAtom } from "../../context/atoms";
 
 const ballMarks = [
 	{ value: 1, label: "Very slow" },
@@ -24,7 +24,7 @@ const SettingsComponent: React.FC = () => {
 	const [, setSettings] = useAtom(gameSettingsAtom);
 	const [ballSpeed, setBallSpeed] = useState(3);
 	const [paddleSize, setPaddleSize] = useState(20);
-	// const [rainbowMode, setRainbowMode] = useState(false);
+	const [rainbowMode, setRainbowMode] = useAtom(rainbowModeAtom);
 
 	// Update  component on settings change
 	useEffect(() => {
@@ -36,9 +36,9 @@ const SettingsComponent: React.FC = () => {
 	}, [ballSpeed, paddleSize, setSettings]);
 
 	return (
-		<div className={styles.container}>
-			<div className={styles.settingRow}>
-				<Text className={styles.labelText}>Ball Speed</Text>
+		<div className={classes.container}>
+			<div className={classes.settingRow}>
+				<Text className={classes.labelText}>Ball Speed</Text>
 				<Slider
 					defaultValue={3}
 					onChangeEnd={setBallSpeed}
@@ -53,10 +53,10 @@ const SettingsComponent: React.FC = () => {
 				/>
 			</div>
 
-			<div className={styles.settingRow}>
-				<Text className={styles.labelText}>Paddle Size</Text>
+			<div className={classes.settingRow}>
+				<Text className={classes.labelText}>Paddle Size</Text>
 				<Slider
-					className={styles.slider}
+					className={classes.slider}
 					defaultValue={20}
 					onChangeEnd={setPaddleSize}
 					label={(val) =>
@@ -70,15 +70,23 @@ const SettingsComponent: React.FC = () => {
 				/>
 			</div>
 
-			{/* <div className={styles.settingRow}>
-				<Text className={styles.labelText}>Rainbow mode</Text>
-				<Checkbox
-					checked={rainbowMode}
-					onChange={(event) =>
-						setRainbowMode(event.currentTarget.checked)
-					}
-				/>
-			</div> */}
+			<div className={classes.settingRow}>
+				<Group>
+					<Checkbox
+						id="rainbow-mode"
+						checked={rainbowMode}
+						onChange={(event) =>
+							setRainbowMode(event.currentTarget.checked)
+						}
+					/>
+					<label className={classes.labelText} htmlFor="rainbow-mode">
+						Rainbow mode
+						<span className={classes.epilepsyWarning}>
+							epilepsy warning!
+						</span>
+					</label>
+				</Group>
+			</div>
 		</div>
 	);
 };

@@ -4,7 +4,7 @@ import { IN_GAME } from "../../constants";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import { useSocket } from "../../hooks/useSocket";
 import classes from "./PongGame.module.css";
-import { gameSettingsAtom } from "../../context/atoms";
+import { gameSettingsAtom, rainbowModeAtom } from "../../context/atoms";
 import { useAtom } from "jotai";
 
 const PongGame: FC = () => {
@@ -20,6 +20,7 @@ const PongGame: FC = () => {
 	const [paddles, setPaddles] = useState({ P1: 50, P2: 50 });
 	const [countdown, setCountdown] = useState(3);
 	const [gameSettings] = useAtom(gameSettingsAtom);
+	const [rainbowMode] = useAtom(rainbowModeAtom);
 
 	const scalePosition = (x: number, y: number) => {
 		const scaledX = (x / 300) * 100; // Scale based on game board width
@@ -113,6 +114,10 @@ const PongGame: FC = () => {
 		gameSocket.on("ballPosition", (response: { x: number; y: number }) => {
 			const { x, y } = response;
 			const scaledPos = scalePosition(x, y);
+			if (rainbowMode) {
+				const gameElem = document.getElementById("game")!;
+				gameElem.style.setProperty("--hue", `${x}`);
+			}
 			setBallPosition(scaledPos);
 		});
 
@@ -121,10 +126,10 @@ const PongGame: FC = () => {
 			gameSocket.off("paddlePosition");
 			gameSocket.off("pointScored");
 		};
-	}, [gameSocket, playerScores]);
+	}, [gameSocket, playerScores, rainbowMode]);
 
 	return (
-		<div className={classes.game}>
+		<div id="game" className={classes.game}>
 			{countdown > 0 && (
 				<div className={classes.countdown}>{countdown}</div>
 			)}
