@@ -8,9 +8,21 @@ import {
 	Timeline,
 	Text,
 	Avatar,
+	Group,
+	SimpleGrid,
+	Grid,
 } from "@mantine/core";
 import { fetcherPrivate } from "../../utils/fetcher";
 import useSWR from "swr";
+import {
+	IconChartArrowsVertical,
+	IconMoodLookDown,
+	IconSalt,
+	IconScale,
+	IconThumbDown,
+	IconThumbDownFilled,
+	IconTrophyFilled,
+} from "@tabler/icons-react";
 
 type Props = {
 	user: GeneralUser;
@@ -54,9 +66,32 @@ const StatsModal = ({ user, opened, close }: Props) => {
 				</Tabs.List>
 
 				<Tabs.Panel value="stats" pt="xs">
-					<Text size="sm">
-						Here you can(not, for the moment) see the game stats
-					</Text>
+					<Grid justify="space-around" align="flex-start">
+						<Grid.Col span={6}>
+							<Group>
+								<IconTrophyFilled size={32} />
+								<Text size="lg">{`${data.stats.wins} wins`}</Text>
+							</Group>
+						</Grid.Col>
+						<Grid.Col span={6}>
+							<Group>
+								<IconThumbDown size={32} />
+								<Text size="lg">{`${data.stats.losses} losses`}</Text>
+							</Group>
+						</Grid.Col>
+						<Grid.Col span={6}>
+							<Group>
+								<IconChartArrowsVertical size={32} />
+								<Text size="lg">{`Win streak: ${data.stats.winStreak}`}</Text>
+							</Group>
+						</Grid.Col>
+						<Grid.Col span={6}>
+							<Group>
+								<IconScale size={32} />
+								<Text size="lg">{`Win rate: ${(data.stats.wins * 100) / data.stats.gamesPlayed}%`}</Text>
+							</Group>
+						</Grid.Col>
+					</Grid>
 				</Tabs.Panel>
 				<Tabs.Panel value="timeline" pt="xs">
 					<Timeline bulletSize={24}>
