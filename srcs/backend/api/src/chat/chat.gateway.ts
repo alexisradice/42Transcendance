@@ -22,6 +22,7 @@ import { ChannelService } from "src/channel/channel.service";
 import { SocketResponse } from "src/types";
 import { UserService } from "src/user/user.service";
 import { ChatService } from "./chat.service";
+import { validate } from "uuid";
 
 @WebSocketGateway({
 	cors: {
@@ -180,7 +181,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				false,
 			);
 			client.join(dmChannel.id);
-			client.join(dest.id);
 			response.data = dmChannel;
 		} catch (err) {
 			response.error = err;
@@ -239,7 +239,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					true,
 				);
 				if (isOnline) {
-					client
+					this.server
 						.to(destId)
 						.emit("notif", { channelId: dmChannel.id });
 				}
@@ -412,6 +412,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const { channelId, kickedId, action } = payload;
 		const user: User = client.data.user;
 		try {
+			if (
+				!validate(kickedId) ||
+				!validate(channelId) ||
+				(action !== "kick" && action !== "ban")
+			) {
+				throw new BadRequestException("Invalid request.");
+			}
 			const channel =
 				await this.channelService.findChannelById(channelId);
 			const canEject = await this.channelService.hasRights(
