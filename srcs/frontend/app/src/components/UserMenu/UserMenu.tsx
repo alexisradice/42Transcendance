@@ -1,4 +1,4 @@
-import { Menu } from "@mantine/core";
+import { Center, Loader, Menu } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { errorNotif } from "../../utils/errorNotif";
 import { axiosPrivate } from "../../utils/fetcher";
@@ -40,6 +40,18 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 			errorNotif(err);
 		}
 	};
+
+	if (isLoading) {
+		return (
+			<Center>
+				<Loader type="dots" />
+			</Center>
+		);
+	}
+
+	if (error || !user) {
+		return <></>;
+	}
 
 	return (
 		<>

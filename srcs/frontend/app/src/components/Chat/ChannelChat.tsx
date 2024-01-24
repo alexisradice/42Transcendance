@@ -164,7 +164,7 @@ const ChannelChat = ({
 			try {
 				await axiosPrivate.post("/channel/private", {
 					channelId,
-					activate: "true",
+					activate: true,
 				});
 				mutate(`/channel/${channelId}`);
 				mutate("/channel/list");
@@ -179,7 +179,7 @@ const ChannelChat = ({
 			try {
 				await axiosPrivate.post("/channel/private", {
 					channelId,
-					activate: "false",
+					activate: false,
 				});
 				mutate(`/channel/${channelId}`);
 				mutate("/channel/list");

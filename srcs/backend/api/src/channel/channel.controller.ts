@@ -200,10 +200,8 @@ export class ChannelController {
 			return { success: false };
 		}
 		if (!activate) {
-			console.log("activate :", activate);
 			await this.channelService.deactivatePrivate(channelId);
 		} else {
-			console.log("activate :", activate);
 			await this.channelService.activatePrivate(channelId);
 		}
 		return { success: true };
