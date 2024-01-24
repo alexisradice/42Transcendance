@@ -9,18 +9,15 @@ import {
 	Text,
 	Avatar,
 	Group,
-	SimpleGrid,
 	Grid,
+	Table,
 } from "@mantine/core";
 import { fetcherPrivate } from "../../utils/fetcher";
 import useSWR from "swr";
 import {
 	IconChartArrowsVertical,
-	IconMoodLookDown,
-	IconSalt,
 	IconScale,
 	IconThumbDown,
-	IconThumbDownFilled,
 	IconTrophyFilled,
 } from "@tabler/icons-react";
 
@@ -48,6 +45,23 @@ const StatsModal = ({ user, opened, close }: Props) => {
 	if (error || !data) {
 		return <></>;
 	}
+
+	const rows = data.gamesPlayed.map((game) => (
+		<Table.Tr key={game.id}>
+			<Table.Td c={game.winner.id === user.id ? "gold" : "dimmed"}>
+				<Text ta="center">{game.winner.displayName}</Text>
+			</Table.Td>
+			<Table.Td c={game.winner.id === user.id ? "gold" : "dimmed"}>
+				<Text ta="center">{game.winnerScore}</Text>
+			</Table.Td>
+			<Table.Td c={game.loser.id === user.id ? "red" : "dimmed"}>
+				<Text ta="center">{game.loserScore}</Text>
+			</Table.Td>
+			<Table.Td c={game.loser.id === user.id ? "red" : "dimmed"}>
+				<Text ta="center">{game.loser.displayName}</Text>
+			</Table.Td>
+		</Table.Tr>
+	));
 
 	return (
 		<Modal
@@ -88,7 +102,7 @@ const StatsModal = ({ user, opened, close }: Props) => {
 						<Grid.Col span={6}>
 							<Group>
 								<IconScale size={32} />
-								<Text size="lg">{`Win rate: ${(data.stats.wins * 100) / data.stats.gamesPlayed}%`}</Text>
+								<Text size="lg">{`Win rate: ${Math.round((data.stats.wins * 100) / data.stats.gamesPlayed)}%`}</Text>
 							</Group>
 						</Grid.Col>
 					</Grid>
@@ -100,12 +114,18 @@ const StatsModal = ({ user, opened, close }: Props) => {
 								return (
 									<Timeline.Item
 										key={gamePlayed.id}
-										title={`VS ${data.id === gamePlayed.winner.id ? gamePlayed.loser.displayName : gamePlayed.winner.displayName}`}
+										title={`${data.displayName} VS ${data.id === gamePlayed.winner.id ? gamePlayed.loser.displayName : gamePlayed.winner.displayName}`}
 										bullet={
 											<Avatar
 												size={22}
 												radius="xl"
-												src={gamePlayed.winner.image}
+												src={
+													data.id ===
+													gamePlayed.winner.id
+														? gamePlayed.loser.image
+														: gamePlayed.winner
+																.image
+												}
 											/>
 										}
 									>
@@ -116,7 +136,9 @@ const StatsModal = ({ user, opened, close }: Props) => {
 											{`Final score: ${gamePlayed.winnerScore} - ${gamePlayed.loserScore}`}
 										</Text>
 										<Text size="sm">
-											{`Winner was ${gamePlayed.winner.displayName}`}
+											{data.id === gamePlayed.winner.id
+												? "VICTORY"
+												: "DEFEAT"}
 										</Text>
 									</Timeline.Item>
 								);
@@ -125,49 +147,19 @@ const StatsModal = ({ user, opened, close }: Props) => {
 					</Timeline>
 				</Tabs.Panel>
 				<Tabs.Panel value="history" pt="xs">
-					the full matches history goes here
+					<Table>
+						<Table.Thead>
+							<Table.Tr>
+								<Table.Th>Winner</Table.Th>
+								<Table.Th>Winning Score</Table.Th>
+								<Table.Th>Losing Score</Table.Th>
+								<Table.Th>Loser</Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>{rows}</Table.Tbody>
+					</Table>
 				</Tabs.Panel>
 			</Tabs>
-			{/* <Timeline.Item title="DERNIER COMBAT">
-					{data.gamesPlayed[0].winner.displayName}
-				</Timeline.Item>
-				<Timeline.Item title="AVANT DERNIER COMBAT">
-					{data.gamesPlayed[0].winner.displayName}
-				</Timeline.Item>
-				<Timeline.Item title="AVANT AVANT DERNIER COMBAT">
-					{data.gamesPlayed[0].winner.displayName}
-				</Timeline.Item> */}
-			{/* <Timeline.Item
-					title="Avatar"
-					bullet={
-						<Avatar
-							size={22}
-							radius="xl"
-							src="https://avatars0.githubusercontent.com/u/10353856?s=460&u=88394dfd67727327c1f7670a1764dc38a8a24831&v=4"
-						/>
-					}
-				>
-					Timeline bullet as avatar image
-				</Timeline.Item>
-				<Timeline.Item title="Icon" bullet={<IconSun size="0.8rem" />}>
-					Timeline bullet as icon
-				</Timeline.Item>
-				<Timeline.Item
-					title="ThemeIcon"
-					bullet={
-						<ThemeIcon
-							size={22}
-							variant="gradient"
-							gradient={{ from: "lime", to: "cyan" }}
-							radius="xl"
-						>
-							<IconVideo size="0.8rem" />
-						</ThemeIcon>
-					}
-				>
-					Timeline bullet as ThemeIcon component
-				</Timeline.Item> */}
-			{/* </Timeline> */}
 		</Modal>
 	);
 };
