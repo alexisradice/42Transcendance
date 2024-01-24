@@ -1,5 +1,5 @@
 import { notifications } from "@mantine/notifications";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { validate } from "uuid";
 import PongGame from "../components/Game/PongGame";
@@ -10,6 +10,7 @@ import { SocketResponse } from "../types";
 import { errorNotif } from "../utils/errorNotif";
 
 export const GamePage = () => {
+	const [isVerified, setIsVerified] = useState(false);
 	const { lobbyId } = useParams();
 	const navigate = useNavigate();
 	const { gameSocket } = useSocketContext();
@@ -48,6 +49,8 @@ export const GamePage = () => {
 						Object.assign(err, response.error);
 						errorNotif(err);
 						quitGame();
+					} else {
+						setIsVerified(true);
 					}
 				},
 			);
@@ -58,5 +61,8 @@ export const GamePage = () => {
 		};
 	}, [gameSocket, navigate, lobbyId, chatSocket]);
 
+	if (!isVerified) {
+		return <></>;
+	}
 	return <PongGame />;
 };
