@@ -1,9 +1,13 @@
-import { Server, Socket } from "socket.io";
-import { LobbyMode, Settings } from "../types";
-import { WsException } from "@nestjs/websockets";
-import { Lobby } from "./lobby";
-import { InstanceFactory } from "../instance/instance.factory";
+import {
+	ForbiddenException,
+	NotFoundException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import * as _ from "lodash";
+import { Server, Socket } from "socket.io";
+import { InstanceFactory } from "../instance/instance.factory";
+import { Settings } from "../types";
+import { Lobby } from "./lobby";
 
 export class LobbyManager {
 	public server: Server;
@@ -14,7 +18,7 @@ export class LobbyManager {
 		Lobby
 	>();
 
-	public findOrCreateLobby(mode: LobbyMode, settings: Settings): Lobby {
+	public findOrCreateLobby(settings: Settings, client: Socket): Lobby {
 		this.lobbiesCleaner();
 		for (let lobby of this.lobbies.values()) {
 			if (
@@ -25,16 +29,16 @@ export class LobbyManager {
 				return lobby;
 			}
 		}
-		return this.createLobby(mode, settings);
+		return this.createLobby(settings, client);
 	}
 
-	public createLobby(mode: LobbyMode, settings: Settings): Lobby {
-		const lobby = new Lobby(
-			this.instanceFactory,
-			this.server,
-			mode,
-			settings,
-		);
+	public createLobby(settings: Settings, client: Socket): Lobby {
+		this.lobbies.forEach((lobby) => {
+			if (lobby.clients.has(client.id)) {
+				throw new ForbiddenException("Already in a lobby");
+			}
+		});
+		const lobby = new Lobby(this.instanceFactory, this.server, settings);
 
 		this.lobbies.set(lobby.id, lobby);
 		console.log("created lobby");
@@ -45,30 +49,30 @@ export class LobbyManager {
 		const lobby = this.lobbies.get(lobbyId);
 
 		if (!lobby) {
-			throw new WsException("Lobby not found");
+			throw new NotFoundException("Lobby not found");
 		}
 
 		const isInLobby = lobby.clients.has(client.id);
 
 		if (!isInLobby) {
-			throw new WsException("Unauthorized access to lobby");
+			throw new UnauthorizedException("Lobby expired");
 		}
 	}
 
 	public joinLobby(lobbyId: string, client: Socket): void {
 		const lobby = this.lobbies.get(lobbyId);
 
-		if (!lobby) {
-			throw new WsException("Lobby expired");
+		if (!lobby || lobby.instance.hasFinished || lobby.clients.size < 1) {
+			throw new NotFoundException("Lobby expired");
 		}
 
 		if (lobby.clients.size >= 2) {
-			throw new WsException("Lobby already full");
+			throw new ForbiddenException("Lobby already full");
 		}
 
 		this.lobbies.forEach((lobby) => {
 			if (lobby.clients.has(client.id)) {
-				throw new WsException("Already in a lobby");
+				throw new ForbiddenException("Already in a lobby");
 			}
 		});
 

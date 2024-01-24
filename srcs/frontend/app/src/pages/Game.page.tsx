@@ -7,6 +7,7 @@ import { ONLINE } from "../constants";
 import { useSocketContext } from "../context/useContextGameSocket";
 import { useSocket } from "../hooks/useSocket";
 import { SocketResponse } from "../types";
+import { errorNotif } from "../utils/errorNotif";
 
 export const GamePage = () => {
 	const { lobbyId } = useParams();
@@ -43,11 +44,9 @@ export const GamePage = () => {
 				{ lobbyId },
 				(response: SocketResponse<undefined>) => {
 					if (response.error) {
-						notifications.show({
-							title: "Error",
-							message: "Lobby does not exist",
-							color: "red",
-						});
+						const err = new Error();
+						Object.assign(err, response.error);
+						errorNotif(err);
 						quitGame();
 					}
 				},

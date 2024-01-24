@@ -10,9 +10,10 @@ import {
 import { useAtom } from "jotai";
 import { gameSettingsAtom } from "../../context/atoms";
 import { useSocketContext } from "../../context/useContextGameSocket";
-import { GeneralUser } from "../../types";
+import { GeneralUser, SocketResponse } from "../../types";
 import StatsModal from "../StatsModal/StatsModal";
 import UserCard from "../UserCard/UserCard";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	friend: GeneralUser;
@@ -47,11 +48,22 @@ const FriendCard = ({ friend, joinDM, removeFriend, blockFriend }: Props) => {
 				`You'll invite ${friend.login} your current selected game settings. Is this ok?`,
 			)
 		) {
-			gameSocket.emit("create-invite", {
-				settings: gameSettings,
-				opponentLogin: friend.login,
-			});
-			setIsPending(true);
+			gameSocket.emit(
+				"create-invite",
+				{
+					settings: gameSettings,
+					opponentLogin: friend.login,
+				},
+				(response: SocketResponse<undefined>) => {
+					if (response.error) {
+						const error = new Error();
+						Object.assign(error, response.error);
+						errorNotif(error);
+					} else {
+						setIsPending(true);
+					}
+				},
+			);
 		}
 	};
 

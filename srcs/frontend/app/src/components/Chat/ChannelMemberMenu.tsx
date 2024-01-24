@@ -174,11 +174,22 @@ const ChannelMemberMenu = ({
 				`You'll invite ${login} your current selected game settings. Is this ok?`,
 			)
 		) {
-			gameSocket.emit("create-invite", {
-				settings: gameSettings,
-				opponentLogin: login,
-			});
-			setIsPending(true);
+			gameSocket.emit(
+				"create-invite",
+				{
+					settings: gameSettings,
+					opponentLogin: login,
+				},
+				(response: SocketResponse<undefined>) => {
+					if (response.error) {
+						const error = new Error();
+						Object.assign(error, response.error);
+						errorNotif(error);
+					} else {
+						setIsPending(true);
+					}
+				},
+			);
 		}
 	};
 

@@ -5,8 +5,9 @@ import { createRef, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { validate as uuidValidate } from "uuid";
 import { useSocketContext } from "../../context/useContextGameSocket";
-import { Message } from "../../types";
+import { Message, SocketResponse } from "../../types";
 import classes from "./MessagesArea.module.css";
+import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	messages: Message[];
@@ -73,7 +74,7 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 
 		const isSameSite = messageURL.host === appURL.host;
 		const pathParts = messageURL.pathname.split("/");
-		const isGameURL = pathParts[1] === "invite";
+		const isGameURL = pathParts[1] === "game";
 		const lobbyId = pathParts[2];
 		const isCodeValid = uuidValidate(lobbyId || "");
 
@@ -82,7 +83,19 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		if (isInviteLink) {
 			return (
 				<Button
-					onClick={() => gameSocket.emit("join-lobby", { lobbyId })}
+					onClick={() => {
+						gameSocket.emit(
+							"join-lobby",
+							{ lobbyId },
+							(response: SocketResponse<undefined>) => {
+								if (response.error) {
+									const err = new Error();
+									Object.assign(err, response.error);
+									errorNotif(err);
+								}
+							},
+						);
+					}}
 					className={classes.gameInviteButton}
 				>
 					Accept invitation

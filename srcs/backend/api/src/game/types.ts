@@ -1,7 +1,5 @@
 import { Socket } from "socket.io";
 
-export type LobbyMode = "private" | "public";
-
 export interface ServerPayloads {
 	queue: {
 		gameSettings: Settings;
@@ -9,7 +7,6 @@ export interface ServerPayloads {
 
 	lobbyState: {
 		lobbyId: string;
-		mode: LobbyMode;
 		hasStarted: boolean;
 		hasFinished: boolean;
 		isSuspended: boolean;
@@ -38,10 +35,6 @@ export interface ServerPayloads {
 
 	gameOver: {
 		winner: string;
-	};
-
-	waitingForOpponent: {
-		lobbyId: string;
 	};
 
 	launch: {

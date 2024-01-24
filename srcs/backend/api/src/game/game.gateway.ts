@@ -1,4 +1,8 @@
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import {
+	BadRequestException,
+	ForbiddenException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import {
@@ -9,18 +13,21 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 	WsException,
-	WsResponse,
 } from "@nestjs/websockets";
 import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";
 import { Server, Socket } from "socket.io";
 import { ChannelService } from "src/channel/channel.service";
 import { ChatService } from "src/chat/chat.service";
-import { SocketResponse } from "src/types";
+import {
+	BALL_SPEEDS,
+	PADDLE_SIZE as PADDLE_SIZES,
+	SocketResponse,
+} from "src/types";
 import { UserService } from "src/user/user.service";
 import { InstanceFactory } from "./instance/instance.factory";
 import { LobbyManager } from "./lobby/lobby.manager";
-import { ServerPayloads, Settings } from "./types";
+import { Settings } from "./types";
 
 @WebSocketGateway({
 	cors: {
@@ -126,20 +133,17 @@ export class GameGateway
 	}
 
 	@SubscribeMessage("queue")
-	launchQueue(
-		client: Socket,
-		data: { settings: Settings },
-	): WsResponse<ServerPayloads["waitingForOpponent"]> {
+	launchQueue(client: Socket, data: { settings: Settings }) {
 		const { settings } = data;
 		if (
 			settings.ballSpeed < 1 ||
-				settings.ballSpeed > 5 ||
+			settings.ballSpeed > 5 ||
 			settings.paddleSize < 10 ||
 			settings.paddleSize > 30
 		) {
-			throw new WsException("Invalid settings");
+			throw new BadRequestException("Invalid settings");
 		}
-		const lobby = this.lobbyManager.findOrCreateLobby("public", settings);
+		const lobby = this.lobbyManager.findOrCreateLobby(settings, client);
 		lobby.addClient(client);
 
 		const login = client.data.user.login;
@@ -148,26 +152,20 @@ export class GameGateway
 			login,
 			status: Status.IN_QUEUE,
 		});
-
-		return {
-			event: "waitingForOpponent",
-			data: {
-				lobbyId: lobby.id,
-			},
-		};
 	}
 
 	@SubscribeMessage("create-invite")
 	async onLobbyCreate(
 		client: Socket,
 		data: { settings: Settings; opponentLogin: string },
-	): Promise<WsResponse<ServerPayloads["waitingForOpponent"]>> {
-		const lobby = this.lobbyManager.createLobby("private", data.settings);
-		lobby.addClient(client);
-
-		const inviter: User = client.data.user;
-		const opponentLogin = data.opponentLogin;
+	) {
+		const response = {} as SocketResponse;
 		try {
+			const lobby = this.lobbyManager.createLobby(data.settings, client);
+			lobby.addClient(client);
+
+			const inviter: User = client.data.user;
+			const opponentLogin = data.opponentLogin;
 			const opponent = await this.userService.findOne({
 				login: opponentLogin,
 			});
@@ -191,17 +189,17 @@ export class GameGateway
 			await this.chatService.createMessage(
 				dmChannel.id,
 				inviter.id,
-				`Hey, join me on this game: ${siteUrl}invite/${lobby.id}. Ball speed: ${lobby.settings.ballSpeed}, paddle size: ${lobby.settings.paddleSize}`,
+				`Hey, join me on this game (${
+					BALL_SPEEDS[lobby.settings.ballSpeed]
+				} ball, ${
+					PADDLE_SIZES[lobby.settings.paddleSize]
+				} paddle) ${siteUrl}game/${lobby.id}`,
 			);
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
-			return {
-				event: "waitingForOpponent",
-				data: {
-					lobbyId: lobby.id,
-				},
-			};
 		} catch (err) {
-			throw new WsException(err.message);
+			response.error = err;
+		} finally {
+			return response;
 		}
 	}
 
@@ -211,15 +209,22 @@ export class GameGateway
 		try {
 			this.lobbyManager.verifyLobby(data.lobbyId, client);
 		} catch (err) {
-			response.error = err.message;
+			response.error = err;
 		} finally {
 			return response;
 		}
 	}
 
 	@SubscribeMessage("join-lobby")
-	onLobbyJoin(client: Socket, data: { lobbyId: string }): void {
-		this.lobbyManager.joinLobby(data.lobbyId, client);
+	onLobbyJoin(client: Socket, data: { lobbyId: string }): SocketResponse {
+		const response = {} as SocketResponse;
+		try {
+			this.lobbyManager.joinLobby(data.lobbyId, client);
+		} catch (err) {
+			response.error = err;
+		} finally {
+			return response;
+		}
 	}
 
 	@SubscribeMessage("leave-lobby")
@@ -230,7 +235,7 @@ export class GameGateway
 	@SubscribeMessage("move-paddle")
 	onMovePaddle(client: Socket, data: { direction: "up" | "down" }): void {
 		if (!client.data.lobby) {
-			throw new WsException("You are not in a lobby");
+			throw new ForbiddenException("You are not in a lobby");
 		}
 		client.data.lobby.instance.movePaddle(data.direction, client);
 	}

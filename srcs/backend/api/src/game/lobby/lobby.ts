@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import { Instance } from "../instance/instance";
-import { GameResult, LobbyMode, ServerPayloads, Settings } from "../types";
+import { GameResult, ServerPayloads, Settings } from "../types";
 import { InstanceFactory } from "../instance/instance.factory";
 
 export class Lobby {
@@ -20,7 +20,6 @@ export class Lobby {
 	constructor(
 		private readonly instanceFactory: InstanceFactory,
 		private readonly server: Server,
-		public readonly mode: LobbyMode,
 		public readonly settings: Settings,
 	) {}
 
@@ -71,7 +70,6 @@ export class Lobby {
 	public dispatchLobbyState(): void {
 		const payload: ServerPayloads["lobbyState"] = {
 			lobbyId: this.id,
-			mode: this.mode,
 			hasStarted: this.instance.hasStarted,
 			hasFinished: this.instance.hasFinished,
 			isSuspended: this.instance.isSuspended,
