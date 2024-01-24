@@ -38,7 +38,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	const chatSocket = useSocket("chat");
 	const { gameSocket, setIsPending } = useSocketContext();
 	const navigate = useNavigate();
-	const isDesktopResolution = useMediaQuery("(min-width: 62em)");
+	const isDesktopResolution = useMediaQuery("(min-width: 768px)");
 	const [leftSectionOpened, { open, close, toggle: toggleLeftSection }] =
 		useDisclosure();
 	const [chatOpened, setChatOpened] = useState(false);
@@ -67,10 +67,14 @@ const LoggedView = ({ setIsLogged }: Props) => {
 	useEffect(() => {
 		if (isDesktopResolution) {
 			open();
+			if (selectedChannel) {
+				setChatOpened(true);
+			}
 		} else {
 			close();
+			setChatOpened(false);
 		}
-	}, [isDesktopResolution, open, close]);
+	}, [isDesktopResolution, open, close, setChatOpened, selectedChannel]);
 
 	useEffect(() => {
 		const handleStatusChanged = (response: {
@@ -221,7 +225,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			footer={{ height: 40 }}
 			navbar={{
 				width: 250,
-				breakpoint: "md",
+				breakpoint: "xs",
 				collapsed: {
 					mobile: !leftSectionOpened,
 					desktop: !leftSectionOpened,
@@ -229,7 +233,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			}}
 			aside={{
 				width: 350,
-				breakpoint: "md",
+				breakpoint: "xs",
 				collapsed: {
 					mobile: !chatOpened || selectedChannel === "",
 					desktop: !chatOpened || selectedChannel === "",
