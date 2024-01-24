@@ -169,7 +169,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				dest.login,
 			);
 			if (blockedByDest) {
-				throw new HttpException("This user blocked you.", 400);
+				throw new ForbiddenException("This user blocked you.");
+			}
+			const blockedDest = await this.userService.isBlockedBy(
+				dest.login,
+				user.login,
+			);
+			if (blockedDest) {
+				throw new ForbiddenException("You blocked this user.");
 			}
 			const dmChannel = await this.channelService.findOrCreateDm(
 				user.id,
@@ -222,6 +229,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			);
 			if (blockedByDest) {
 				throw new ForbiddenException("This user blocked you.");
+			}
+			const blockedDest = await this.userService.isBlockedBy(
+				dest.login,
+				author.login,
+			);
+			if (blockedDest) {
+				throw new ForbiddenException("You blocked this user.");
 			}
 			const message = await this.chatService.createMessage(
 				dmChannel.id,
