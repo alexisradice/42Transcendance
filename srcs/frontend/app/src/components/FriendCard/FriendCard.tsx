@@ -11,9 +11,9 @@ import { useAtom } from "jotai";
 import { gameSettingsAtom } from "../../context/atoms";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import { GeneralUser, SocketResponse } from "../../types";
+import { errorNotif } from "../../utils/errorNotif";
 import StatsModal from "../StatsModal/StatsModal";
 import UserCard from "../UserCard/UserCard";
-import { errorNotif } from "../../utils/errorNotif";
 
 type Props = {
 	friend: GeneralUser;

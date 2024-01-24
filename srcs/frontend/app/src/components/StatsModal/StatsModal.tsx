@@ -24,7 +24,7 @@ import {
 type Props = {
 	user: GeneralUser;
 	opened: boolean;
-	close: any;
+	close: () => void;
 };
 
 const StatsModal = ({ user, opened, close }: Props) => {

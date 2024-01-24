@@ -112,6 +112,7 @@ export class UserController {
 			select: {
 				friends: {
 					select: {
+						id: true,
 						login: true,
 						displayName: true,
 						image: true,

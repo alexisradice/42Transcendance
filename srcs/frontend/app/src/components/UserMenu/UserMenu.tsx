@@ -9,7 +9,6 @@ import { OFFLINE } from "../../constants";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import StatsModal from "../StatsModal/StatsModal";
 import { useMyData } from "../../hooks/useMyData";
-import { GeneralUser } from "../../types";
 
 type Props = {
 	children: JSX.Element;
@@ -56,7 +55,7 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 	return (
 		<>
 			<StatsModal
-				user={user as GeneralUser}
+				user={user}
 				opened={gameStatsOpened}
 				close={closeStats}
 			/>
