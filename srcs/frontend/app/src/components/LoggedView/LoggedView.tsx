@@ -131,6 +131,8 @@ const LoggedView = ({ setIsLogged }: Props) => {
 
 		gameSocket.on("launch", ({ lobbyId }: { lobbyId: string }) => {
 			setIsPending(false);
+			setChatOpened(false);
+			close();
 			navigate(`/game/${lobbyId}`);
 		});
 
@@ -155,6 +157,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 		gameSocket,
 		setIsPending,
 		navigate,
+		close,
 	]);
 
 	const openChannel = (channelId: string) => {
