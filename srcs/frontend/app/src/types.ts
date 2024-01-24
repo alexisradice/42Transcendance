@@ -42,11 +42,14 @@ export interface GeneralUser {
 	status: string;
 }
 
-export interface MyData {
-	id: string;
-	login: string;
-	displayName: string;
-	image: string;
+// export interface MyData {
+// 	id: string;
+// 	login: string;
+// 	displayName: string;
+// 	image: string;
+// 	twoFA: boolean;
+// }
+export interface MyData extends GeneralUser {
 	twoFA: boolean;
 }
 
