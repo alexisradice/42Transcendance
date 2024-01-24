@@ -145,16 +145,19 @@ const StatsModal = ({ user, opened, close }: Props) => {
 					</Stack>
 				</Tabs.Panel>
 				<Tabs.Panel value="timeline" pt="md" h={350}>
-					<Timeline bulletSize={24}>
+					<Timeline bulletSize={50}>
 						{data.gamesPlayed.map((gamePlayed, index: number) => {
 							if (index < 3) {
 								return (
 									<Timeline.Item
 										key={gamePlayed.id}
-										title={`${data.displayName} VS ${data.id === gamePlayed.winner.id ? gamePlayed.loser.displayName : gamePlayed.winner.displayName}`}
+										title={`${data.displayName} VS ${data.id === gamePlayed.winner.id ? gamePlayed.loser.displayName : gamePlayed.winner.displayName}`.toUpperCase()}
+										styles={{
+											itemTitle: { fontSize: "20px" },
+										}}
 										bullet={
 											<Avatar
-												size={22}
+												size={50}
 												radius="xl"
 												src={
 													data.id ===
@@ -166,16 +169,33 @@ const StatsModal = ({ user, opened, close }: Props) => {
 											/>
 										}
 									>
-										<Text size="xs" c="dimmed">
+										<Text size="sm" c="dimmed">
 											{`Ball speed: ${getFormattedValue("ball", gamePlayed.ballSpeed)}, Paddle size: ${getFormattedValue("paddle", gamePlayed.paddleSize)}`}
 										</Text>
-										<Text size="xs" c="dimmed">
+										<Text size="sm" c="dimmed">
 											{`Final score: ${gamePlayed.winnerScore} - ${gamePlayed.loserScore}`}
 										</Text>
-										<Text size="sm">
-											{data.id === gamePlayed.winner.id
-												? "VICTORY"
-												: "DEFEAT"}
+										<Text size="md">
+											{data.id ===
+											gamePlayed.winner.id ? (
+												<Group
+													align="center"
+													justify="flex-start"
+													gap={5}
+												>
+													<IconTrophy />
+													VICTORY
+												</Group>
+											) : (
+												<Group
+													align="center"
+													justify="flex-start"
+													gap={5}
+												>
+													<IconMoodLookDown />
+													DEFEAT
+												</Group>
+											)}
 										</Text>
 									</Timeline.Item>
 								);
