@@ -91,8 +91,8 @@ export class Instance {
 			height: this.lobby.settings.paddleSize,
 			width: 6,
 		};
-		this.paddleP1 = { x: 1, y: 50 };
-		this.paddleP2 = { x: 299, y: 50 };
+		this.paddleP1 = { x: -5, y: 50 };
+		this.paddleP2 = { x: 298, y: 50 };
 	};
 
 	public setPlayer1(client: Socket): void {
