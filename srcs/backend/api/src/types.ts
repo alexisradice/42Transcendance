@@ -1,3 +1,8 @@
+import { Express } from "express";
+import { Multer } from "multer";
+
+export type File = Express.Multer.File;
+
 export type MiniUser = {
 	email: string;
 	login: string;

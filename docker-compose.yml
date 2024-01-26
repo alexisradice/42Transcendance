@@ -14,16 +14,18 @@ services:
     frontend:
         image: frontend
         container_name: frontend
-        build: ./srcs/frontend
-        restart: always
-        environment:
-            - VITE_CLIENT_ID=${VITE_CLIENT_ID}
-            - VITE_API_URL=${VITE_API_URL}
-            - VITE_42_AUTH_URL=${VITE_42_AUTH_URL}
+        build:
+            context: ./srcs/frontend
+            args:
+                - VITE_CLIENT_ID=${VITE_CLIENT_ID}
+                - VITE_API_URL=${VITE_API_URL}
+                - VITE_AUTH_URL=${VITE_AUTH_URL}
+        depends_on:
+            - backend
         networks:
             - transcendence
         ports:
-            - "8080:8080"
+            - "4173:4173"
 
     backend:
         image: backend

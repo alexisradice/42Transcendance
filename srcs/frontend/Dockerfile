@@ -1,10 +1,25 @@
-FROM node
+FROM node:latest
 
-WORKDIR /app
+# inject all environment vars we'll need
+ARG VITE_CLIENT_ID
+ARG VITE_API_URL
+ARG VITE_AUTH_URL
 
-COPY app/ .
-RUN npm install --silent && npm run build && chmod 775 ./src/docker/init.sh
+# expose the variable to the finished container
+ENV VITE_CLIENT_ID=$VITE_CLIENT_ID
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_AUTH_URL=$VITE_AUTH_URL
 
-EXPOSE 8080
+# build
+WORKDIR /usr/src/app
 
-CMD ["./src/docker/init.sh"]
+COPY app/package.json ./
+RUN npm install
+
+COPY app/ ./
+
+RUN npm run build
+
+EXPOSE 4173
+
+CMD ["npm", "run", "preview", "--", "--host"]

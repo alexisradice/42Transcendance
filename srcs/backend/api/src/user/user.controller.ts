@@ -24,6 +24,8 @@ import { UserService } from "./user.service";
 import { AuthService } from "src/auth/auth.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Status } from "@prisma/client";
+import { File } from "src/types";
+
 // import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("user")
@@ -73,7 +75,7 @@ export class UserController {
 				fileIsRequired: false,
 			}),
 		)
-		image?: Express.Multer.File,
+		image?: File,
 	) {
 		let fileType: string | null;
 		let base64Image: string | null;

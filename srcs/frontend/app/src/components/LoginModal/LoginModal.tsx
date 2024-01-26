@@ -62,7 +62,7 @@ const LoginModal = ({ setIsLogged }: Props) => {
 			redirect_uri: currentUrl.origin,
 		});
 		window.location.replace(
-			`${import.meta.env.VITE_42_AUTH_URL}?${params.toString()}`,
+			`${import.meta.env.VITE_AUTH_URL}?${params.toString()}`,
 		);
 	};
 
