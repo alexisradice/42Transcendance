@@ -67,7 +67,7 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 		return `${dayString} ${timeString}`;
 	};
 
-	const renderLink = ({ attributes, content }) => {
+	const renderLink = ({ attributes, content }: any) => {
 		const { href, ...props } = attributes;
 		const messageURL = new URL(href);
 		const appURL = new URL(import.meta.env.VITE_REDIRECT_URI);

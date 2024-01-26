@@ -118,7 +118,6 @@ const ProfileSettings = ({ opened, close }: Props) => {
 								/>
 							}
 							clearable
-							// @ts-expect-error - Mantine types are missing the placeholder prop
 							placeholder="Click here to select a file"
 							{...form.getInputProps("image")}
 						/>
