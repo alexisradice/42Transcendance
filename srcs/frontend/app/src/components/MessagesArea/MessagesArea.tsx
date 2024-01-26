@@ -70,7 +70,7 @@ const MessagesArea = ({ messages, isDM, login }: Props) => {
 	const renderLink = ({ attributes, content }: any) => {
 		const { href, ...props } = attributes;
 		const messageURL = new URL(href);
-		const appURL = new URL(import.meta.env.VITE_REDIRECT_URI);
+		const appURL = new URL(window.location.href);
 
 		const isSameSite = messageURL.host === appURL.host;
 		const pathParts = messageURL.pathname.split("/");

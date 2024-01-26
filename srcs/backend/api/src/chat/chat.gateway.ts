@@ -25,10 +25,6 @@ import { ChatService } from "./chat.service";
 import { validate } from "uuid";
 
 @WebSocketGateway({
-	cors: {
-		origin: "http://localhost:5173",
-		credentials: true,
-	},
 	namespace: "chat",
 	connectionStateRecovery: {
 		maxDisconnectionDuration: 2 * 60 * 1000,

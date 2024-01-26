@@ -55,10 +55,11 @@ const LoginModal = ({ setIsLogged }: Props) => {
 
 	const login = () => {
 		setIsLoading(true);
+		const currentUrl = new URL(window.location.href);
 		const params = new URLSearchParams({
 			response_type: "code",
 			client_id: import.meta.env.VITE_CLIENT_ID,
-			redirect_uri: import.meta.env.VITE_REDIRECT_URI,
+			redirect_uri: currentUrl.origin,
 		});
 		window.location.replace(
 			`${import.meta.env.VITE_42_AUTH_URL}?${params.toString()}`,

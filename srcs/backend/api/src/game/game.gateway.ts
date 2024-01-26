@@ -30,10 +30,6 @@ import { LobbyManager } from "./lobby/lobby.manager";
 import { Settings } from "./types";
 
 @WebSocketGateway({
-	cors: {
-		origin: "http://localhost:5173",
-		credentials: true,
-	},
 	namespace: "game",
 })
 export class GameGateway

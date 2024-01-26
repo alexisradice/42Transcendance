@@ -1,12 +1,10 @@
-FROM alpine
-
-RUN apk add --update nodejs npm
+FROM node
 
 WORKDIR /api
 
-COPY ./api /api
+COPY ./api .
 
-RUN npm install && npm run build
+RUN npm install && npm run prisma:gen && npm run build
 
 EXPOSE 3000
 
