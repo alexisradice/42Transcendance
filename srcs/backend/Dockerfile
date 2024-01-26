@@ -1,15 +1,15 @@
 FROM node
 
-ENV NODE_ENV production
-
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY api/package*.json ./
+COPY api/prisma ./prisma/
+
 RUN npm ci
 
 COPY api/ ./
 
-RUN npm run prisma:gen && npm run build
+RUN npm run build
 
 EXPOSE 3000
 

@@ -1,15 +1,14 @@
-version: "3.1"
+version: "3.8"
 
 services:
     postgres:
         image: postgres
         container_name: postgres
         restart: always
-        env_file: .env
-        networks:
-            - transcendence
-        expose:
-            - "5432"
+        ports:
+            - 5432:5432
+        env_file:
+            - .env
 
     frontend:
         image: frontend
@@ -25,22 +24,19 @@ services:
         networks:
             - transcendence
         ports:
-            - "4173:4173"
+            - 4173:4173
 
     backend:
-        image: backend
         container_name: backend
-        build: ./srcs/backend
+        build:
+            context: ./srcs/backend
         restart: always
-        env_file: .env
-        networks:
-            - transcendence
+        ports:
+            - 3000:3000
         depends_on:
             - postgres
-        links:
-            - postgres
-        ports:
-            - "3000:3000"
+        env_file:
+            - .env
 
 networks:
     transcendence:
