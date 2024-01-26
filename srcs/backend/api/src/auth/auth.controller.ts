@@ -32,7 +32,8 @@ export class AuthController {
 		const token =
 			req.cookies.token || (await this.authService.get42Token(code));
 		const userInfo = await this.authService.validateUser(token);
-		const user = await this.userService.findOrCreate(userInfo);
+		const { user, firstTime } =
+			await this.userService.findOrCreate(userInfo);
 
 		if (pinCode) {
 			const isCodeValid = await this.authService.verifyTwoFACode(
@@ -61,7 +62,7 @@ export class AuthController {
 		res.cookie("isLogged", true, { maxAge: 7 * 24 * 3600 * 1000 });
 		res.clearCookie("token");
 		this.userService.updateStatus(user.login, Status.ONLINE);
-		return { success: true };
+		return { success: true, firstTime: firstTime };
 	}
 
 	@UseGuards(JwtGuard)

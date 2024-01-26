@@ -3,12 +3,15 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/fetcher";
 import { errorNotif } from "../../utils/errorNotif";
 import PinCodeValidator from "../PinCodeValidator/PinCodeValidator";
+import { useAtom } from "jotai";
+import { firstTimeLogin } from "../../context/atoms";
 
 type Props = {
 	setIsLogged: Dispatch<SetStateAction<boolean>>;
 };
 
 const LoginModal = ({ setIsLogged }: Props) => {
+	const [, setFirstTimeLoginAtom] = useAtom(firstTimeLogin);
 	const [needsTwoFA, setNeedsTwoFA] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -27,6 +30,9 @@ const LoginModal = ({ setIsLogged }: Props) => {
 				if (!response.data.success && response.data.needsTwoFA) {
 					setNeedsTwoFA(true);
 					return;
+				}
+				if (response.data.success && response.data.firstTime) {
+					setFirstTimeLoginAtom(true);
 				}
 				isMounted && setIsLogged(true);
 			} catch (err: unknown) {

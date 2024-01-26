@@ -9,6 +9,9 @@ import { OFFLINE } from "../../constants";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import StatsModal from "../StatsModal/StatsModal";
 import { useMyData } from "../../hooks/useMyData";
+import { useAtom } from "jotai";
+import { firstTimeLogin } from "../../context/atoms";
+import { useEffect } from "react";
 
 type Props = {
 	children: JSX.Element;
@@ -17,6 +20,7 @@ type Props = {
 
 const UserMenu = ({ children, setIsLogged }: Props) => {
 	const chatSocket = useSocket("chat");
+	const [firstTimeLoginAtom, setFirstTimeLoginAtom] = useAtom(firstTimeLogin);
 	const { user, error, isLoading } = useMyData();
 	const { gameSocket, setIsPending } = useSocketContext();
 	const [gameStatsOpened, { open: openStats, close: closeStats }] =
@@ -25,6 +29,19 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 		useDisclosure(false);
 	const [accountOpened, { open: openAccount, close: closeAccount }] =
 		useDisclosure(false);
+
+	useEffect(() => {
+		if (firstTimeLoginAtom) {
+			if (
+				confirm(
+					"Hello there, newcomer. Do you want to customize your display name and profile picture?",
+				)
+			) {
+				openProfile();
+			}
+			setFirstTimeLoginAtom(false);
+		}
+	}, [firstTimeLoginAtom]);
 
 	const logOut = async () => {
 		try {

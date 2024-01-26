@@ -7,3 +7,5 @@ export const gameSettingsAtom = atom<SettingsType>({
 });
 
 export const rainbowModeAtom = atom<boolean>(false);
+
+export const firstTimeLogin = atom<boolean>(false);

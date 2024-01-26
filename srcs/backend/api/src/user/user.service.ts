@@ -35,10 +35,12 @@ export class UserService {
 		return user;
 	}
 
-	async findOrCreate(user: MiniUser): Promise<User> {
+	async findOrCreate(
+		user: MiniUser,
+	): Promise<{ user: User; firstTime: boolean }> {
 		const foundUser = await this.findOne({ login: user.login });
 		if (foundUser) {
-			return foundUser;
+			return { user: foundUser, firstTime: false };
 		}
 		const createdUser = await this.prisma.user.create({
 			data: {
@@ -59,7 +61,7 @@ export class UserService {
 				},
 			});
 		}
-		return createdUser;
+		return { user: createdUser, firstTime: true };
 	}
 
 	async findUserByUsername(login: string) {
