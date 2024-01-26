@@ -148,7 +148,9 @@ export class AuthService {
 		const secret = authenticator.generateSecret();
 		const otpAuthUrl = authenticator.keyuri(
 			user.login,
-			this.configService.get("TWO_FACTOR_AUTHENTICATION_APP_NAME"),
+			this.configService.get<string>(
+				"TWO_FACTOR_AUTHENTICATION_APP_NAME",
+			),
 			secret,
 		);
 		await this.prisma.user.update({

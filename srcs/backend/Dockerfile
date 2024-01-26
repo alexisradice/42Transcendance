@@ -1,11 +1,16 @@
 FROM node
 
-WORKDIR /api
+ENV NODE_ENV production
 
-COPY ./api .
+WORKDIR /usr/src/app
 
-RUN npm install && npm run prisma:gen && npm run build
+COPY api/package*.json ./
+RUN npm ci
+
+COPY api/ ./
+
+RUN npm run prisma:gen && npm run build
 
 EXPOSE 3000
 
-ENTRYPOINT [ "npm", "run", "start:prod" ]
+CMD [ "npm", "run", "start:prod" ]

@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { MessageModule } from "./message/message.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -29,13 +28,16 @@ import { GameModule } from "./game/game.module";
 		GameModule,
 	],
 	controllers: [AppController],
-	providers: [AppService, JwtService],
+	providers: [JwtService],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
 		consumer
 			.apply(JwtRefreshMiddleware)
-			.exclude({ path: "auth/login", method: RequestMethod.POST })
+			.exclude(
+				{ path: "health", method: RequestMethod.GET },
+				{ path: "auth/login", method: RequestMethod.POST },
+			)
 			.forRoutes("*");
 	}
 }
