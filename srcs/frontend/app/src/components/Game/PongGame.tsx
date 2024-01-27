@@ -1,11 +1,12 @@
 import cx from "clsx";
+import { useAtom } from "jotai";
 import { FC, useEffect, useState } from "react";
 import { IN_GAME } from "../../constants";
+import { gameSettingsAtom, rainbowModeAtom } from "../../context/atoms";
 import { useSocketContext } from "../../context/useContextGameSocket";
 import { useSocket } from "../../hooks/useSocket";
 import classes from "./PongGame.module.css";
-import { gameSettingsAtom, rainbowModeAtom } from "../../context/atoms";
-import { useAtom } from "jotai";
+import { Text } from "@mantine/core";
 
 const PongGame: FC = () => {
 	const chatSocket = useSocket("chat");
@@ -134,9 +135,15 @@ const PongGame: FC = () => {
 				<div className={classes.countdown}>{countdown}</div>
 			)}
 			<div className={classes.score}>
-				<div className={classes.player1Score}>{playerScores.P1}</div>
+				<Text component="span" ta="right" size="xl">wburgos</Text>
+				<div className={classes.player1Score}>
+					{playerScores.P1}
+				</div>
+				<div className={classes.separator}></div>
 				<div className={classes.player2Score}>{playerScores.P2}</div>
+				<Text component="span" ta="left" size="xl">lmurtin</Text>
 			</div>
+
 			<div
 				className={classes.ball}
 				style={{
