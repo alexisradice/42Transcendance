@@ -23,7 +23,7 @@ export class LobbyManager {
 		for (let lobby of this.lobbies.values()) {
 			if (
 				!lobby.instance.hasFinished &&
-				_.isEqual(lobby.settings, settings)
+				_.isEqual(lobby.settings, settings) && lobby.clients.size < 2
 			) {
 				console.log("found lobby");
 				return lobby;

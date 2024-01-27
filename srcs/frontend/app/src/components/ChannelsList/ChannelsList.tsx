@@ -85,8 +85,8 @@ const ChannelsList = ({ login, joinChannel, joinDM }: Props) => {
 		>
 			<Tabs defaultValue="channels">
 				<Tabs.List grow>
-					<Tabs.Tab value="channels">Channels</Tabs.Tab>
-					<Tabs.Tab value="messages">
+					<Tabs.Tab value="channels" onClick={() => mutate()}>Channels</Tabs.Tab>
+					<Tabs.Tab value="messages" onClick={() => mutate()}>
 						<Indicator
 							position="middle-end"
 							offset={-15}

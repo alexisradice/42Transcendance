@@ -166,7 +166,7 @@ export class Instance {
 				// modifier la direction de la balle en fonction de l'angle d'incidence
 				this.ball.directionX *= -1; // inverser la direction horizontale
 				this.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
-				this.ball.x = this.paddleP1.x + paddleWidth + ballRadius; // Add offset to x position
+				this.ball.x = this.paddleP1.x + paddleWidth + ballRadius;
 			}
 
 			if (
@@ -188,7 +188,7 @@ export class Instance {
 				// modifier la direction de la balle en fonction de l'angle d'incidence
 				this.ball.directionX *= -1; // inverser la direction horizontale
 				this.ball.directionY = Math.sin(bounceAngle); // mettre à jour la direction verticale
-				this.ball.x = this.paddleP2.x - ballRadius; // Add offset to x position
+				this.ball.x = this.paddleP2.x - ballRadius;
 			}
 
 			this.lobby.dispatchToLobby<ServerPayloads["playerNames"]>(
