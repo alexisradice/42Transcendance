@@ -130,7 +130,6 @@ export class GameGateway
 	@SubscribeMessage("queue")
 	launchQueue(client: Socket, data: { settings: Settings }) {
 		const { settings } = data;
-		const extendedSettings: Settings = { ...settings, mode: "public" };
 		if (
 			settings.ballSpeed < 1 ||
 			settings.ballSpeed > 5 ||
@@ -139,6 +138,7 @@ export class GameGateway
 		) {
 			throw new BadRequestException("Invalid settings");
 		}
+		const extendedSettings: Settings = { ...settings, mode: "public" };
 		const lobby = this.lobbyManager.findOrCreateLobby(
 			extendedSettings,
 			client,
@@ -160,6 +160,14 @@ export class GameGateway
 	) {
 		const response = {} as SocketResponse;
 		const { settings, opponentLogin } = data;
+		if (
+			settings.ballSpeed < 1 ||
+			settings.ballSpeed > 5 ||
+			settings.paddleSize < 10 ||
+			settings.paddleSize > 30
+		) {
+			throw new BadRequestException("Invalid settings");
+		}
 		const extendedSettings: Settings = { ...settings, mode: "private" };
 		try {
 			const lobby = this.lobbyManager.createLobby(
@@ -240,6 +248,10 @@ export class GameGateway
 		if (!client.data.lobby) {
 			throw new ForbiddenException("You are not in a lobby");
 		}
-		client.data.lobby.instance.movePaddle(data.direction, client);
+		const { direction } = data;
+		if (direction !== "up" && direction !== "down") {
+			throw new BadRequestException("Bad direction");
+		}
+		client.data.lobby.instance.movePaddle(direction, client);
 	}
 }
