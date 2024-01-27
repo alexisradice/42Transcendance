@@ -186,7 +186,7 @@ export class GameGateway
 					BALL_SPEEDS[lobby.settings.ballSpeed]
 				} ball, ${
 					PADDLE_SIZES[lobby.settings.paddleSize]
-				} paddle) ${siteUrl}game/${lobby.id}`,
+				} paddle) ${siteUrl}/game/${lobby.id}`,
 			);
 			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
 		} catch (err) {

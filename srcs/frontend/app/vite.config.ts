@@ -5,6 +5,6 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
 	plugins: [react()],
 	preview: {
-		host: "0.0.0.0",
+		host: "10.12.5.9",
 	},
 });
