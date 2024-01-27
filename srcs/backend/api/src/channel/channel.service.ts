@@ -643,6 +643,7 @@ export class ChannelService {
 	}
 
 	async activatePrivate(channelId: string) {
+		console.log("in activate function");
 		return await this.prisma.channel.update({
 			where: {
 				id: channelId,
@@ -654,6 +655,7 @@ export class ChannelService {
 	}
 
 	async deactivatePrivate(channelId: string) {
+		console.log("in deactivate function");
 		return await this.prisma.channel.update({
 			where: {
 				id: channelId,

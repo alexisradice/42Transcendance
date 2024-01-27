@@ -51,6 +51,8 @@ export class Instance {
 			return;
 		}
 
+		console.log("winner:", result.winner.client.id);
+		console.log("loser:", result.loser.client.id);
 		const { winner, loser } = result;
 		const userWinner = winner.client.data.user;
 		const userLoser = loser.client.data.user;
@@ -73,6 +75,7 @@ export class Instance {
 	};
 
 	private initializeGame = (): void => {
+		console.log("this.lobby.settings", this.lobby.settings);
 		this.player1.score = 0;
 		this.player2.score = 0;
 		this.board = { width: 300, height: 100 };
