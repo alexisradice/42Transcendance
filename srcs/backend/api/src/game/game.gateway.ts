@@ -198,7 +198,7 @@ export class GameGateway
 					PADDLE_SIZES[lobby.settings.paddleSize]
 				} paddle) ${siteUrl}/game/${lobby.id}`,
 			);
-			this.server.to(dmChannel.id).emit("display-message", dmChannel.id);
+			this.server.to(dmChannel.id).emit("display-invite", dmChannel.id);
 		} catch (err) {
 			response.error = err;
 		} finally {

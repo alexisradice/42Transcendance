@@ -129,7 +129,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			mutate("/channel/notifications");
 		});
 
-		gameSocket.on("display-message", (channelId: string) => {
+		gameSocket.on("display-invite", (channelId: string) => {
 			mutate(`/channel/${channelId}`);
 		});
 
@@ -148,7 +148,7 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			chatSocket.off("display-message");
 			chatSocket.off("status-changed");
 			chatSocket.off("notif");
-			gameSocket.off("display-message");
+			gameSocket.off("display-invite");
 			gameSocket.off("status-changed");
 			gameSocket.off("launch");
 		};
