@@ -13,8 +13,8 @@ ENV VITE_AUTH_URL=$VITE_AUTH_URL
 # build
 WORKDIR /usr/src/app
 
-COPY app/package.json ./
-RUN npm install
+COPY app/package*.json ./
+RUN npm ci
 
 COPY app/ ./
 
