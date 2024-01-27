@@ -31,7 +31,7 @@ type Props = {
 };
 
 const StatsModal = ({ user, opened, close }: Props) => {
-	const { data, isLoading, error } = useSWR<GameStats>(
+	const { data, isLoading, error, mutate } = useSWR<GameStats>(
 		`/user/stats/${user.id}`,
 		fetcherPrivate,
 	);
@@ -89,9 +89,15 @@ const StatsModal = ({ user, opened, close }: Props) => {
 		>
 			<Tabs variant="default" radius="md" defaultValue="stats">
 				<Tabs.List grow>
-					<Tabs.Tab value="stats">Stats</Tabs.Tab>
-					<Tabs.Tab value="timeline">Last Matches</Tabs.Tab>
-					<Tabs.Tab value="history">History</Tabs.Tab>
+					<Tabs.Tab value="stats" onClick={() => mutate()}>
+						Stats
+					</Tabs.Tab>
+					<Tabs.Tab value="timeline" onClick={() => mutate()}>
+						Last Matches
+					</Tabs.Tab>
+					<Tabs.Tab value="history" onClick={() => mutate()}>
+						History
+					</Tabs.Tab>
 				</Tabs.List>
 
 				<Tabs.Panel value="stats" pt="md" h={350}>
