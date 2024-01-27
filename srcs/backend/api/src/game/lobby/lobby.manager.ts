@@ -25,7 +25,6 @@ export class LobbyManager {
 				!lobby.instance.hasFinished &&
 				_.isEqual(lobby.settings, settings)
 			) {
-				console.log("found lobby");
 				return lobby;
 			}
 		}
@@ -41,7 +40,6 @@ export class LobbyManager {
 		const lobby = new Lobby(this.instanceFactory, this.server, settings);
 
 		this.lobbies.set(lobby.id, lobby);
-		console.log("created lobby");
 		return lobby;
 	}
 
@@ -76,7 +74,6 @@ export class LobbyManager {
 			}
 		});
 
-		console.log("lobby and client are ok, joining lobby");
 		lobby.addClient(client);
 	}
 
@@ -84,10 +81,8 @@ export class LobbyManager {
 		for (const [lobbyId, lobby] of this.lobbies) {
 			if (lobby.instance.hasFinished) {
 				lobby.clients.forEach((client) => {
-					console.log("Removing client", client.id);
 					lobby.removeClient(client);
 				});
-				console.log("Destroying", lobbyId);
 				this.lobbies.delete(lobbyId);
 			}
 		}

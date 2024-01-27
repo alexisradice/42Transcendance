@@ -27,7 +27,6 @@ export class Lobby {
 		this.clients.set(client.id, client);
 		client.join(this.id);
 		client.data.lobby = this;
-		console.log("client joined lobby", this.id, client.id);
 
 		if (this.clients.size === 1) {
 			this.instance.setPlayer1(client);
@@ -43,7 +42,6 @@ export class Lobby {
 
 	public async removeClient(client: Socket): Promise<void> {
 		if (this.instance.hasStarted && !this.instance.hasFinished) {
-			console.log("client leaving while ongoing game:", client.id);
 			// If player leave then the game isn't worth to play anymore
 			const result: GameResult = {} as GameResult;
 			if (this.instance.player1.client.id === client.id) {

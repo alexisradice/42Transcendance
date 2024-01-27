@@ -276,7 +276,6 @@ export class UserController {
 				},
 			},
 		});
-		// console.log(userStats);
 		return userStats;
 	}
 

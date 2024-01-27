@@ -99,7 +99,6 @@ export class GameGateway
 			try {
 				const user = await this.userFromRefreshToken(refreshToken);
 				client.data.user = user;
-				console.log("connected to game socket, client:", client.id);
 				client.data.lobby = null;
 			} catch (err) {
 				console.error(err);
@@ -114,7 +113,6 @@ export class GameGateway
 					login: user.sub,
 				});
 				client.data.user = dbUser;
-				console.log("connected to game socket, client:", client.id);
 				client.data.lobby = null;
 			} catch (err) {
 				console.error(err);
@@ -124,7 +122,6 @@ export class GameGateway
 	}
 
 	async handleDisconnect(client: Socket) {
-		console.log("client disconnecting from game socket:", client.id);
 		await client.data.lobby?.removeClient(client);
 	}
 
