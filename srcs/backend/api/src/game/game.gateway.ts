@@ -192,9 +192,6 @@ export class GameGateway
 				throw new ForbiddenException("This user blocked you.");
 			}
 
-			client.join(dmChannel.id);
-			client.join(opponent.id);
-
 			const siteUrl = this.configService.get<string>("REDIRECT_URI");
 
 			await this.chatService.createMessage(
@@ -206,7 +203,10 @@ export class GameGateway
 					PADDLE_SIZES[lobby.settings.paddleSize]
 				} paddle) ${siteUrl}/game/${lobby.id}`,
 			);
-			this.server.to(dmChannel.id).emit("display-invite", dmChannel.id);
+			this.server.emit("display-invite", {
+				userId: opponent.id,
+				channelId: dmChannel.id,
+			});
 		} catch (err) {
 			response.error = err;
 		} finally {

@@ -129,9 +129,15 @@ const LoggedView = ({ setIsLogged }: Props) => {
 			mutate("/channel/notifications");
 		});
 
-		gameSocket.on("display-invite", (channelId: string) => {
-			mutate(`/channel/${channelId}`);
-		});
+		gameSocket.on(
+			"display-invite",
+			(response: { userId: string; channelId: string }) => {
+				const { userId, channelId } = response;
+				if (user?.id === userId) {
+					mutate(`/channel/${channelId}`);
+				}
+			},
+		);
 
 		gameSocket.on("launch", ({ lobbyId }: { lobbyId: string }) => {
 			setIsPending(false);
