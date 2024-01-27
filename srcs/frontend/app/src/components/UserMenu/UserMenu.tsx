@@ -12,6 +12,7 @@ import { useMyData } from "../../hooks/useMyData";
 import { useAtom } from "jotai";
 import { firstTimeLogin } from "../../context/atoms";
 import { useEffect } from "react";
+import { useSWRConfig } from "swr";
 
 type Props = {
 	children: JSX.Element;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 const UserMenu = ({ children, setIsLogged }: Props) => {
+	const { mutate } = useSWRConfig();
 	const chatSocket = useSocket("chat");
 	const [firstTimeLoginAtom, setFirstTimeLoginAtom] = useAtom(firstTimeLogin);
 	const { user, error, isLoading } = useMyData();
@@ -69,6 +71,11 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 		return <></>;
 	}
 
+	const handleOpenStats = () => {
+		mutate(`/user/stats/${user.id}`);
+		openStats();
+	};
+
 	return (
 		<>
 			<StatsModal
@@ -83,7 +90,7 @@ const UserMenu = ({ children, setIsLogged }: Props) => {
 				<Menu.Target>{children}</Menu.Target>
 				<Menu.Dropdown>
 					<Menu.Item onClick={openProfile}>Update Profile</Menu.Item>
-					<Menu.Item onClick={openStats}>Game Stats</Menu.Item>
+					<Menu.Item onClick={handleOpenStats}>Game Stats</Menu.Item>
 					<Menu.Item onClick={openAccount}>Account</Menu.Item>
 					<Menu.Item onClick={logOut}>Log out</Menu.Item>
 				</Menu.Dropdown>
