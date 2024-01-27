@@ -35,7 +35,7 @@
 
 .score {
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
 	font-weight: bold;
 	font-size: 7vh;
 	color: var(--foreground-color);
@@ -45,18 +45,18 @@
 .score > * {
 	flex-grow: 1;
 	flex-basis: 0;
-	padding: 0 15%;
+	padding: 0;
 	margin: 1vh 0;
 	opacity: 0.3;
 }
 
 .player1Score {
-	text-align: right;
+	text-align: center;
 	/* border-right: 0.5vh solid var(--foreground-color); */
 }
 
 .player2Score {
-	text-align: left;
+	text-align: center;
 }
 
 /* Countdown style centered in the game board */
@@ -69,4 +69,13 @@
 	font-weight: bold;
 	font-family: "Pong", Courier, monospace;
 	color: var(--foreground-color);
+}
+
+.separator {
+	height: 100%;
+	border-left: 3px dashed white;
+	border-right: 3px dashed white;
+	width: 1px;
+	position: absolute;
+	left: 50%;
 }

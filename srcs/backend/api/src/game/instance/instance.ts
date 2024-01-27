@@ -188,6 +188,14 @@ export class Instance {
 				this.ball.x = this.paddleP2.x - ballRadius; // Add offset to x position
 			}
 
+			this.lobby.dispatchToLobby<ServerPayloads["playerNames"]>(
+				"playerNames",
+				{
+					P1Name: this.player1.client.data.user.displayName,
+					P2Name: this.player2.client.data.user.displayName,
+				},
+			);
+
 			this.lobby.dispatchToLobby<ServerPayloads["ballPosition"]>(
 				"ballPosition",
 				{

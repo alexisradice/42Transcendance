@@ -11,8 +11,7 @@ import {
 	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer,
-	WsException,
+	WebSocketServer
 } from "@nestjs/websockets";
 import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";

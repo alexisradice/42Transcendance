@@ -40,6 +40,11 @@ export interface ServerPayloads {
 	launch: {
 		lobbyId: string;
 	};
+
+	playerNames: {
+		P1Name: string;
+		P2Name: string;
+	}
 }
 
 export interface Board {
