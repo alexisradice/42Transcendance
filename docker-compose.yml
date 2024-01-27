@@ -19,14 +19,14 @@ services:
                 - VITE_CLIENT_ID=${VITE_CLIENT_ID}
                 - VITE_API_URL=${VITE_API_URL}
                 - VITE_AUTH_URL=${VITE_AUTH_URL}
-        depends_on:
-            - backend
+        restart: always
         networks:
             - transcendence
         ports:
             - 4173:4173
 
     backend:
+        image: backend
         container_name: backend
         build:
             context: ./srcs/backend

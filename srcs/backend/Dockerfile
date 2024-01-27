@@ -2,15 +2,10 @@ FROM node
 
 WORKDIR /app
 
-COPY api/package*.json ./
-COPY api/prisma ./prisma/
+COPY api/ .
 
-RUN npm ci
-
-COPY api/ ./
-
-RUN npm run build
+RUN npm install --silent
 
 EXPOSE 3000
 
-CMD [ "npm", "run", "start:prod" ]
+CMD [ "npm", "run", "start:docker" ]
