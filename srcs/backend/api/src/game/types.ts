@@ -44,7 +44,7 @@ export interface ServerPayloads {
 	playerNames: {
 		P1Name: string;
 		P2Name: string;
-	}
+	};
 }
 
 export interface Board {
@@ -82,6 +82,7 @@ export interface GameResult {
 }
 
 export class Settings {
+	mode: "public" | "private";
 	ballSpeed: number;
 	paddleSize: number;
 }

@@ -11,7 +11,7 @@ import {
 	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer
+	WebSocketServer,
 } from "@nestjs/websockets";
 import { Status, User } from "@prisma/client";
 import * as argon2 from "argon2";
@@ -130,6 +130,7 @@ export class GameGateway
 	@SubscribeMessage("queue")
 	launchQueue(client: Socket, data: { settings: Settings }) {
 		const { settings } = data;
+		const extendedSettings: Settings = { ...settings, mode: "public" };
 		if (
 			settings.ballSpeed < 1 ||
 			settings.ballSpeed > 5 ||
@@ -138,7 +139,10 @@ export class GameGateway
 		) {
 			throw new BadRequestException("Invalid settings");
 		}
-		const lobby = this.lobbyManager.findOrCreateLobby(settings, client);
+		const lobby = this.lobbyManager.findOrCreateLobby(
+			extendedSettings,
+			client,
+		);
 		lobby.addClient(client);
 
 		const login = client.data.user.login;
@@ -155,12 +159,16 @@ export class GameGateway
 		data: { settings: Settings; opponentLogin: string },
 	) {
 		const response = {} as SocketResponse;
+		const { settings, opponentLogin } = data;
+		const extendedSettings: Settings = { ...settings, mode: "private" };
 		try {
-			const lobby = this.lobbyManager.createLobby(data.settings, client);
+			const lobby = this.lobbyManager.createLobby(
+				extendedSettings,
+				client,
+			);
 			lobby.addClient(client);
 
 			const inviter: User = client.data.user;
-			const opponentLogin = data.opponentLogin;
 			const opponent = await this.userService.findOne({
 				login: opponentLogin,
 			});

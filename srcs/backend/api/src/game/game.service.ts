@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { Lobby } from "./lobby/lobby";
 import { Settings } from "./types";
 
 @Injectable()
